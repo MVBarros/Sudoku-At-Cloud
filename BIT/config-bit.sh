@@ -1,1 +1,1 @@
-export CLASSPATH="$CLASSPATH:/tmp/cnv/BIT:/tmp/cnv/BIT/samples:./"
+export CLASSPATH="$CLASSPATH:`pwd`/BIT:`pwd`/BIT/samples:`pwd`"
