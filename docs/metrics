@@ -1,0 +1,12 @@
+
+Parameter Number of unassigned entries not working
+
+Instrumentar primeiro single threaded e depois por o servidor a correr com ferramentas
+
+Guardar num ficheiro apos cada pedido (Guardar tambem informação do puzzle)
+
+load store
+icount
+alloc
+branch
+tamanho dos metodos
