@@ -2,12 +2,11 @@ package pt.ulisboa.tecnico.cnv.solver;
 
 import org.apache.commons.cli.Option;
 import org.json.JSONArray;
+import org.json.JSONObject;
 import org.json.JSONException;
 import pt.ulisboa.tecnico.cnv.util.AbstractArgumentParser;
 import java.util.Collections;
 import java.util.Arrays;
-
-
 
 
 public class SolverArgumentParser extends AbstractArgumentParser {
@@ -171,7 +170,6 @@ public class SolverArgumentParser extends AbstractArgumentParser {
 
     }
 
-
     public String getPuzzleBoard() {
         return (String) super.argValues.get(SolverParameters.PUZZLE_BOARD.toString());
 
@@ -188,5 +186,16 @@ public class SolverArgumentParser extends AbstractArgumentParser {
     @Override
     public String toString(){
         return String.format("Lenght: %d Height: %d UN: %d InputBoard: %s PuzzleBoard: %s SolverType: %s Number Zeroes: %d", getN1(), getN2(), getUn(), getInputBoard(), getPuzzleBoard(), getSolverStrategy().toString(), getBoardZeros());
+    }
+
+    public JSONObject toJSON() {
+        JSONObject obj = new JSONObject();
+        obj.put("N1", getN1());
+        obj.put("N2", getN2());
+        obj.put("UN", getUn());
+        obj.put("Input Board", getInputBoard());
+        obj.put("Puzzle Board", getPuzzleBoard());
+        obj.put("Board Zeros", getBoardZeros());
+        return obj;
     }
 }

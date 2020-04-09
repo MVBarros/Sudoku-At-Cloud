@@ -15,6 +15,7 @@
 // expressed or implied, about its correctness or performance.  The licensor
 // shall not be liable for any damages suffered as a result of using
 // and modifying this software.
+import org.json.JSONObject;
 
 public class StatisticsBranch 
 {
@@ -47,5 +48,35 @@ public class StatisticsBranch
 		{
 			not_taken_++;
 		}
+
+	public String getClass_name_() {
+		return class_name_;
+	}
+
+	public String getMethod_name_() {
+		return method_name_;
+	}
+
+	public int getPc_() {
+		return pc_;
+	}
+
+	public int getTaken_() {
+		return taken_;
+	}
+
+	public int getNot_taken_() {
+		return not_taken_;
+	}
+	public JSONObject toJSON() {
+		JSONObject obj = new JSONObject();
+		obj.put("Class Name", getClass_name_());
+		obj.put("Method Name", getMethod_name_());
+		obj.put("Program Counter", getPc_());
+		obj.put("Taken", getTaken_());
+		obj.put("Not Taken", getNot_taken_());
+		return obj;
+	}
+
 }
 

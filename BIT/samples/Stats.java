@@ -1,5 +1,5 @@
-
-
+import org.json.JSONObject;
+import org.json.JSONArray;
 public class Stats {
     private static Integer branchCount = 0;
 
@@ -160,6 +160,30 @@ public class Stats {
 
     public static void setBranchCount(int n) {
         Stats.branchCount = n;
+    }
+
+    public JSONObject toJSON() {
+        JSONObject obj = new JSONObject();
+        obj.put("Method Count", getDyn_method_count());
+        obj.put("Basic Block Count", getDyn_bb_count());
+        obj.put("Basic Instruction Count", getDyn_instr_count());
+        obj.put("A New Array Count", getAnewarraycount());
+        obj.put("New Array Count", getNewarraycount());
+        obj.put("New Count", getNewcount());
+        obj.put("Multi New Array Count", getMultianewarraycount());
+        obj.put("Load Count", getLoadcount());
+        obj.put("Store Count", getStorecount());
+        obj.put("Field Load Count", getFieldloadcount());
+        obj.put("Field Store Count", getStorecount());
+        JSONArray array = new JSONArray();
+        StatisticsBranch[] branches = getBranch_info();
+        for (StatisticsBranch branch: branches) {
+            if (branch != null) {
+                array.put(branch.toJSON());
+            }
+        }
+        obj.put("Branches", array);
+        return obj;
     }
 
 }

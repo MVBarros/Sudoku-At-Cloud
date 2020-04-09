@@ -1,13 +1,19 @@
 import BIT.highBIT.*;
 
-import java.io.File;
+import java.io.*;
 import java.util.Enumeration;
+import java.util.UUID;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 import pt.ulisboa.tecnico.cnv.server.WebServer;
+import pt.ulisboa.tecnico.cnv.solver.SolverArgumentParser;
+import org.json.JSONObject;
 
 public class SudokuMetricsTool {
+
     private static ConcurrentHashMap<String, Stats> stats = new ConcurrentHashMap<>();
+
+    private static String outputDir = "./out";
 
     public static String getCurrentThreadName() {
         return String.valueOf(Thread.currentThread().getId());
@@ -356,9 +362,23 @@ public class SudokuMetricsTool {
         printLoadStore(foo, getCurrentThreadName());
         printBranch(foo, getCurrentThreadName());
 
-        System.out.println(WebServer.getCurrentThreadBoard());
+        SolverArgumentParser parser = WebServer.getCurrentThreadBoard();
+        writeToFile(getCurrentStats(), parser);
         stats.remove(getCurrentThreadName());
     }
+
+    public static void writeToFile(Stats stats, SolverArgumentParser parser)  {
+        JSONObject object = stats.toJSON();
+        object.put("Board", parser.toJSON());
+        String path = outputDir + System.getProperty("file.separator") + UUID.randomUUID().toString() + ".json";
+        try (PrintWriter out = new PrintWriter(path)) {
+            out.println(object.toString());
+        } catch (FileNotFoundException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+
     public static void setBranchClassName(String name) {
         getCurrentStats().setBranch_class_name(name);
     }
