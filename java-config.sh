@@ -6,4 +6,4 @@ export PATH=/usr/lib/jvm/java-7-openjdk/bin/:$PATH
 export SDK_HOME=/usr/lib/jvm/java-7-openjdk/
 export _JAVA_OPTIONS="-XX:-UseSplitVerifier "$_JAVA_OPTIONS
 
-export CLASSPATH="$CLASSPATH:`pwd`/BIT/BIT:`pwd`/BIT/samples:`pwd`/BIT:`pwd`:sudoku"
+export CLASSPATH="$CLASSPATH:`pwd`/BIT/BIT:`pwd`/BIT/samples:`pwd`/BIT:`pwd`/sudoku"
