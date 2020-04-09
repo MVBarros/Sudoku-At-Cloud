@@ -20,7 +20,7 @@ public class Stats {
     private StatisticsBranch[] branch_info = null;
     private int branch_number = 0;
     private int branch_pc = 0;
-    private static String branch_class_name = null;
+    private String branch_class_name = null;
     private String branch_method_name = null;
 
     public int getDyn_method_count() {
@@ -138,12 +138,12 @@ public class Stats {
         this.branch_pc = branch_pc;
     }
 
-    public static String getBranch_class_name() {
-        return Stats.branch_class_name;
+    public String getBranch_class_name() {
+        return this.branch_class_name;
     }
 
-    public static void setBranch_class_name(String branch_class_name) {
-        Stats.branch_class_name = branch_class_name;
+    public void setBranch_class_name(String branch_class_name) {
+        this.branch_class_name = branch_class_name;
     }
 
     public String getBranch_method_name() {

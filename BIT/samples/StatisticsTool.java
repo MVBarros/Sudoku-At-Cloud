@@ -424,6 +424,8 @@ public class StatisticsTool {
                         Instruction instr = (Instruction) instructions.elementAt(bb.getEndAddress());
                         short instr_type = InstructionTable.InstructionTypeTable[instr.getOpcode()];
                         if (instr_type == InstructionTable.CONDITIONAL_INSTRUCTION) {
+                            instr.addBefore("StatisticsTool", "setBranchClassName", ci.getClassName());
+                            instr.addBefore("StatisticsTool", "setBranchMethodName", routine.getMethodName());
                             instr.addBefore("StatisticsTool", "setBranchPC", new Integer(instr.getOffset()));
                             instr.addBefore("StatisticsTool", "updateBranchNumber", new Integer(k));
                             instr.addBefore("StatisticsTool", "updateBranchOutcome", "BranchOutcome");
@@ -440,7 +442,7 @@ public class StatisticsTool {
     }
 
     public static synchronized void setBranchClassName(String name) {
-        Stats.setBranch_class_name(name);
+        getCurrentStats().setBranch_class_name(name);
 
         branch_class_name = name;
     }
@@ -469,7 +471,7 @@ public class StatisticsTool {
         Stats stats = getCurrentStats();
         stats.setBranch_number(n);
         if (stats.getBranch_info()[stats.getBranch_number()] == null) {
-            stats.getBranch_info()[stats.getBranch_number()] = new StatisticsBranch(Stats.getBranch_class_name(), stats.getBranch_method_name(), stats.getBranch_pc());
+            stats.getBranch_info()[stats.getBranch_number()] = new StatisticsBranch(stats.getBranch_class_name(), stats.getBranch_method_name(), stats.getBranch_pc());
         }
 
         branch_number = n;
