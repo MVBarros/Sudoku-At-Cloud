@@ -25,25 +25,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class StatisticsTool {
     private static ConcurrentHashMap<String, Stats> stats = new ConcurrentHashMap<>();
-    private static int dyn_method_count = 0;
-    private static int dyn_bb_count = 0;
-    private static int dyn_instr_count = 0;
-
-    private static int newcount = 0;
-    private static int newarraycount = 0;
-    private static int anewarraycount = 0;
-    private static int multianewarraycount = 0;
-
-    private static int loadcount = 0;
-    private static int storecount = 0;
-    private static int fieldloadcount = 0;
-    private static int fieldstorecount = 0;
-
-    private static StatisticsBranch[] branch_info;
-    private static int branch_number;
-    private static int branch_pc;
-    private static String branch_class_name;
-    private static String branch_method_name;
 
     public static String getCurrentThreadName() {
         return String.valueOf(Thread.currentThread().getId());
@@ -68,6 +49,7 @@ public class StatisticsTool {
         System.out.println("        alloc:      memory allocation instructions");
         System.out.println("        load_store: loads and stores (both field and regular)");
         System.out.println("        branch:     gathers branch outcome statistics");
+        System.out.println("        all:        gathers all dynamic properties");
         System.out.println();
         System.out.println("        in_path:  directory from which the class files are read");
         System.out.println("        out_path: directory to which the class files are written");
@@ -151,30 +133,13 @@ public class StatisticsTool {
         }
     }
 
-    public static synchronized void printDynamic(String foo) {
-        System.out.println("Dynamic information summary:");
-        System.out.println("Number of methods:      " + dyn_method_count);
-        System.out.println("Number of basic blocks: " + dyn_bb_count);
-        System.out.println("Number of instructions: " + dyn_instr_count);
-
-        if (dyn_method_count == 0) {
-            return;
-        }
-
-        float instr_per_bb = (float) dyn_instr_count / (float) dyn_bb_count;
-        float instr_per_method = (float) dyn_instr_count / (float) dyn_method_count;
-        float bb_per_method = (float) dyn_bb_count / (float) dyn_method_count;
-
-        System.out.println("Average number of instructions per basic block: " + instr_per_bb);
-        System.out.println("Average number of instructions per method:      " + instr_per_method);
-        System.out.println("Average number of basic blocks per method:      " + bb_per_method);
-
+    public static void printDynamic(String foo) {
         for (String thread : stats.keySet()) {
             printDynamic(foo, thread);
         }
     }
 
-    public static synchronized void printDynamic(String foo, String thread) {
+    public static void printDynamic(String foo, String thread) {
         System.out.println(String.format("Dynamic information summary for thread %s:", thread));
 
         Stats stats = getStatsForThread(thread);
@@ -196,19 +161,14 @@ public class StatisticsTool {
     }
 
 
-    public static synchronized void dynInstrCount(int incr) {
+    public static void dynInstrCount(int incr) {
         Stats stats = getCurrentStats();
         stats.incrDyn_instr_count(incr);
         stats.incrDyn_bb_count(1);
-
-        dyn_instr_count += incr;
-        dyn_bb_count++;
     }
 
-    public static synchronized void dynMethodCount(int incr) {
+    public static void dynMethodCount(int incr) {
         getCurrentStats().incrDyn_method_count(1);
-
-        dyn_method_count++;
     }
 
     public static void doAlloc(File in_dir, File out_dir) {
@@ -242,19 +202,13 @@ public class StatisticsTool {
         }
     }
 
-    public static synchronized void printAlloc(String s) {
-        System.out.println("Allocations summary:");
-        System.out.println("new:            " + newcount);
-        System.out.println("newarray:       " + newarraycount);
-        System.out.println("anewarray:      " + anewarraycount);
-        System.out.println("multianewarray: " + multianewarraycount);
-
+    public static void printAlloc(String s) {
         for (String thread : stats.keySet()) {
             printAlloc(s, thread);
         }
     }
 
-    public static synchronized void printAlloc(String s, String thread) {
+    public static void printAlloc(String s, String thread) {
         System.out.println(String.format("Allocations summary for thread %s:", thread));
         Stats stats = getStatsForThread(thread);
         System.out.println("new:            " + stats.getNewcount());
@@ -263,7 +217,7 @@ public class StatisticsTool {
         System.out.println("multianewarray: " + stats.getMultianewarraycount());
     }
 
-    public static synchronized void allocCount(int type) {
+    public static void allocCount(int type) {
         switch (type) {
             case InstructionTable.NEW:
                 getCurrentStats().incrNewcount(1);
@@ -276,21 +230,6 @@ public class StatisticsTool {
                 break;
             case InstructionTable.multianewarray:
                 getCurrentStats().incrMultianewarraycount(1);
-                break;
-        }
-
-        switch (type) {
-            case InstructionTable.NEW:
-                newcount++;
-                break;
-            case InstructionTable.newarray:
-                newarraycount++;
-                break;
-            case InstructionTable.anewarray:
-                anewarraycount++;
-                break;
-            case InstructionTable.multianewarray:
-                multianewarraycount++;
                 break;
         }
     }
@@ -331,19 +270,13 @@ public class StatisticsTool {
         }
     }
 
-    public static synchronized void printLoadStore(String s) {
-        System.out.println("Load Store Summary:");
-        System.out.println("Field load:    " + fieldloadcount);
-        System.out.println("Field store:   " + fieldstorecount);
-        System.out.println("Regular load:  " + loadcount);
-        System.out.println("Regular store: " + storecount);
-
+    public static void printLoadStore(String s) {
         for (String thread : stats.keySet()) {
             printLoadStore(s, thread);
         }
     }
 
-    public static synchronized void printLoadStore(String s, String thread) {
+    public static void printLoadStore(String s, String thread) {
         Stats stats = getStatsForThread(thread);
         System.out.println(String.format("Load Store Summary for thread %s: ", thread));
         System.out.println("Field load:    " + stats.getFieldloadcount());
@@ -352,33 +285,21 @@ public class StatisticsTool {
         System.out.println("Regular store: " + stats.getStorecount());
     }
 
-    public static synchronized void LSFieldCount(int type) {
+    public static void LSFieldCount(int type) {
         Stats stats = getCurrentStats();
         if (type == 0) {
             stats.incrFieldloadcount(1);
         } else {
             stats.incrFieldstorecount(1);
         }
-
-        if (type == 0) {
-            fieldloadcount++;
-        } else {
-            fieldstorecount++;
-        }
     }
 
-    public static synchronized void LSCount(int type) {
+    public static void LSCount(int type) {
         Stats stats = getCurrentStats();
         if (type == 0) {
             stats.incrLoadcount(1);
         } else {
             stats.incrStorecount(1);
-        }
-
-        if (type == 0) {
-            loadcount++;
-        } else {
-            storecount++;
         }
     }
 
@@ -441,76 +362,50 @@ public class StatisticsTool {
         }
     }
 
-    public static synchronized void setBranchClassName(String name) {
+    public static void setBranchClassName(String name) {
         getCurrentStats().setBranch_class_name(name);
-
-        branch_class_name = name;
     }
 
-    public static synchronized void setBranchMethodName(String name) {
+    public static void setBranchMethodName(String name) {
         getCurrentStats().setBranch_method_name(name);
-
-        branch_method_name = name;
     }
 
-    public static synchronized void setBranchPC(int pc) {
+    public static void setBranchPC(int pc) {
         getCurrentStats().setBranch_pc(pc);
-
-        branch_pc = pc;
     }
 
-    public static synchronized void branchInit(int n) {
+    public static void branchInit(int n) {
         Stats.setBranchCount(n);
 
-        if (branch_info == null) {
-            branch_info = new StatisticsBranch[n];
-        }
     }
 
-    public static synchronized void updateBranchNumber(int n) {
+    public static void updateBranchNumber(int n) {
         Stats stats = getCurrentStats();
         stats.setBranch_number(n);
         if (stats.getBranch_info()[stats.getBranch_number()] == null) {
             stats.getBranch_info()[stats.getBranch_number()] = new StatisticsBranch(stats.getBranch_class_name(), stats.getBranch_method_name(), stats.getBranch_pc());
         }
-
-        branch_number = n;
-        if (branch_info[branch_number] == null) {
-            branch_info[branch_number] = new StatisticsBranch(branch_class_name, branch_method_name, branch_pc);
-        }
     }
 
-    public static synchronized void updateBranchOutcome(int br_outcome) {
+    public static void updateBranchOutcome(int br_outcome) {
         Stats stats = getCurrentStats();
         if (br_outcome == 0) {
             stats.getBranch_info()[stats.getBranch_number()].incrNotTaken();
         } else {
             stats.getBranch_info()[stats.getBranch_number()].incrTaken();
         }
-
-        if (br_outcome == 0) {
-            branch_info[branch_number].incrNotTaken();
-        } else {
-            branch_info[branch_number].incrTaken();
-        }
     }
 
-    public static synchronized void printBranch(String foo) {
+    public static void printBranch(String foo) {
         System.out.println("Branch summary: ");
         System.out.println("CLASS NAME" + '\t' + "METHOD" + '\t' + "PC" + '\t' + "TAKEN" + '\t' + "NOT_TAKEN");
-
-        for (int i = 0; i < branch_info.length; i++) {
-            if (branch_info[i] != null) {
-                branch_info[i].print();
-            }
-        }
 
         for (String thread : stats.keySet()) {
             printBranch(foo, thread);
         }
     }
 
-    public static synchronized void printBranch(String foo, String thread) {
+    public static void printBranch(String foo, String thread) {
         System.out.println(String.format("Branch summary for thread %s: ", thread));
         System.out.println("CLASS NAME" + '\t' + "METHOD" + '\t' + "PC" + '\t' + "TAKEN" + '\t' + "NOT_TAKEN");
         Stats stats = getStatsForThread(thread);
@@ -611,6 +506,27 @@ public class StatisticsTool {
             } catch (NullPointerException e) {
                 printUsage();
             }
+        } else if (argv[0].equals("-all")) {
+            if (argv.length != 3) {
+                printUsage();
+            }
+
+            try {
+                File in_dir = new File(argv[1]);
+                File out_dir = new File(argv[2]);
+
+                if (in_dir.isDirectory() && out_dir.isDirectory()) {
+                    doDynamic(in_dir, out_dir);
+                    doLoadStore(out_dir, out_dir);
+                    doAlloc(out_dir, out_dir);
+                    doBranch(out_dir, out_dir);
+                } else {
+                    printUsage();
+                }
+            } catch (NullPointerException e) {
+                printUsage();
+            }
         }
+
     }
 }
