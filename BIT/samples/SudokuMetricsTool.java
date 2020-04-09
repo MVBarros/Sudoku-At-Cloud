@@ -25,7 +25,7 @@ public class SudokuMetricsTool {
     }
 
     public static void printUsage() {
-        System.out.println("Syntax: java StatisticsTool -stat_type in_path [out_path]");
+        System.out.println("Syntax: java SudokuMetricsTool -stat_type in_path [out_path]");
         System.out.println("        where stat_type can be:");
         System.out.println("        static:     static properties");
         System.out.println("        dynamic:    dynamic properties");
@@ -103,14 +103,16 @@ public class SudokuMetricsTool {
                 ClassInfo ci = new ClassInfo(in_filename);
                 for (Enumeration e = ci.getRoutines().elements(); e.hasMoreElements(); ) {
                     Routine routine = (Routine) e.nextElement();
-                    routine.addBefore("StatisticsTool", "dynMethodCount", new Integer(1));
+                    routine.addBefore("SudokuMetricsTool", "dynMethodCount", new Integer(1));
 
                     for (Enumeration b = routine.getBasicBlocks().elements(); b.hasMoreElements(); ) {
                         BasicBlock bb = (BasicBlock) b.nextElement();
-                        bb.addBefore("StatisticsTool", "dynInstrCount", new Integer(bb.size()));
+                        bb.addBefore("SudokuMetricsTool", "dynInstrCount", new Integer(bb.size()));
                     }
+
+
                 }
-                ci.addAfter("StatisticsTool", "printDynamic", "null");
+                ci.addAfter("SudokuMetricsTool", "printDynamic", "null");
                 ci.write(out_filename);
             }
         }
@@ -175,11 +177,11 @@ public class SudokuMetricsTool {
                                 (opcode == InstructionTable.newarray) ||
                                 (opcode == InstructionTable.anewarray) ||
                                 (opcode == InstructionTable.multianewarray)) {
-                            instr.addBefore("StatisticsTool", "allocCount", new Integer(opcode));
+                            instr.addBefore("SudokuMetricsTool", "allocCount", new Integer(opcode));
                         }
                     }
                 }
-                ci.addAfter("StatisticsTool", "printAlloc", "null");
+                ci.addAfter("SudokuMetricsTool", "printAlloc", "null");
                 ci.write(out_filename);
             }
         }
@@ -234,20 +236,20 @@ public class SudokuMetricsTool {
                         Instruction instr = (Instruction) instrs.nextElement();
                         int opcode = instr.getOpcode();
                         if (opcode == InstructionTable.getfield)
-                            instr.addBefore("StatisticsTool", "LSFieldCount", new Integer(0));
+                            instr.addBefore("SudokuMetricsTool", "LSFieldCount", new Integer(0));
                         else if (opcode == InstructionTable.putfield)
-                            instr.addBefore("StatisticsTool", "LSFieldCount", new Integer(1));
+                            instr.addBefore("SudokuMetricsTool", "LSFieldCount", new Integer(1));
                         else {
                             short instr_type = InstructionTable.InstructionTypeTable[opcode];
                             if (instr_type == InstructionTable.LOAD_INSTRUCTION) {
-                                instr.addBefore("StatisticsTool", "LSCount", new Integer(0));
+                                instr.addBefore("SudokuMetricsTool", "LSCount", new Integer(0));
                             } else if (instr_type == InstructionTable.STORE_INSTRUCTION) {
-                                instr.addBefore("StatisticsTool", "LSCount", new Integer(1));
+                                instr.addBefore("SudokuMetricsTool", "LSCount", new Integer(1));
                             }
                         }
                     }
                 }
-                ci.addAfter("StatisticsTool", "printLoadStore", "null");
+                ci.addAfter("SudokuMetricsTool", "printLoadStore", "null");
                 ci.write(out_filename);
             }
         }
@@ -321,30 +323,42 @@ public class SudokuMetricsTool {
 
                 for (Enumeration e = ci.getRoutines().elements(); e.hasMoreElements(); ) {
                     Routine routine = (Routine) e.nextElement();
-                    routine.addBefore("StatisticsTool", "setBranchMethodName", routine.getMethodName());
+                    routine.addBefore("SudokuMetricsTool", "setBranchMethodName", routine.getMethodName());
                     InstructionArray instructions = routine.getInstructionArray();
                     for (Enumeration b = routine.getBasicBlocks().elements(); b.hasMoreElements(); ) {
                         BasicBlock bb = (BasicBlock) b.nextElement();
                         Instruction instr = (Instruction) instructions.elementAt(bb.getEndAddress());
                         short instr_type = InstructionTable.InstructionTypeTable[instr.getOpcode()];
                         if (instr_type == InstructionTable.CONDITIONAL_INSTRUCTION) {
-                            instr.addBefore("StatisticsTool", "setBranchClassName", ci.getClassName());
-                            instr.addBefore("StatisticsTool", "setBranchMethodName", routine.getMethodName());
-                            instr.addBefore("StatisticsTool", "setBranchPC", new Integer(instr.getOffset()));
-                            instr.addBefore("StatisticsTool", "updateBranchNumber", new Integer(k));
-                            instr.addBefore("StatisticsTool", "updateBranchOutcome", "BranchOutcome");
+                            instr.addBefore("SudokuMetricsTool", "setBranchClassName", ci.getClassName());
+                            instr.addBefore("SudokuMetricsTool", "setBranchMethodName", routine.getMethodName());
+                            instr.addBefore("SudokuMetricsTool", "setBranchPC", new Integer(instr.getOffset()));
+                            instr.addBefore("SudokuMetricsTool", "updateBranchNumber", new Integer(k));
+                            instr.addBefore("SudokuMetricsTool", "updateBranchOutcome", "BranchOutcome");
                             k++;
                         }
                     }
+
+                    if(routine.getMethodName().equals("solveSudoku")){
+                        routine.addAfter("SudokuMetricsTool", "printStatus", "null");
+                    }
                 }
-                ci.addBefore("StatisticsTool", "setBranchClassName", ci.getClassName());
-                ci.addBefore("StatisticsTool", "branchInit", new Integer(total));
-                ci.addAfter("StatisticsTool", "printBranch", "null");
+                ci.addBefore("SudokuMetricsTool", "setBranchClassName", ci.getClassName());
+                ci.addBefore("SudokuMetricsTool", "branchInit", new Integer(total));
+                ci.addAfter("SudokuMetricsTool", "printBranch", "null");
                 ci.write(out_filename);
             }
         }
     }
+    public static void printStatus(String foo) {
+        printDynamic(foo, getCurrentThreadName());
+        printAlloc(foo, getCurrentThreadName());
+        printLoadStore(foo, getCurrentThreadName());
+        printBranch(foo, getCurrentThreadName());
 
+        System.out.println(WebServer.getCurrentThreadBoard());
+        stats.remove(getCurrentThreadName());
+    }
     public static void setBranchClassName(String name) {
         getCurrentStats().setBranch_class_name(name);
     }

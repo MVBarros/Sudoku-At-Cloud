@@ -185,4 +185,8 @@ public class SolverArgumentParser extends AbstractArgumentParser {
         return Collections.frequency(Arrays.asList(getPuzzleBoard().replace("[", "").replace("]", "").split(",")), "0");
     }
 
+    @Override
+    public String toString(){
+        return String.format("Lenght: %d Height: %d UN: %d InputBoard: %s PuzzleBoard: %s SolverType: %s Number Zeroes: %d", getN1(), getN2(), getUn(), getInputBoard(), getPuzzleBoard(), getSolverStrategy().toString(), getBoardZeros());
+    }
 }

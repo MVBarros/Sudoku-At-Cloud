@@ -33,7 +33,7 @@ public class WebServer {
 
 		server.createContext("/sudoku", new MyHandler());
 
-		// be aware! infinite pool of threads!
+		// be aware! infinite pool of threads!đđ
 		server.setExecutor(Executors.newCachedThreadPool());
 		server.start();
 
@@ -116,6 +116,7 @@ public class WebServer {
 
 			//Solve sudoku puzzle
 			JSONArray solution = s.solveSudoku();
+
 
 
 			// Send response to browser.
