@@ -17,8 +17,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class WebServer {
+
+	private static ConcurrentHashMap<String, SolverArgumentParser> boards = new ConcurrentHashMap<>();
 
 	public static void main(final String[] args) throws Exception {
 
@@ -55,6 +58,24 @@ public class WebServer {
 
         return buf.toString();
     }
+
+	public static ConcurrentHashMap<String, SolverArgumentParser> getBoards() {
+		return boards;
+	}
+
+	public static String getCurrentThreadName() {
+		return String.valueOf(Thread.currentThread().getId());
+	}
+
+	public static SolverArgumentParser getCurrentThreadBoard() {
+		String name = getCurrentThreadName();
+		return boards.get(name);
+	}
+
+	public static SolverArgumentParser getBoardForThread(String name) {
+		return boards.get(name);
+	}
+
 	static class MyHandler implements HttpHandler {
 		@Override
 		public void handle(final HttpExchange t) throws IOException {
@@ -87,6 +108,8 @@ public class WebServer {
 			}
 			// Get user-provided flags.
 			final SolverArgumentParser ap = new SolverArgumentParser(args);
+			WebServer.getBoards().put(WebServer.getCurrentThreadName(), ap);
+
 
 			// Create solver instance from factory.
 			final Solver s = SolverFactory.getInstance().makeSolver(ap);
@@ -122,6 +145,10 @@ public class WebServer {
 			os.close();
 
 			System.out.println("> Sent response to " + t.getRemoteAddress().toString());
+
+
+			WebServer.getBoards().remove(getCurrentThreadName());
+
 		}
 	}
 }

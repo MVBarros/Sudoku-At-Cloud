@@ -4,6 +4,10 @@ import org.apache.commons.cli.Option;
 import org.json.JSONArray;
 import org.json.JSONException;
 import pt.ulisboa.tecnico.cnv.util.AbstractArgumentParser;
+import java.util.Collections;
+import java.util.Arrays;
+
+
 
 
 public class SolverArgumentParser extends AbstractArgumentParser {
@@ -176,4 +180,9 @@ public class SolverArgumentParser extends AbstractArgumentParser {
     public SolverFactory.SolverType getSolverStrategy() {
         return (SolverFactory.SolverType)super.argValues.get(SolverArgumentParser.SolverParameters.STRATEGY.toString());
     }
+
+    public int getBoardZeros() {
+        return Collections.frequency(Arrays.asList(getPuzzleBoard().replace("[", "").replace("]", "").split(",")), "0");
+    }
+
 }
