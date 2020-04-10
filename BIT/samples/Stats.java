@@ -1,23 +1,23 @@
 import org.json.JSONObject;
-import org.json.JSONArray;
+
 public class Stats {
-    private int methodCount = 0;
-    private int dynamicBasicBlockCount = 0;
-    private int instructionCount = 0;
+    private long methodCount = 0;
+    private long basicBlockCount = 0;
+    private long instructionCount = 0;
 
-    private int newCount = 0;
-    private int newArrayCount = 0;
-    private int aNewArrayCount = 0;
-    private int multiANewArrayCount = 0;
+    private long newCount = 0;
+    private long newArrayCount = 0;
+    private long aNewArrayCount = 0;
+    private long multiANewArrayCount = 0;
 
-    private int loadCount = 0;
-    private int storeCount = 0;
-    private int fieldLoadCount = 0;
-    private int fieldStoreCount = 0;
+    private long loadCount = 0;
+    private long storeCount = 0;
+    private long fieldLoadCount = 0;
+    private long fieldStoreCount = 0;
 
-    private int branchCount = 0;
+    private long branchCount = 0;
 
-    public int getMethodCount() {
+    public long getMethodCount() {
         return methodCount;
     }
 
@@ -25,23 +25,23 @@ public class Stats {
         this.methodCount++;
     }
 
-    public int getDynamicBasicBlockCount() {
-        return dynamicBasicBlockCount;
+    public long getBasicBlockCount() {
+        return basicBlockCount;
     }
 
     public void incrBasicBlockCount() {
-        this.dynamicBasicBlockCount++;
+        this.basicBlockCount++;
     }
 
-    public int getInstructionCount() {
+    public long getInstructionCount() {
         return instructionCount;
     }
 
-    public void incrInstructionCount(int instructionCount) {
-        this.instructionCount += instructionCount;
+    public void incrInstructionCount(long count) {
+        this.instructionCount += count;
     }
 
-    public int getNewCount() {
+    public long getNewCount() {
         return newCount;
     }
 
@@ -49,7 +49,7 @@ public class Stats {
         this.newCount++;
     }
 
-    public int getNewArrayCount() {
+    public long getNewArrayCount() {
         return newArrayCount;
     }
 
@@ -57,7 +57,7 @@ public class Stats {
         this.newArrayCount++;
     }
 
-    public int getANewArrayCount() {
+    public long getANewArrayCount() {
         return aNewArrayCount;
     }
 
@@ -65,7 +65,7 @@ public class Stats {
         this.aNewArrayCount++;
     }
 
-    public int getMultiANewArrayCount() {
+    public long getMultiANewArrayCount() {
         return multiANewArrayCount;
     }
 
@@ -73,7 +73,7 @@ public class Stats {
         this.multiANewArrayCount++;
     }
 
-    public int getLoadCount() {
+    public long getLoadCount() {
         return loadCount;
     }
 
@@ -81,7 +81,7 @@ public class Stats {
         this.loadCount++;
     }
 
-    public int getStoreCount() {
+    public long getStoreCount() {
         return storeCount;
     }
 
@@ -89,7 +89,7 @@ public class Stats {
         this.storeCount++;
     }
 
-    public int getFieldLoadCount() {
+    public long getFieldLoadCount() {
         return fieldLoadCount;
     }
 
@@ -97,7 +97,7 @@ public class Stats {
         this.fieldLoadCount++;
     }
 
-    public int getFieldStoreCount() {
+    public long getFieldStoreCount() {
         return fieldStoreCount;
     }
 
@@ -106,7 +106,7 @@ public class Stats {
     }
 
 
-    public int getBranchCount() {
+    public long getBranchCount() {
         return branchCount;
     }
 
@@ -117,7 +117,7 @@ public class Stats {
     public JSONObject toJSON() {
         JSONObject obj = new JSONObject();
         obj.put("Method Count", getMethodCount());
-        obj.put("Basic Block Count", getDynamicBasicBlockCount());
+        obj.put("Basic Block Count", getBasicBlockCount());
         obj.put("Basic Instruction Count", getInstructionCount());
         obj.put("A New Array Count", getANewArrayCount());
         obj.put("New Array Count", getNewArrayCount());
@@ -126,7 +126,7 @@ public class Stats {
         obj.put("Load Count", getLoadCount());
         obj.put("Store Count", getStoreCount());
         obj.put("Field Load Count", getFieldLoadCount());
-        obj.put("Field Store Count", getStoreCount());
+        obj.put("Field Store Count", getFieldStoreCount());
         obj.put("Branch Count", getBranchCount());
         return obj;
     }

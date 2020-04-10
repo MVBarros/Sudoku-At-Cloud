@@ -33,7 +33,7 @@ public class WebServer {
 
 		server.createContext("/sudoku", new MyHandler());
 
-		// be aware! infinite pool of threads!đđ
+		// be aware! infinite pool of threads!
 		server.setExecutor(Executors.newCachedThreadPool());
 		server.start();
 
