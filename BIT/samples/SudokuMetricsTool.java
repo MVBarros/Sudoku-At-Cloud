@@ -36,11 +36,19 @@ public class SudokuMetricsTool {
         for (Enumeration instrs = instructions.elements(); instrs.hasMoreElements(); ) {
             Instruction instr = (Instruction) instrs.nextElement();
             int opcode = instr.getOpcode();
-            if ((opcode == InstructionTable.NEW) ||
-                    (opcode == InstructionTable.newarray) ||
-                    (opcode == InstructionTable.anewarray) ||
-                    (opcode == InstructionTable.multianewarray)) {
-                instr.addBefore("SudokuMetricsTool", "alloc", opcode);
+            switch (opcode) {
+                case InstructionTable.NEW:
+                    instr.addBefore("SudokuMetricsTool", "allocNew", "null");
+                    break;
+                case InstructionTable.newarray:
+                    instr.addBefore("SudokuMetricsTool", "allocNewArray", "null");
+                    break;
+                case InstructionTable.anewarray:
+                    instr.addBefore("SudokuMetricsTool", "allocANewArray", "null");
+                    break;
+                case InstructionTable.multianewarray:
+                    instr.addBefore("SudokuMetricsTool", "allocMultiNewArray", "null");
+                    break;
             }
         }
     }
@@ -50,15 +58,15 @@ public class SudokuMetricsTool {
             Instruction instr = (Instruction) instrs.nextElement();
             int opcode = instr.getOpcode();
             if (opcode == InstructionTable.getfield)
-                instr.addBefore("SudokuMetricsTool", "loadStoreField", 0);
+                instr.addBefore("SudokuMetricsTool", "loadField", "null");
             else if (opcode == InstructionTable.putfield)
-                instr.addBefore("SudokuMetricsTool", "loadStoreField", 1);
+                instr.addBefore("SudokuMetricsTool", "storeField", "null");
             else {
                 short instr_type = InstructionTable.InstructionTypeTable[opcode];
                 if (instr_type == InstructionTable.LOAD_INSTRUCTION) {
-                    instr.addBefore("SudokuMetricsTool", "loadStore", 0);
+                    instr.addBefore("SudokuMetricsTool", "load", "null");
                 } else if (instr_type == InstructionTable.STORE_INSTRUCTION) {
-                    instr.addBefore("SudokuMetricsTool", "loadStore", 1);
+                    instr.addBefore("SudokuMetricsTool", "store", "null");
                 }
             }
         }
@@ -78,7 +86,7 @@ public class SudokuMetricsTool {
         routine.addBefore("SudokuMetricsTool", "method", 1);
         for (Enumeration b = blocks; b.hasMoreElements(); ) {
             BasicBlock bb = (BasicBlock) b.nextElement();
-            bb.addBefore("SudokuMetricsTool", "instr", bb.size());
+            bb.addBefore("SudokuMetricsTool", "instructions", bb.size());
         }
     }
 
@@ -97,11 +105,10 @@ public class SudokuMetricsTool {
                 String in_filename = in_dir.getAbsolutePath() + System.getProperty("file.separator") + filename;
                 ClassInfo ci = new ClassInfo(in_filename);
                 for (Enumeration e = ci.getRoutines().elements(); e.hasMoreElements(); ) {
-                    //Must get Blocks and instructions before doing any instrumentation
-                    //So as not to instrument the instrumentation
                     Routine routine = (Routine) e.nextElement();
                     InstructionArray instructions = routine.getInstructionArray();
                     Enumeration blocks = routine.getBasicBlocks().elements();
+
                     doAlloc(instructions);
                     doLoadStore(instructions);
                     doBranch(instructions);
@@ -116,7 +123,7 @@ public class SudokuMetricsTool {
     public static void saveStats(String foo) {
         SolverArgumentParser parser = WebServer.getCurrentThreadBoard();
         writeToFile(getCurrentStats(), parser);
-        //Thread is finished after SolveSudoku
+        //Thread is effectively finished after SolveSudoku
         stats.remove(getCurrentThreadName());
     }
 
@@ -132,7 +139,7 @@ public class SudokuMetricsTool {
         }
     }
 
-    public static void instr(int incr) {
+    public static void instructions(int incr) {
         Stats stats = getCurrentStats();
         stats.incrInstructionCount(incr);
         stats.incrBasicBlockCount();
@@ -142,39 +149,36 @@ public class SudokuMetricsTool {
         getCurrentStats().incrMethodCount();
     }
 
-    public static void alloc(int type) {
-        switch (type) {
-            case InstructionTable.NEW:
-                getCurrentStats().incrNewCount();
-                break;
-            case InstructionTable.newarray:
-                getCurrentStats().incrNewArrayCount();
-                break;
-            case InstructionTable.anewarray:
-                getCurrentStats().incrANewArrayCount();
-                break;
-            case InstructionTable.multianewarray:
-                getCurrentStats().incrMultiANewArrayCount();
-                break;
-        }
+    public static void allocNew(String foo) {
+        getCurrentStats().incrNewCount();
     }
 
-    public static void loadStoreField(int type) {
-        Stats stats = getCurrentStats();
-        if (type == 0) {
-            stats.incrFieldLoadCount();
-        } else {
-            stats.incrFieldStoreCount();
-        }
+    public static void allocNewArray(String foo) {
+        getCurrentStats().incrNewArrayCount();
     }
 
-    public static void loadStore(int type) {
-        Stats stats = getCurrentStats();
-        if (type == 0) {
-            stats.incrLoadCount();
-        } else {
-            stats.incrStoreCount();
-        }
+    public static void allocMultiNewArray(String foo) {
+        getCurrentStats().incrMultiANewArrayCount();
+    }
+
+    public static void allocANewArray(String foo) {
+        getCurrentStats().incrANewArrayCount();
+    }
+
+    public static void load(String foo) {
+        getCurrentStats().incrLoadCount();
+    }
+
+    public static void loadField(String foo) {
+        getCurrentStats().incrFieldLoadCount();
+    }
+
+    public static void store(String foo) {
+        getCurrentStats().incrStoreCount();
+    }
+
+    public static void storeField(String foo) {
+        getCurrentStats().incrFieldStoreCount();
     }
 
     public static void updateBranch(String foo) {
