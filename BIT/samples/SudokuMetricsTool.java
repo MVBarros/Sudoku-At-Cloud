@@ -31,84 +31,65 @@ public class SudokuMetricsTool {
         System.exit(-1);
     }
 
-    public static void addInstructionInstrumentation(File in_dir) {
-        String[] fileList = in_dir.list();
 
-        for (String filename : fileList) {
-            if (filename.endsWith(".class")) {
-                String in_filename = in_dir.getAbsolutePath() + System.getProperty("file.separator") + filename;
-                ClassInfo ci = new ClassInfo(in_filename);
-                for (Enumeration e = ci.getRoutines().elements(); e.hasMoreElements(); ) {
-                    Routine routine = (Routine) e.nextElement();
-                    routine.addBefore("SudokuMetricsTool", "method", 1);
-                    for (Enumeration b = routine.getBasicBlocks().elements(); b.hasMoreElements(); ) {
-                        BasicBlock bb = (BasicBlock) b.nextElement();
-                        bb.addBefore("SudokuMetricsTool", "instr", bb.size());
-                    }
-                }
-                ci.write(in_filename);
+    public static void doAlloc(InstructionArray instructions) {
+        for (Enumeration instrs = instructions.elements(); instrs.hasMoreElements(); ) {
+            Instruction instr = (Instruction) instrs.nextElement();
+            int opcode = instr.getOpcode();
+            if ((opcode == InstructionTable.NEW) ||
+                    (opcode == InstructionTable.newarray) ||
+                    (opcode == InstructionTable.anewarray) ||
+                    (opcode == InstructionTable.multianewarray)) {
+                instr.addBefore("SudokuMetricsTool", "alloc", opcode);
             }
         }
     }
 
-    public static void addAlocationInstrumentation(File in_dir) {
-        String[] fileList = in_dir.list();
-
-        for (String filename : fileList) {
-            if (filename.endsWith(".class")) {
-                String in_filename = in_dir.getAbsolutePath() + System.getProperty("file.separator") + filename;
-                ClassInfo ci = new ClassInfo(in_filename);
-                for (Enumeration e = ci.getRoutines().elements(); e.hasMoreElements(); ) {
-                    Routine routine = (Routine) e.nextElement();
-                    InstructionArray instructions = routine.getInstructionArray();
-                    for (Enumeration instrs = instructions.elements(); instrs.hasMoreElements(); ) {
-                        Instruction instr = (Instruction) instrs.nextElement();
-                        int opcode = instr.getOpcode();
-                        if ((opcode == InstructionTable.NEW) ||
-                                (opcode == InstructionTable.newarray) ||
-                                (opcode == InstructionTable.anewarray) ||
-                                (opcode == InstructionTable.multianewarray)) {
-                            instr.addBefore("SudokuMetricsTool", "alloc", opcode);
-                        }
-                    }
+    public static void doLoadStore(InstructionArray instructions) {
+        for (Enumeration instrs = instructions.elements(); instrs.hasMoreElements(); ) {
+            Instruction instr = (Instruction) instrs.nextElement();
+            int opcode = instr.getOpcode();
+            if (opcode == InstructionTable.getfield)
+                instr.addBefore("SudokuMetricsTool", "loadStoreField", 0);
+            else if (opcode == InstructionTable.putfield)
+                instr.addBefore("SudokuMetricsTool", "loadStoreField", 1);
+            else {
+                short instr_type = InstructionTable.InstructionTypeTable[opcode];
+                if (instr_type == InstructionTable.LOAD_INSTRUCTION) {
+                    instr.addBefore("SudokuMetricsTool", "loadStore", 0);
+                } else if (instr_type == InstructionTable.STORE_INSTRUCTION) {
+                    instr.addBefore("SudokuMetricsTool", "loadStore", 1);
                 }
-                ci.write(in_filename);
             }
         }
     }
 
-    public static void addLoadStoreInstrumentation(File in_dir) {
-        String[] fileList = in_dir.list();
-
-        for (String filename : fileList) {
-            if (filename.endsWith(".class")) {
-                String in_filename = in_dir.getAbsolutePath() + System.getProperty("file.separator") + filename;
-                ClassInfo ci = new ClassInfo(in_filename);
-                for (Enumeration e = ci.getRoutines().elements(); e.hasMoreElements(); ) {
-                    Routine routine = (Routine) e.nextElement();
-                    for (Enumeration instrs = (routine.getInstructionArray()).elements(); instrs.hasMoreElements(); ) {
-                        Instruction instr = (Instruction) instrs.nextElement();
-                        int opcode = instr.getOpcode();
-                        if (opcode == InstructionTable.getfield)
-                            instr.addBefore("SudokuMetricsTool", "loadStoreField", 0);
-                        else if (opcode == InstructionTable.putfield)
-                            instr.addBefore("SudokuMetricsTool", "loadStoreField", 1);
-                        else {
-                            short instr_type = InstructionTable.InstructionTypeTable[opcode];
-                            if (instr_type == InstructionTable.LOAD_INSTRUCTION) {
-                                instr.addBefore("SudokuMetricsTool", "loadStore", 0);
-                            } else if (instr_type == InstructionTable.STORE_INSTRUCTION) {
-                                instr.addBefore("SudokuMetricsTool", "loadStore", 1);
-                            }
-                        }
-                    }
-                }
-                ci.write(in_filename);
+    public static void doBranch(InstructionArray instructions) {
+        for (Enumeration instrs = instructions.elements(); instrs.hasMoreElements(); ) {
+            Instruction instr = (Instruction) instrs.nextElement();
+            short instr_type = InstructionTable.InstructionTypeTable[instr.getOpcode()];
+            if (instr_type == InstructionTable.CONDITIONAL_INSTRUCTION) {
+                instr.addBefore("SudokuMetricsTool", "updateBranch", "null");
             }
         }
     }
 
-    public static void addBranchInstrumentation(File in_dir) {
+    public static void doInstr(Routine routine, Enumeration blocks) {
+        routine.addBefore("SudokuMetricsTool", "method", 1);
+        for (Enumeration b = blocks; b.hasMoreElements(); ) {
+            BasicBlock bb = (BasicBlock) b.nextElement();
+            bb.addBefore("SudokuMetricsTool", "instr", bb.size());
+        }
+    }
+
+    public static void doCallback(Routine routine) {
+        if (routine.getMethodName().equals("solveSudoku")) {
+            routine.addAfter("SudokuMetricsTool", "saveStats", "null");
+        }
+    }
+
+
+    public static void addInstrumentation(File in_dir) {
         String[] fileList = in_dir.list();
 
         for (String filename : fileList) {
@@ -116,40 +97,21 @@ public class SudokuMetricsTool {
                 String in_filename = in_dir.getAbsolutePath() + System.getProperty("file.separator") + filename;
                 ClassInfo ci = new ClassInfo(in_filename);
                 for (Enumeration e = ci.getRoutines().elements(); e.hasMoreElements(); ) {
+                    //Must get Blocks and instructions before doing any instrumentation
+                    //So as not to instrument the instrumentation
                     Routine routine = (Routine) e.nextElement();
                     InstructionArray instructions = routine.getInstructionArray();
-                    for (Enumeration b = routine.getBasicBlocks().elements(); b.hasMoreElements(); ) {
-                        BasicBlock bb = (BasicBlock) b.nextElement();
-                        Instruction instr = instructions.elementAt(bb.getEndAddress());
-                        short instr_type = InstructionTable.InstructionTypeTable[instr.getOpcode()];
-                        if (instr_type == InstructionTable.CONDITIONAL_INSTRUCTION) {
-                            instr.addBefore("SudokuMetricsTool", "updateBranch", "null");
-                        }
-                    }
+                    Enumeration blocks = routine.getBasicBlocks().elements();
+                    doAlloc(instructions);
+                    doLoadStore(instructions);
+                    doBranch(instructions);
+                    doInstr(routine, blocks);
+                    doCallback(routine);
                 }
                 ci.write(in_filename);
             }
         }
     }
-
-    public static void addSolveCallback(File in_dir) {
-        String[] fileList = in_dir.list();
-
-        for (String filename : fileList) {
-            if (filename.endsWith(".class")) {
-                String in_filename = in_dir.getAbsolutePath() + System.getProperty("file.separator") + filename;
-                ClassInfo ci = new ClassInfo(in_filename);
-                for (Enumeration e = ci.getRoutines().elements(); e.hasMoreElements(); ) {
-                    Routine routine = (Routine) e.nextElement();
-                    if (routine.getMethodName().equals("solveSudoku")) {
-                        routine.addAfter("SudokuMetricsTool", "saveStats", "null");
-                    }
-                }
-                ci.write(in_filename);
-            }
-        }
-    }
-
 
     public static void saveStats(String foo) {
         SolverArgumentParser parser = WebServer.getCurrentThreadBoard();
@@ -227,11 +189,7 @@ public class SudokuMetricsTool {
             File in_dir = new File(argv[0]);
 
             if (in_dir.isDirectory()) {
-                addInstructionInstrumentation(in_dir);
-                addLoadStoreInstrumentation(in_dir);
-                addAlocationInstrumentation(in_dir);
-                addBranchInstrumentation(in_dir);
-                addSolveCallback(in_dir);
+                addInstrumentation(in_dir);
             } else {
                 printUsage();
             }
