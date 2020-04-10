@@ -171,6 +171,7 @@ public class SudokuMetricsTool {
         }
     }
 
+    //FIXME MAKE IT JUST SAVE NUMBER OF BRANCHES?
 
     public static void saveStats(String foo) {
         SolverArgumentParser parser = WebServer.getCurrentThreadBoard();
