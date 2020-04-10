@@ -3,155 +3,155 @@ import org.json.JSONArray;
 public class Stats {
     private static Integer branchCount = 0;
 
-    private int dyn_method_count = 0;
-    private int dyn_bb_count = 0;
-    private int dyn_instr_count = 0;
+    private int methodCount = 0;
+    private int dynamicBasicBlockCount = 0;
+    private int instructionCount = 0;
 
-    private int newcount = 0;
-    private int newarraycount = 0;
-    private int anewarraycount = 0;
-    private int multianewarraycount = 0;
+    private int newCount = 0;
+    private int newArrayCount = 0;
+    private int aNewArrayCount = 0;
+    private int multiANewArrayCount = 0;
 
-    private int loadcount = 0;
-    private int storecount = 0;
-    private int fieldloadcount = 0;
-    private int fieldstorecount = 0;
+    private int loadCount = 0;
+    private int storeCount = 0;
+    private int fieldLoadCount = 0;
+    private int fieldStoreCount = 0;
 
-    private StatisticsBranch[] branch_info = null;
-    private int branch_number = 0;
-    private int branch_pc = 0;
-    private String branch_class_name = null;
-    private String branch_method_name = null;
+    private StatisticsBranch[] branchInfo = null;
+    private int branchNumber = 0;
+    private int branchPc = 0;
+    private String branchClassName = null;
+    private String branchMethodName = null;
 
-    public int getDyn_method_count() {
-        return dyn_method_count;
+    public int getMethodCount() {
+        return methodCount;
     }
 
-    public void incrDyn_method_count(int dyn_method_count) {
-        this.dyn_method_count += dyn_method_count;
+    public void incrMethodCount() {
+        this.methodCount++;
     }
 
-    public int getDyn_bb_count() {
-        return dyn_bb_count;
+    public int getDynamicBasicBlockCount() {
+        return dynamicBasicBlockCount;
     }
 
-    public void incrDyn_bb_count(int dyn_bb_count) {
-        this.dyn_bb_count += dyn_bb_count;
+    public void incrBasicBlockCount() {
+        this.dynamicBasicBlockCount++;
     }
 
-    public int getDyn_instr_count() {
-        return dyn_instr_count;
+    public int getInstructionCount() {
+        return instructionCount;
     }
 
-    public void incrDyn_instr_count(int dyn_instr_count) {
-        this.dyn_instr_count += dyn_instr_count;
+    public void incrInstructionCount(int instructionCount) {
+        this.instructionCount += instructionCount;
     }
 
-    public int getNewcount() {
-        return newcount;
+    public int getNewCount() {
+        return newCount;
     }
 
-    public void incrNewcount(int newcount) {
-        this.newcount += newcount;
+    public void incrNewCount() {
+        this.newCount++;
     }
 
-    public int getNewarraycount() {
-        return newarraycount;
+    public int getNewArrayCount() {
+        return newArrayCount;
     }
 
-    public void incrNewarraycount(int newarraycount) {
-        this.newarraycount += newarraycount;
+    public void incrNewArrayCount() {
+        this.newArrayCount++;
     }
 
-    public int getAnewarraycount() {
-        return anewarraycount;
+    public int getANewArrayCount() {
+        return aNewArrayCount;
     }
 
-    public void incrAnewarraycount(int anewarraycount) {
-        this.anewarraycount += anewarraycount;
+    public void incrANewArrayCount() {
+        this.aNewArrayCount++;
     }
 
-    public int getMultianewarraycount() {
-        return multianewarraycount;
+    public int getMultiANewArrayCount() {
+        return multiANewArrayCount;
     }
 
-    public void incrMultianewarraycount(int multianewarraycount) {
-        this.multianewarraycount += multianewarraycount;
+    public void incrMultiANewArrayCount() {
+        this.multiANewArrayCount++;
     }
 
-    public int getLoadcount() {
-        return loadcount;
+    public int getLoadCount() {
+        return loadCount;
     }
 
-    public void incrLoadcount(int loadcount) {
-        this.loadcount += loadcount;
+    public void incrLoadCount() {
+        this.loadCount++;
     }
 
-    public int getStorecount() {
-        return storecount;
+    public int getStoreCount() {
+        return storeCount;
     }
 
-    public void incrStorecount(int storecount) {
-        this.storecount += storecount;
+    public void incrStoreCount() {
+        this.storeCount++;
     }
 
-    public int getFieldloadcount() {
-        return fieldloadcount;
+    public int getFieldLoadCount() {
+        return fieldLoadCount;
     }
 
-    public void incrFieldloadcount(int fieldloadcount) {
-        this.fieldloadcount += fieldloadcount;
+    public void incrFieldLoadCount() {
+        this.fieldLoadCount++;
     }
 
-    public int getFieldstorecount() {
-        return fieldstorecount;
+    public int getFieldStoreCount() {
+        return fieldStoreCount;
     }
 
-    public void incrFieldstorecount(int fieldstorecount) {
-        this.fieldstorecount += fieldstorecount;
+    public void incrFieldStoreCount() {
+        this.fieldStoreCount++;
     }
 
-    public StatisticsBranch[] getBranch_info() {
-        if (this.branch_info == null) {
-            setBranch_info(new StatisticsBranch[Stats.getBranchCount()]);
+    public StatisticsBranch[] getBranchInfo() {
+        if (this.branchInfo == null) {
+            setBranchInfo(new StatisticsBranch[Stats.getBranchCount()]);
         }
-        return this.branch_info;
+        return this.branchInfo;
     }
 
-    public void setBranch_info(StatisticsBranch[] branch_info) {
-        this.branch_info = branch_info;
+    public void setBranchInfo(StatisticsBranch[] branchInfo) {
+        this.branchInfo = branchInfo;
     }
 
-    public int getBranch_number() {
-        return branch_number;
+    public int getBranchNumber() {
+        return branchNumber;
     }
 
-    public void setBranch_number(int branch_number) {
-        this.branch_number = branch_number;
+    public void setBranchNumber(int branchNumber) {
+        this.branchNumber = branchNumber;
     }
 
-    public int getBranch_pc() {
-        return branch_pc;
+    public int getBranchPc() {
+        return branchPc;
     }
 
-    public void setBranch_pc(int branch_pc) {
-        this.branch_pc = branch_pc;
+    public void setBranchPc(int branchPc) {
+        this.branchPc = branchPc;
     }
 
-    public String getBranch_class_name() {
-        return this.branch_class_name;
+    public String getBranchClassName() {
+        return this.branchClassName;
     }
 
-    public void setBranch_class_name(String branch_class_name) {
-        this.branch_class_name = branch_class_name;
+    public void setBranchClassName(String branchClassName) {
+        this.branchClassName = branchClassName;
     }
 
-    public String getBranch_method_name() {
-        return branch_method_name;
+    public String getBranchMethodName() {
+        return branchMethodName;
     }
 
-    public void setBranch_method_name(String branch_method_name) {
-        this.branch_method_name = branch_method_name;
+    public void setBranchMethodName(String branchMethodName) {
+        this.branchMethodName = branchMethodName;
     }
 
     public static int getBranchCount() {
@@ -164,19 +164,19 @@ public class Stats {
 
     public JSONObject toJSON() {
         JSONObject obj = new JSONObject();
-        obj.put("Method Count", getDyn_method_count());
-        obj.put("Basic Block Count", getDyn_bb_count());
-        obj.put("Basic Instruction Count", getDyn_instr_count());
-        obj.put("A New Array Count", getAnewarraycount());
-        obj.put("New Array Count", getNewarraycount());
-        obj.put("New Count", getNewcount());
-        obj.put("Multi New Array Count", getMultianewarraycount());
-        obj.put("Load Count", getLoadcount());
-        obj.put("Store Count", getStorecount());
-        obj.put("Field Load Count", getFieldloadcount());
-        obj.put("Field Store Count", getStorecount());
+        obj.put("Method Count", getMethodCount());
+        obj.put("Basic Block Count", getDynamicBasicBlockCount());
+        obj.put("Basic Instruction Count", getInstructionCount());
+        obj.put("A New Array Count", getANewArrayCount());
+        obj.put("New Array Count", getNewArrayCount());
+        obj.put("New Count", getNewCount());
+        obj.put("Multi New Array Count", getMultiANewArrayCount());
+        obj.put("Load Count", getLoadCount());
+        obj.put("Store Count", getStoreCount());
+        obj.put("Field Load Count", getFieldLoadCount());
+        obj.put("Field Store Count", getStoreCount());
         JSONArray array = new JSONArray();
-        StatisticsBranch[] branches = getBranch_info();
+        StatisticsBranch[] branches = getBranchInfo();
         for (StatisticsBranch branch: branches) {
             if (branch != null) {
                 array.put(branch.toJSON());
