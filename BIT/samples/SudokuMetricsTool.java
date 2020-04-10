@@ -1,6 +1,7 @@
 import BIT.highBIT.*;
 import org.json.JSONObject;
 import pt.ulisboa.tecnico.cnv.server.WebServer;
+import pt.ulisboa.tecnico.cnv.server.MetricUtils;
 import pt.ulisboa.tecnico.cnv.solver.SolverArgumentParser;
 
 import java.io.File;
@@ -129,7 +130,7 @@ public class SudokuMetricsTool {
 
     public static void writeToFile(Stats stats, SolverArgumentParser parser) {
         JSONObject object = stats.toJSON();
-        object.put("Board", parser.toJSON());
+        object.put("Board", MetricUtils.toJSON(parser));
         String outputDir = "./out";
         String path = outputDir + System.getProperty("file.separator") + UUID.randomUUID().toString() + ".json";
         try (PrintWriter out = new PrintWriter(path)) {

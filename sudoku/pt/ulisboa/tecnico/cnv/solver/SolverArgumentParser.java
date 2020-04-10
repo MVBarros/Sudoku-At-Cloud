@@ -179,23 +179,4 @@ public class SolverArgumentParser extends AbstractArgumentParser {
         return (SolverFactory.SolverType)super.argValues.get(SolverArgumentParser.SolverParameters.STRATEGY.toString());
     }
 
-    public int getBoardZeros() {
-        return Collections.frequency(Arrays.asList(getPuzzleBoard().replace("[", "").replace("]", "").split(",")), "0");
-    }
-
-    @Override
-    public String toString(){
-        return String.format("Lenght: %d Height: %d UN: %d InputBoard: %s PuzzleBoard: %s SolverType: %s Number Zeroes: %d", getN1(), getN2(), getUn(), getInputBoard(), getPuzzleBoard(), getSolverStrategy().toString(), getBoardZeros());
-    }
-
-    public JSONObject toJSON() {
-        JSONObject obj = new JSONObject();
-        obj.put("N1", getN1());
-        obj.put("N2", getN2());
-        obj.put("UN", getUn());
-        obj.put("Input Board", getInputBoard());
-        obj.put("Puzzle Board", getPuzzleBoard());
-        obj.put("Board Zeros", getBoardZeros());
-        return obj;
-    }
 }
