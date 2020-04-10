@@ -7,6 +7,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -51,6 +53,72 @@ public class SudokuMetricsTool {
         }
     }
 
+
+    public static void addLoadStoreInstrumentation(File in_dir) {
+        String[] fileList = in_dir.list();
+
+        for (String filename : fileList) {
+            if (filename.endsWith(".class")) {
+                String in_filename = in_dir.getAbsolutePath() + System.getProperty("file.separator") + filename;
+                ClassInfo ci = new ClassInfo(in_filename);
+                for (Enumeration e = ci.getRoutines().elements(); e.hasMoreElements(); ) {
+                    Routine routine = (Routine) e.nextElement();
+                    InstructionArray instructions = routine.getInstructionArray();
+
+                    Set<BlockAddresses> blocks = new HashSet<>();
+
+                    for (Enumeration b = routine.getBasicBlocks().elements(); b.hasMoreElements(); ) {
+                        BasicBlock bb = (BasicBlock) b.nextElement();
+                        blocks.add(new BlockAddresses(bb.getStartAddress(), bb.getEndAddress()));
+                    }
+
+                    for (Enumeration instrs = instructions.elements(); instrs.hasMoreElements(); ) {
+                        Instruction instr = (Instruction) instrs.nextElement();
+                        int addr = instr.getOffset();
+                        for (BlockAddresses ba : blocks) {
+                            if (ba.contains(addr)) {
+                                int opcode = instr.getOpcode();
+                                if (opcode == InstructionTable.getfield)
+                                    ba.incrLoadFields();
+                                else if (opcode == InstructionTable.putfield)
+                                    ba.incrStoreFields();
+                                else {
+                                    short instr_type = InstructionTable.InstructionTypeTable[opcode];
+                                    if (instr_type == InstructionTable.LOAD_INSTRUCTION) {
+                                        ba.incrLoads();
+                                    } else if (instr_type == InstructionTable.STORE_INSTRUCTION) {
+                                        ba.incrStores();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    for (Enumeration b = routine.getBasicBlocks().elements(); b.hasMoreElements(); ) {
+                        BasicBlock bb = (BasicBlock) b.nextElement();
+                        for (BlockAddresses addr : blocks) {
+                            if (addr.getBegin() == bb.getStartAddress() && addr.getEnd() == bb.getEndAddress()) {
+                                if (addr.getLoads() != 0) {
+                                    bb.addBefore("SudokuMetricsTool", "addLoads", addr.getLoads());
+                                }
+                                if (addr.getStores() != 0) {
+                                    bb.addBefore("SudokuMetricsTool", "addStores", addr.getStores());
+                                }
+                                if (addr.getLoadFields() != 0) {
+                                    bb.addBefore("SudokuMetricsTool", "addLoadFields", addr.getLoadFields());
+                                }
+                                if (addr.getStoreFields() != 0) {
+                                    bb.addBefore("SudokuMetricsTool", "addStoreFields", addr.getStoreFields());
+                                }
+                            }
+                        }
+                    }
+                }
+                ci.write(in_filename);
+            }
+        }
+    }
+
+
     public static void addAlocationInstrumentation(File in_dir) {
         String[] fileList = in_dir.list();
 
@@ -69,37 +137,6 @@ public class SudokuMetricsTool {
                                 (opcode == InstructionTable.anewarray) ||
                                 (opcode == InstructionTable.multianewarray)) {
                             instr.addBefore("SudokuMetricsTool", "alloc", opcode);
-                        }
-                    }
-                }
-                ci.write(in_filename);
-            }
-        }
-    }
-
-    public static void addLoadStoreInstrumentation(File in_dir) {
-        String[] fileList = in_dir.list();
-
-        for (String filename : fileList) {
-            if (filename.endsWith(".class")) {
-                String in_filename = in_dir.getAbsolutePath() + System.getProperty("file.separator") + filename;
-                ClassInfo ci = new ClassInfo(in_filename);
-                for (Enumeration e = ci.getRoutines().elements(); e.hasMoreElements(); ) {
-                    Routine routine = (Routine) e.nextElement();
-                    for (Enumeration instrs = (routine.getInstructionArray()).elements(); instrs.hasMoreElements(); ) {
-                        Instruction instr = (Instruction) instrs.nextElement();
-                        int opcode = instr.getOpcode();
-                        if (opcode == InstructionTable.getfield)
-                            instr.addBefore("SudokuMetricsTool", "loadStoreField", 0);
-                        else if (opcode == InstructionTable.putfield)
-                            instr.addBefore("SudokuMetricsTool", "loadStoreField", 1);
-                        else {
-                            short instr_type = InstructionTable.InstructionTypeTable[opcode];
-                            if (instr_type == InstructionTable.LOAD_INSTRUCTION) {
-                                instr.addBefore("SudokuMetricsTool", "loadStore", 0);
-                            } else if (instr_type == InstructionTable.STORE_INSTRUCTION) {
-                                instr.addBefore("SudokuMetricsTool", "loadStore", 1);
-                            }
                         }
                     }
                 }
@@ -197,6 +234,22 @@ public class SudokuMetricsTool {
         }
     }
 
+    public static void addLoads(int count) {
+        getCurrentStats().addLoadCount(count);
+    }
+
+    public static void addStores(int count) {
+        getCurrentStats().addStoreCount(count);
+    }
+
+    public static void addLoadFields(int count) {
+        getCurrentStats().addFieldLoadCount(count);
+    }
+
+    public static void addStoreFields(int count) {
+        getCurrentStats().addFieldStoreCount(count);
+    }
+
     public static void loadStoreField(int type) {
         Stats stats = getCurrentStats();
         if (type == 0) {
@@ -238,6 +291,75 @@ public class SudokuMetricsTool {
         } catch (NullPointerException e) {
             printUsage();
         }
+    }
+}
+
+class BlockAddresses {
+
+    private final int begin;
+    private final int end;
+
+    private int loads;
+    private int stores;
+    private int loadFields;
+    private int storeFields;
+
+    public BlockAddresses(int begin, int end) {
+        this.begin = begin;
+        this.end = end;
+    }
+
+    public int getBegin() {
+        return begin;
+    }
+
+    public int getEnd() {
+        return end;
+    }
+
+    public boolean contains(int addr) {
+        return addr >= begin && addr <= end;
+    }
+
+    @Override
+    public boolean equals(Object address) {
+        if (!(address instanceof BlockAddresses)) {
+            return false;
+        }
+        BlockAddresses addr = (BlockAddresses) address;
+        return addr.getBegin() == begin && addr.getEnd() == end;
+    }
+
+    public int getLoads() {
+        return loads;
+    }
+
+    public void incrLoads() {
+        this.loads++;
+    }
+
+    public int getStores() {
+        return stores;
+    }
+
+    public void incrStores() {
+        this.stores++;
+    }
+
+    public int getLoadFields() {
+        return loadFields;
+    }
+
+    public void incrLoadFields() {
+        this.loadFields++;
+    }
+
+    public int getStoreFields() {
+        return storeFields;
+    }
+
+    public void incrStoreFields() {
+        this.storeFields++;
     }
 }
 

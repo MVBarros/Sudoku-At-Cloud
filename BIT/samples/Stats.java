@@ -81,12 +81,20 @@ public class Stats {
         this.loadCount++;
     }
 
+    public void addLoadCount(int count) {
+        this.loadCount+= count;
+    }
+
     public int getStoreCount() {
         return storeCount;
     }
 
     public void incrStoreCount() {
         this.storeCount++;
+    }
+
+    public void addStoreCount(int count) {
+        this.storeCount+= count;
     }
 
     public int getFieldLoadCount() {
@@ -97,6 +105,10 @@ public class Stats {
         this.fieldLoadCount++;
     }
 
+    public void addFieldLoadCount(int count) {
+        this.fieldLoadCount += count;
+    }
+
     public int getFieldStoreCount() {
         return fieldStoreCount;
     }
@@ -105,6 +117,9 @@ public class Stats {
         this.fieldStoreCount++;
     }
 
+    public void addFieldStoreCount(int count) {
+        this.fieldStoreCount += count;
+    }
 
     public int getBranchCount() {
         return branchCount;

@@ -196,6 +196,7 @@ public class SolverArgumentParser extends AbstractArgumentParser {
         obj.put("Input Board", getInputBoard());
         obj.put("Puzzle Board", getPuzzleBoard());
         obj.put("Board Zeros", getBoardZeros());
+        obj.put("Solver Strategy", getSolverStrategy().toString());
         return obj;
     }
 }
