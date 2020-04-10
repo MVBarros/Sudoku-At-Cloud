@@ -1,8 +1,6 @@
 import org.json.JSONObject;
 import org.json.JSONArray;
 public class Stats {
-    private static Integer branchCount = 0;
-
     private int methodCount = 0;
     private int dynamicBasicBlockCount = 0;
     private int instructionCount = 0;
@@ -17,11 +15,7 @@ public class Stats {
     private int fieldLoadCount = 0;
     private int fieldStoreCount = 0;
 
-    private StatisticsBranch[] branchInfo = null;
-    private int branchNumber = 0;
-    private int branchPc = 0;
-    private String branchClassName = null;
-    private String branchMethodName = null;
+    private int branchCount = 0;
 
     public int getMethodCount() {
         return methodCount;
@@ -111,55 +105,13 @@ public class Stats {
         this.fieldStoreCount++;
     }
 
-    public StatisticsBranch[] getBranchInfo() {
-        if (this.branchInfo == null) {
-            setBranchInfo(new StatisticsBranch[Stats.getBranchCount()]);
-        }
-        return this.branchInfo;
-    }
 
-    public void setBranchInfo(StatisticsBranch[] branchInfo) {
-        this.branchInfo = branchInfo;
-    }
-
-    public int getBranchNumber() {
-        return branchNumber;
-    }
-
-    public void setBranchNumber(int branchNumber) {
-        this.branchNumber = branchNumber;
-    }
-
-    public int getBranchPc() {
-        return branchPc;
-    }
-
-    public void setBranchPc(int branchPc) {
-        this.branchPc = branchPc;
-    }
-
-    public String getBranchClassName() {
-        return this.branchClassName;
-    }
-
-    public void setBranchClassName(String branchClassName) {
-        this.branchClassName = branchClassName;
-    }
-
-    public String getBranchMethodName() {
-        return branchMethodName;
-    }
-
-    public void setBranchMethodName(String branchMethodName) {
-        this.branchMethodName = branchMethodName;
-    }
-
-    public static int getBranchCount() {
+    public int getBranchCount() {
         return branchCount;
     }
 
-    public static void setBranchCount(int n) {
-        Stats.branchCount = n;
+    public void incrBranchCount() {
+        this.branchCount++;
     }
 
     public JSONObject toJSON() {
@@ -175,14 +127,7 @@ public class Stats {
         obj.put("Store Count", getStoreCount());
         obj.put("Field Load Count", getFieldLoadCount());
         obj.put("Field Store Count", getStoreCount());
-        JSONArray array = new JSONArray();
-        StatisticsBranch[] branches = getBranchInfo();
-        for (StatisticsBranch branch: branches) {
-            if (branch != null) {
-                array.put(branch.toJSON());
-            }
-        }
-        obj.put("Branches", array);
+        obj.put("Branch Count", getBranchCount());
         return obj;
     }
 
