@@ -1,7 +1,7 @@
 import BIT.highBIT.*;
 import org.json.JSONObject;
-import pt.ulisboa.tecnico.cnv.server.WebServer;
 import pt.ulisboa.tecnico.cnv.server.MetricUtils;
+import pt.ulisboa.tecnico.cnv.server.WebServer;
 import pt.ulisboa.tecnico.cnv.solver.SolverArgumentParser;
 
 import java.io.File;
@@ -92,8 +92,8 @@ public class SudokuMetricsTool {
     }
 
     public static void doStackDepth(Routine routine) {
-        routine.addBefore("SudokuMetricsTool", "addStackDepth", routine.getMaxStack());
-        routine.addAfter("SudokuMetricsToo", "removeStackDepth", routine.getMaxStack());
+        routine.addBefore("SudokuMetricsTool", "addStackDepth", (int) routine.getMaxStack());
+        routine.addAfter("SudokuMetricsTool", "removeStackDepth", (int) routine.getMaxStack());
     }
 
     public static void doCallback(Routine routine) {
@@ -111,11 +111,13 @@ public class SudokuMetricsTool {
                 ClassInfo ci = new ClassInfo(in_filename);
                 for (Enumeration e = ci.getRoutines().elements(); e.hasMoreElements(); ) {
                     Routine routine = (Routine) e.nextElement();
+                    InstructionArray instructions = routine.getInstructionArray();
+                    Enumeration blocks = routine.getBasicBlocks().elements();
+                    doAlloc(instructions);
+                    doLoadStore(instructions);
+                    doBranch(instructions);
+                    doInstr(routine, blocks);
                     doStackDepth(routine);
-                    doAlloc(routine.getInstructionArray());
-                    doLoadStore(routine.getInstructionArray());
-                    doBranch(routine.getInstructionArray());
-                    doInstr(routine, routine.getBasicBlocks().elements());
                     doCallback(routine);
                 }
                 ci.write(in_filename);
