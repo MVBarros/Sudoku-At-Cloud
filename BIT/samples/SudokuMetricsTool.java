@@ -135,14 +135,23 @@ public class SudokuMetricsTool {
     public static void writeToFile(Stats stats, SolverArgumentParser parser) {
         JSONObject object = stats.toJSON();
         object.put("Board", MetricUtils.toJSON(parser));
+
         String outputDir = "./out";
-        String path = outputDir + System.getProperty("file.separator") + UUID.randomUUID().toString() + ".json";
+
+        String strat = parser.getSolverStrategy().toString();
+        String name = parser.getInputBoard();
+        String un = parser.getUn().toString();
+        name += "-" + strat + "-" + un + "-" + UUID.randomUUID().toString();
+
+        String path = outputDir + System.getProperty("file.separator") + name + ".json";
         try (PrintWriter out = new PrintWriter(path)) {
             out.println(object.toString());
         } catch (FileNotFoundException e) {
             System.out.println(e.getMessage());
         }
     }
+
+
 
     public static void instructions(int incr) {
         Stats stats = getCurrentStats();
