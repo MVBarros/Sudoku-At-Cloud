@@ -91,12 +91,16 @@ public class SudokuMetricsTool {
         }
     }
 
+    public static void doStackDepth(Routine routine) {
+        routine.addBefore("SudokuMetricsTool", "addStackDepth", routine.getMaxStack());
+        routine.addAfter("SudokuMetricsToo", "removeStackDepth", routine.getMaxStack());
+    }
+
     public static void doCallback(Routine routine) {
         if (routine.getMethodName().equals("solveSudoku")) {
             routine.addAfter("SudokuMetricsTool", "saveStats", "null");
         }
     }
-
 
     public static void addInstrumentation(File in_dir) {
         String[] fileList = in_dir.list();
@@ -107,13 +111,11 @@ public class SudokuMetricsTool {
                 ClassInfo ci = new ClassInfo(in_filename);
                 for (Enumeration e = ci.getRoutines().elements(); e.hasMoreElements(); ) {
                     Routine routine = (Routine) e.nextElement();
-                    InstructionArray instructions = routine.getInstructionArray();
-                    Enumeration blocks = routine.getBasicBlocks().elements();
-
-                    doAlloc(instructions);
-                    doLoadStore(instructions);
-                    doBranch(instructions);
-                    doInstr(routine, blocks);
+                    doStackDepth(routine);
+                    doAlloc(routine.getInstructionArray());
+                    doLoadStore(routine.getInstructionArray());
+                    doBranch(routine.getInstructionArray());
+                    doInstr(routine, routine.getBasicBlocks().elements());
                     doCallback(routine);
                 }
                 ci.write(in_filename);
@@ -148,6 +150,15 @@ public class SudokuMetricsTool {
 
     public static void method(int foo) {
         getCurrentStats().incrMethodCount();
+    }
+
+
+    public static void addStackDepth(int depth) {
+        getCurrentStats().incrCurrStackDepth(depth);
+    }
+
+    public static void removeStackDepth(int dept) {
+        getCurrentStats().incrCurrStackDepth(-dept);
     }
 
     public static void allocNew(String foo) {

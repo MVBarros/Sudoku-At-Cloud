@@ -17,6 +17,9 @@ public class Stats {
 
     private long branchCount = 0;
 
+    private long currStackDepth = 0;
+    private long maxStackDepth = 0;
+
     public long getMethodCount() {
         return methodCount;
     }
@@ -128,7 +131,24 @@ public class Stats {
         obj.put("Field Load Count", getFieldLoadCount());
         obj.put("Field Store Count", getFieldStoreCount());
         obj.put("Branch Count", getBranchCount());
+        obj.put("Stack Depth", getMaxStackDepth());
         return obj;
     }
 
+    public long getCurrStackDepth() {
+        return currStackDepth;
+    }
+
+    public void incrCurrStackDepth(long depth) {
+        this.currStackDepth += depth;
+        this.maxStackDepth = Math.max(currStackDepth, maxStackDepth);
+    }
+
+    public long getMaxStackDepth() {
+        return maxStackDepth;
+    }
+
+    public void setMaxStackDepth(long maxStackDepth) {
+        this.maxStackDepth = maxStackDepth;
+    }
 }
