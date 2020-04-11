@@ -45,32 +45,32 @@ public class Stats {
         return newCount;
     }
 
-    public void incrNewCount() {
-        this.newCount++;
+    public void incrNewCount(int count) {
+        this.newCount+= count;
     }
 
     public long getNewArrayCount() {
         return newArrayCount;
     }
 
-    public void incrNewArrayCount() {
-        this.newArrayCount++;
+    public void incrNewArrayCount(int count) {
+        this.newArrayCount += count;
     }
 
     public long getANewArrayCount() {
         return aNewArrayCount;
     }
 
-    public void incrANewArrayCount() {
-        this.aNewArrayCount++;
+    public void incrANewArrayCount(int count) {
+        this.aNewArrayCount += count;
     }
 
     public long getMultiANewArrayCount() {
         return multiANewArrayCount;
     }
 
-    public void incrMultiANewArrayCount() {
-        this.multiANewArrayCount++;
+    public void incrMultiANewArrayCount(int count) {
+        this.multiANewArrayCount += count;
     }
 
     public long getLoadCount() {
