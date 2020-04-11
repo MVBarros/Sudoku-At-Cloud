@@ -31,6 +31,7 @@ public class SudokuMetricsTool {
     }
 
     private static void constructBlocks(Enumeration bblocks) {
+        blocks.clear();
         for (Enumeration e = bblocks; e.hasMoreElements(); ) {
             BasicBlock bb = (BasicBlock) e.nextElement();
             blocks.put(bb, new BlockStats());
@@ -155,14 +156,12 @@ public class SudokuMetricsTool {
                 for (Enumeration e = ci.getRoutines().elements(); e.hasMoreElements(); ) {
                     Routine routine = (Routine) e.nextElement();
                     InstructionArray instructions = routine.getInstructionArray();
-                    Enumeration blocks = routine.getBasicBlocks().elements();
-                    constructBlocks(blocks);
-                    doAlloc(instructions);
+                    constructBlocks(routine.getBasicBlocks().elements());
                     doLoadStore(instructions);
                     doBranch(instructions);
-                    doInstr(routine, blocks);
+                    doInstr(routine, routine.getBasicBlocks().elements());
+                    doAlloc(instructions);
                     doCallback(routine);
-                    SudokuMetricsTool.blocks.clear();
                 }
                 ci.write(in_filename);
             }
