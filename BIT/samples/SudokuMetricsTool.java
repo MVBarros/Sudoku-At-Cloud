@@ -13,16 +13,21 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class SudokuMetricsTool {
 
-    private static final ConcurrentHashMap<String, Stats> stats = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Long, Stats> stats = new ConcurrentHashMap<>();
 
-    public static String getCurrentThreadName() {
-        return String.valueOf(Thread.currentThread().getId());
+    public static long getCurrentThreadId() {
+        return Thread.currentThread().getId();
     }
 
     private static Stats getCurrentStats() {
-        String name = getCurrentThreadName();
-        stats.putIfAbsent(name, new Stats());
-        return stats.get(name);
+        //no thread tries to access the same key at the same time
+        Long id = getCurrentThreadId();
+        Stats stat = stats.get(id);
+        if (stat == null) {
+            stat = new Stats();
+            stats.put(id, stat);
+        }
+        return stat;
     }
 
     public static void printUsage() {
@@ -92,8 +97,8 @@ public class SudokuMetricsTool {
     }
 
     public static void doStackDepth(Routine routine) {
-        routine.addBefore("SudokuMetricsTool", "addStackDepth", (int) routine.getMaxStack());
-        routine.addAfter("SudokuMetricsTool", "removeStackDepth", (int) routine.getMaxStack());
+        routine.addBefore("SudokuMetricsTool", "addStackDepth", new Integer(routine.getMaxStack()));
+        routine.addAfter("SudokuMetricsTool", "removeStackDepth", new Integer(routine.getMaxStack()));
     }
 
     public static void doCallback(Routine routine) {
@@ -128,8 +133,8 @@ public class SudokuMetricsTool {
     public static void saveStats(String foo) {
         SolverArgumentParser parser = WebServer.getCurrentThreadBoard();
         writeToFile(getCurrentStats(), parser);
-        //Thread is effectively finished after SolveSudoku
-        stats.remove(getCurrentThreadName());
+        //Thread is effectively finished after SolveSudoku and will not call more solver code
+        stats.remove(getCurrentThreadId());
     }
 
     public static void writeToFile(Stats stats, SolverArgumentParser parser) {
@@ -169,7 +174,7 @@ public class SudokuMetricsTool {
     }
 
     public static void removeStackDepth(int dept) {
-        getCurrentStats().incrCurrStackDepth(-dept);
+        getCurrentStats().decrCurrStackDepth(dept);
     }
 
     public static void allocNew(String foo) {
@@ -214,7 +219,6 @@ public class SudokuMetricsTool {
         }
         try {
             File in_dir = new File(argv[0]);
-
             if (in_dir.isDirectory()) {
                 addInstrumentation(in_dir);
             } else {

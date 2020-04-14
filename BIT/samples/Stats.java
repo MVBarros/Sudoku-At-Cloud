@@ -121,7 +121,7 @@ public class Stats {
         JSONObject obj = new JSONObject();
         obj.put("Method Count", getMethodCount());
         obj.put("Basic Block Count", getBasicBlockCount());
-        obj.put("Basic Instruction Count", getInstructionCount());
+        obj.put("Instruction Count", getInstructionCount());
         obj.put("A New Array Count", getANewArrayCount());
         obj.put("New Array Count", getNewArrayCount());
         obj.put("New Count", getNewCount());
@@ -141,7 +141,11 @@ public class Stats {
 
     public void incrCurrStackDepth(long depth) {
         this.currStackDepth += depth;
+    }
+
+    public void decrCurrStackDepth(long depth) {
         this.maxStackDepth = Math.max(currStackDepth, maxStackDepth);
+        this.currStackDepth -= depth;
     }
 
     public long getMaxStackDepth() {
