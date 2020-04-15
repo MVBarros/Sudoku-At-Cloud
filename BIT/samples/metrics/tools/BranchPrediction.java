@@ -1,6 +1,6 @@
+package metrics.tools;
+
 import BIT.highBIT.*;
-import BIT.lowBIT.*;
-import java.io.File;
 /*import java.util.Enumeration;
 import java.util.Vector;*/
 import java.util.*;

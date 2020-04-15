@@ -1,0 +1,4 @@
+Enviar metricas: 
+    A cada X pedidos
+    Ou:
+        Quando uma thread acaba e vê que não há mais pedidos concorrentes

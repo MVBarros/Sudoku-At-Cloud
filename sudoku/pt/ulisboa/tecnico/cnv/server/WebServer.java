@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ConcurrentHashMap;
 
+import metrics.tools.SudokuMetricsTool;
+
 public class WebServer {
 
 	private static ConcurrentHashMap<String, SolverArgumentParser> boards = new ConcurrentHashMap<>();
@@ -117,8 +119,7 @@ public class WebServer {
 			//Solve sudoku puzzle
 			JSONArray solution = s.solveSudoku();
 
-
-
+			SudokuMetricsTool.saveStats();
 			// Send response to browser.
 			final Headers hdrs = t.getResponseHeaders();
 

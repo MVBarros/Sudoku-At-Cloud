@@ -1,3 +1,5 @@
+package metrics.tools;
+
 import BIT.highBIT.*;
 import org.json.JSONObject;
 import pt.ulisboa.tecnico.cnv.server.MetricUtils;
@@ -44,16 +46,16 @@ public class SudokuMetricsTool {
             int opcode = instr.getOpcode();
             switch (opcode) {
                 case InstructionTable.NEW:
-                    instr.addBefore("SudokuMetricsTool", "allocNew", "null");
+                    instr.addBefore("metrics/tools/SudokuMetricsTool", "allocNew", "null");
                     break;
                 case InstructionTable.newarray:
-                    instr.addBefore("SudokuMetricsTool", "allocNewArray", "null");
+                    instr.addBefore("metrics/tools/SudokuMetricsTool", "allocNewArray", "null");
                     break;
                 case InstructionTable.anewarray:
-                    instr.addBefore("SudokuMetricsTool", "allocANewArray", "null");
+                    instr.addBefore("metrics/tools/SudokuMetricsTool", "allocANewArray", "null");
                     break;
                 case InstructionTable.multianewarray:
-                    instr.addBefore("SudokuMetricsTool", "allocMultiNewArray", "null");
+                    instr.addBefore("metrics/tools/SudokuMetricsTool", "allocMultiNewArray", "null");
                     break;
             }
         }
@@ -64,15 +66,15 @@ public class SudokuMetricsTool {
             Instruction instr = (Instruction) instrs.nextElement();
             int opcode = instr.getOpcode();
             if (opcode == InstructionTable.getfield)
-                instr.addBefore("SudokuMetricsTool", "loadField", "null");
+                instr.addBefore("metrics/tools/SudokuMetricsTool", "loadField", "null");
             else if (opcode == InstructionTable.putfield)
-                instr.addBefore("SudokuMetricsTool", "storeField", "null");
+                instr.addBefore("metrics/tools/SudokuMetricsTool", "storeField", "null");
             else {
                 short instr_type = InstructionTable.InstructionTypeTable[opcode];
                 if (instr_type == InstructionTable.LOAD_INSTRUCTION) {
-                    instr.addBefore("SudokuMetricsTool", "load", "null");
+                    instr.addBefore("metrics/tools/SudokuMetricsTool", "load", "null");
                 } else if (instr_type == InstructionTable.STORE_INSTRUCTION) {
-                    instr.addBefore("SudokuMetricsTool", "store", "null");
+                    instr.addBefore("metrics/tools/SudokuMetricsTool", "store", "null");
                 }
             }
         }
@@ -83,28 +85,22 @@ public class SudokuMetricsTool {
             Instruction instr = (Instruction) instrs.nextElement();
             short instr_type = InstructionTable.InstructionTypeTable[instr.getOpcode()];
             if (instr_type == InstructionTable.CONDITIONAL_INSTRUCTION) {
-                instr.addBefore("SudokuMetricsTool", "updateBranch", "null");
+                instr.addBefore("metrics/tools/SudokuMetricsTool", "updateBranch", "null");
             }
         }
     }
 
     public static void doInstr(Routine routine, Enumeration blocks) {
-        routine.addBefore("SudokuMetricsTool", "method", 1);
+        routine.addBefore("metrics/tools/SudokuMetricsTool", "method", 1);
         for (Enumeration b = blocks; b.hasMoreElements(); ) {
             BasicBlock bb = (BasicBlock) b.nextElement();
-            bb.addBefore("SudokuMetricsTool", "instructions", bb.size());
+            bb.addBefore("metrics/tools/SudokuMetricsTool", "instructions", bb.size());
         }
     }
 
     public static void doStackDepth(Routine routine) {
-        routine.addBefore("SudokuMetricsTool", "addStackDepth", new Integer(routine.getMaxStack()));
-        routine.addAfter("SudokuMetricsTool", "removeStackDepth", new Integer(routine.getMaxStack()));
-    }
-
-    public static void doCallback(Routine routine) {
-        if (routine.getMethodName().equals("solveSudoku")) {
-            routine.addAfter("SudokuMetricsTool", "saveStats", "null");
-        }
+        routine.addBefore("metrics/tools/SudokuMetricsTool", "addStackDepth", new Integer(routine.getMaxStack()));
+        routine.addAfter("metrics/tools/SudokuMetricsTool", "removeStackDepth", new Integer(routine.getMaxStack()));
     }
 
     public static void addInstrumentation(File in_dir) {
@@ -123,14 +119,13 @@ public class SudokuMetricsTool {
                     doBranch(instructions);
                     doInstr(routine, blocks);
                     doStackDepth(routine);
-                    doCallback(routine);
                 }
                 ci.write(in_filename);
             }
         }
     }
 
-    public static void saveStats(String foo) {
+    public static void saveStats() {
         SolverArgumentParser parser = WebServer.getCurrentThreadBoard();
         writeToFile(getCurrentStats(), parser);
         //Thread is effectively finished after SolveSudoku and will not call more solver code
@@ -141,7 +136,7 @@ public class SudokuMetricsTool {
         JSONObject object = stats.toJSON();
         object.put("Board", MetricUtils.toJSON(parser));
 
-        String outputDir = "./out";
+        String outputDir = "out";
 
         String strat = parser.getSolverStrategy().toString();
         String name = parser.getInputBoard();

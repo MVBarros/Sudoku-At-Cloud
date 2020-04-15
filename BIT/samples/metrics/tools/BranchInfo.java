@@ -1,3 +1,5 @@
+package metrics.tools;
+
 public class BranchInfo {
 
     public BranchInfo(String className, String methodName, int pc, int number) {
