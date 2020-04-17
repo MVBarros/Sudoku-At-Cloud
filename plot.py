@@ -5,7 +5,7 @@ import re
 numbers = re.compile(r'(\d+)')
 
 
-paths = ['./out/9x9/101/BFS/*.json', './out/9x9/101/CP/*.json', './out/9x9/101/DLX/*.json', './out/9x9/102/BFS/*.json', './out/9x9/102/CP/*.json', './out/9x9/102/DLX/*.json',\
+paths = ['./out/9x9/1-BFS/*.json', './out/9x9/1-CP/*.json', './out/9x9/1-DLX/*.json', './out/9x9/2-BFS/*.json', './out/9x9/2-CP/*.json', './out/9x9/2-DLX/*.json',\
 './out/16x16/1-BFS/*.json', './out/16x16/1-CP/*.json', './out/16x16/1-DLX/*.json', './out/16x16/2-BFS/*.json', './out/16x16/2-CP/*.json', './out/16x16/2-DLX/*.json', \
 './out/25x25/1-BFS/*.json', './out/25x25/1-CP/*.json', './out/25x25/1-DLX/*.json', './out/25x25/2-BFS/*.json', './out/25x25/2-CP/*.json', './out/25x25/2-DLX/*.json']
 
@@ -79,5 +79,5 @@ def grafico2():
             plt.savefig(out_dir + strat + "-" + metric + ".png")
             plt.clf()
                 
-grafico()
+#grafico()
 grafico2()
