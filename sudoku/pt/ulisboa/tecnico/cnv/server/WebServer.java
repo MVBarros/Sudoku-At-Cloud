@@ -43,23 +43,23 @@ public class WebServer {
 	}
 
 	public static String parseRequestBody(InputStream is) throws IOException {
-        InputStreamReader isr =  new InputStreamReader(is,"utf-8");
-        BufferedReader br = new BufferedReader(isr);
+		InputStreamReader isr =  new InputStreamReader(is,"utf-8");
+		BufferedReader br = new BufferedReader(isr);
 
-        // From now on, the right way of moving from bytes to utf-8 characters:
+		// From now on, the right way of moving from bytes to utf-8 characters:
 
-        int b;
-        StringBuilder buf = new StringBuilder(512);
-        while ((b = br.read()) != -1) {
-            buf.append((char) b);
+		int b;
+		StringBuilder buf = new StringBuilder(512);
+		while ((b = br.read()) != -1) {
+			buf.append((char) b);
 
-        }
+		}
 
-        br.close();
-        isr.close();
+		br.close();
+		isr.close();
 
-        return buf.toString();
-    }
+		return buf.toString();
+	}
 
 	public static ConcurrentHashMap<String, SolverArgumentParser> getBoards() {
 		return boards;
@@ -123,26 +123,26 @@ public class WebServer {
 			// Send response to browser.
 			final Headers hdrs = t.getResponseHeaders();
 
-            //t.sendResponseHeaders(200, responseFile.length());
+			//t.sendResponseHeaders(200, responseFile.length());
 
 
 			///hdrs.add("Content-Type", "image/png");
-            hdrs.add("Content-Type", "application/json");
+			hdrs.add("Content-Type", "application/json");
 
 			hdrs.add("Access-Control-Allow-Origin", "*");
 
-            hdrs.add("Access-Control-Allow-Credentials", "true");
+			hdrs.add("Access-Control-Allow-Credentials", "true");
 			hdrs.add("Access-Control-Allow-Methods", "POST, GET, HEAD, OPTIONS");
 			hdrs.add("Access-Control-Allow-Headers", "Origin, Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers");
 
-            t.sendResponseHeaders(200, solution.toString().length());
+			t.sendResponseHeaders(200, solution.toString().length());
 
 
-            final OutputStream os = t.getResponseBody();
-            OutputStreamWriter osw = new OutputStreamWriter(os, "UTF-8");
-            osw.write(solution.toString());
-            osw.flush();
-            osw.close();
+			final OutputStream os = t.getResponseBody();
+			OutputStreamWriter osw = new OutputStreamWriter(os, "UTF-8");
+			osw.write(solution.toString());
+			osw.flush();
+			osw.close();
 
 			os.close();
 

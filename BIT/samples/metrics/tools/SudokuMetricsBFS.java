@@ -46,16 +46,16 @@ public class SudokuMetricsBFS {
             int opcode = instr.getOpcode();
             switch (opcode) {
                 case InstructionTable.NEW:
-                    instr.addBefore("metrics/tools/SudokuMetricsTool", "allocNew", "null");
+                    instr.addBefore("metrics/tools/SudokuMetricsBFS", "allocNew", "null");
                     break;
                 case InstructionTable.newarray:
-                    instr.addBefore("metrics/tools/SudokuMetricsTool", "allocNewArray", "null");
+                    instr.addBefore("metrics/tools/SudokuMetricsBFS", "allocNewArray", "null");
                     break;
                 case InstructionTable.anewarray:
-                    instr.addBefore("metrics/tools/SudokuMetricsTool", "allocANewArray", "null");
+                    instr.addBefore("metrics/tools/SudokuMetricsBFS", "allocANewArray", "null");
                     break;
                 case InstructionTable.multianewarray:
-                    instr.addBefore("metrics/tools/SudokuMetricsTool", "allocMultiNewArray", "null");
+                    instr.addBefore("metrics/tools/SudokuMetricsBFS", "allocMultiNewArray", "null");
                     break;
             }
         }
@@ -66,15 +66,15 @@ public class SudokuMetricsBFS {
             Instruction instr = (Instruction) instrs.nextElement();
             int opcode = instr.getOpcode();
             if (opcode == InstructionTable.getfield)
-                instr.addBefore("metrics/tools/SudokuMetricsTool", "loadField", "null");
+                instr.addBefore("metrics/tools/SudokuMetricsBFS", "loadField", "null");
             else if (opcode == InstructionTable.putfield)
-                instr.addBefore("metrics/tools/SudokuMetricsTool", "storeField", "null");
+                instr.addBefore("metrics/tools/SudokuMetricsBFS", "storeField", "null");
             else {
                 short instr_type = InstructionTable.InstructionTypeTable[opcode];
                 if (instr_type == InstructionTable.LOAD_INSTRUCTION) {
-                    instr.addBefore("metrics/tools/SudokuMetricsTool", "load", "null");
+                    instr.addBefore("metrics/tools/SudokuMetricsBFS", "load", "null");
                 } else if (instr_type == InstructionTable.STORE_INSTRUCTION) {
-                    instr.addBefore("metrics/tools/SudokuMetricsTool", "store", "null");
+                    instr.addBefore("metrics/tools/SudokuMetricsBFS", "store", "null");
                 }
             }
         }
@@ -85,29 +85,29 @@ public class SudokuMetricsBFS {
             Instruction instr = (Instruction) instrs.nextElement();
             short instr_type = InstructionTable.InstructionTypeTable[instr.getOpcode()];
             if (instr_type == InstructionTable.CONDITIONAL_INSTRUCTION) {
-                instr.addBefore("metrics/tools/SudokuMetricsTool", "updateBranch", "null");
+                instr.addBefore("metrics/tools/SudokuMetricsBFS", "updateBranch", "null");
             }
         }
     }
 
     public static void doInstr(Routine routine, Enumeration blocks) {
-        routine.addBefore("metrics/tools/SudokuMetricsTool", "method", 1);
+        routine.addBefore("metrics/tools/SudokuMetricsBFS", "method", 1);
         for (Enumeration b = blocks; b.hasMoreElements(); ) {
             BasicBlock bb = (BasicBlock) b.nextElement();
-            bb.addBefore("metrics/tools/SudokuMetricsTool", "instructions", bb.size());
+            bb.addBefore("metrics/tools/SudokuMetricsBFS", "instructions", bb.size());
         }
     }
 
     public static void doStackDepth(Routine routine) {
-        routine.addBefore("metrics/tools/SudokuMetricsTool", "addStackDepth", new Integer(routine.getMaxStack()));
-        routine.addAfter("metrics/tools/SudokuMetricsTool", "removeStackDepth", new Integer(routine.getMaxStack()));
+        routine.addBefore("metrics/tools/SudokuMetricsBFS", "addStackDepth", new Integer(routine.getMaxStack()));
+        routine.addAfter("metrics/tools/SudokuMetricsBFS", "removeStackDepth", new Integer(routine.getMaxStack()));
     }
 
     public static void addInstrumentation(File in_file) {
         String filename = in_file.getName();
 
             if (filename.endsWith(".class")) {
-                String in_filename = in_file.getAbsolutePath() + System.getProperty("file.separator") + filename;
+                String in_filename = in_file.getAbsolutePath();
                 ClassInfo ci = new ClassInfo(in_filename);
                 for (Enumeration e = ci.getRoutines().elements(); e.hasMoreElements(); ) {
                     Routine routine = (Routine) e.nextElement();
