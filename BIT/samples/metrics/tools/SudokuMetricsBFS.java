@@ -45,11 +45,11 @@ public class SudokuMetricsBFS {
             Instruction instr = (Instruction) instrs.nextElement();
             int opcode = instr.getOpcode();
             if (opcode == InstructionTable.getfield)
-                instr.addBefore("metrics/tools/SudokuMetricsTool", "loadField", "null");
+                instr.addBefore("metrics/tools/SudokuMetricsBFS", "loadField", "null");
             else {
                 short instr_type = InstructionTable.InstructionTypeTable[opcode];
                 if (instr_type == InstructionTable.STORE_INSTRUCTION) {
-                    instr.addBefore("metrics/tools/SudokuMetricsTool", "store", "null");
+                    instr.addBefore("metrics/tools/SudokuMetricsBFS", "store", "null");
                 }
             }
         }
