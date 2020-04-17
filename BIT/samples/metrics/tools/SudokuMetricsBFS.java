@@ -35,31 +35,11 @@ public class SudokuMetricsBFS {
     public static void printUsage() {
         System.out.println("Syntax: java SudokuMetricsBFS in_file ");
         System.out.println();
-        System.out.println("        in_path:  file from which the class files are read and to which they are written");
+        System.out.println("        in_file:  file from which the class files are read and to which they are written");
         System.exit(-1);
     }
 
 
-    public static void doAlloc(InstructionArray instructions) {
-        for (Enumeration instrs = instructions.elements(); instrs.hasMoreElements(); ) {
-            Instruction instr = (Instruction) instrs.nextElement();
-            int opcode = instr.getOpcode();
-            switch (opcode) {
-                case InstructionTable.NEW:
-                    instr.addBefore("metrics/tools/SudokuMetricsTool", "allocNew", "null");
-                    break;
-                case InstructionTable.newarray:
-                    instr.addBefore("metrics/tools/SudokuMetricsTool", "allocNewArray", "null");
-                    break;
-                case InstructionTable.anewarray:
-                    instr.addBefore("metrics/tools/SudokuMetricsTool", "allocANewArray", "null");
-                    break;
-                case InstructionTable.multianewarray:
-                    instr.addBefore("metrics/tools/SudokuMetricsTool", "allocMultiNewArray", "null");
-                    break;
-            }
-        }
-    }
 
     public static void doLoadStore(InstructionArray instructions) {
         for (Enumeration instrs = instructions.elements(); instrs.hasMoreElements(); ) {
@@ -113,7 +93,6 @@ public class SudokuMetricsBFS {
                     Routine routine = (Routine) e.nextElement();
                     InstructionArray instructions = routine.getInstructionArray();
                     Enumeration blocks = routine.getBasicBlocks().elements();
-                    doAlloc(instructions);
                     doLoadStore(instructions);
                     doBranch(instructions);
                     doInstr(routine, blocks);
@@ -168,22 +147,6 @@ public class SudokuMetricsBFS {
 
     public static void removeStackDepth(int dept) {
         getCurrentStats().decrCurrStackDepth(dept);
-    }
-
-    public static void allocNew(String foo) {
-        getCurrentStats().incrNewCount();
-    }
-
-    public static void allocNewArray(String foo) {
-        getCurrentStats().incrNewArrayCount();
-    }
-
-    public static void allocMultiNewArray(String foo) {
-        getCurrentStats().incrMultiANewArrayCount();
-    }
-
-    public static void allocANewArray(String foo) {
-        getCurrentStats().incrANewArrayCount();
     }
 
     public static void load(String foo) {
