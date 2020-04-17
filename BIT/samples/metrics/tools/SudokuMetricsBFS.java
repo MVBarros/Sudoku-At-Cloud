@@ -40,67 +40,9 @@ public class SudokuMetricsBFS {
     }
 
 
-    public static void doAlloc(InstructionArray instructions) {
-        for (Enumeration instrs = instructions.elements(); instrs.hasMoreElements(); ) {
-            Instruction instr = (Instruction) instrs.nextElement();
-            int opcode = instr.getOpcode();
-            switch (opcode) {
-                case InstructionTable.NEW:
-                    instr.addBefore("metrics/tools/SudokuMetricsBFS", "allocNew", "null");
-                    break;
-                case InstructionTable.newarray:
-                    instr.addBefore("metrics/tools/SudokuMetricsBFS", "allocNewArray", "null");
-                    break;
-                case InstructionTable.anewarray:
-                    instr.addBefore("metrics/tools/SudokuMetricsBFS", "allocANewArray", "null");
-                    break;
-                case InstructionTable.multianewarray:
-                    instr.addBefore("metrics/tools/SudokuMetricsBFS", "allocMultiNewArray", "null");
-                    break;
-            }
-        }
-    }
-
-    public static void doLoadStore(InstructionArray instructions) {
-        for (Enumeration instrs = instructions.elements(); instrs.hasMoreElements(); ) {
-            Instruction instr = (Instruction) instrs.nextElement();
-            int opcode = instr.getOpcode();
-            if (opcode == InstructionTable.getfield)
-                instr.addBefore("metrics/tools/SudokuMetricsBFS", "loadField", "null");
-            else if (opcode == InstructionTable.putfield)
-                instr.addBefore("metrics/tools/SudokuMetricsBFS", "storeField", "null");
-            else {
-                short instr_type = InstructionTable.InstructionTypeTable[opcode];
-                if (instr_type == InstructionTable.LOAD_INSTRUCTION) {
-                    instr.addBefore("metrics/tools/SudokuMetricsBFS", "load", "null");
-                } else if (instr_type == InstructionTable.STORE_INSTRUCTION) {
-                    instr.addBefore("metrics/tools/SudokuMetricsBFS", "store", "null");
-                }
-            }
-        }
-    }
-
-    public static void doBranch(InstructionArray instructions) {
-        for (Enumeration instrs = instructions.elements(); instrs.hasMoreElements(); ) {
-            Instruction instr = (Instruction) instrs.nextElement();
-            short instr_type = InstructionTable.InstructionTypeTable[instr.getOpcode()];
-            if (instr_type == InstructionTable.CONDITIONAL_INSTRUCTION) {
-                instr.addBefore("metrics/tools/SudokuMetricsBFS", "updateBranch", "null");
-            }
-        }
-    }
-
-    public static void doInstr(Routine routine, Enumeration blocks) {
+    public static void doInstr(Routine routine) {
         routine.addBefore("metrics/tools/SudokuMetricsBFS", "method", 1);
-        for (Enumeration b = blocks; b.hasMoreElements(); ) {
-            BasicBlock bb = (BasicBlock) b.nextElement();
-            bb.addBefore("metrics/tools/SudokuMetricsBFS", "instructions", bb.size());
-        }
-    }
 
-    public static void doStackDepth(Routine routine) {
-        routine.addBefore("metrics/tools/SudokuMetricsBFS", "addStackDepth", new Integer(routine.getMaxStack()));
-        routine.addAfter("metrics/tools/SudokuMetricsBFS", "removeStackDepth", new Integer(routine.getMaxStack()));
     }
 
     public static void addInstrumentation(File in_file) {
@@ -111,13 +53,7 @@ public class SudokuMetricsBFS {
                 ClassInfo ci = new ClassInfo(in_filename);
                 for (Enumeration e = ci.getRoutines().elements(); e.hasMoreElements(); ) {
                     Routine routine = (Routine) e.nextElement();
-                    InstructionArray instructions = routine.getInstructionArray();
-                    Enumeration blocks = routine.getBasicBlocks().elements();
-                    doAlloc(instructions);
-                    doLoadStore(instructions);
-                    doBranch(instructions);
-                    doInstr(routine, blocks);
-                    doStackDepth(routine);
+                    doInstr(routine);
                 }
                 ci.write(in_filename);
             }
@@ -149,61 +85,8 @@ public class SudokuMetricsBFS {
         }
     }
 
-
-
-    public static void instructions(int incr) {
-        StatsBFS stats = getCurrentStats();
-        stats.incrInstructionCount(incr);
-        stats.incrBasicBlockCount();
-    }
-
     public static void method(int foo) {
         getCurrentStats().incrMethodCount();
-    }
-
-
-    public static void addStackDepth(int depth) {
-        getCurrentStats().incrCurrStackDepth(depth);
-    }
-
-    public static void removeStackDepth(int dept) {
-        getCurrentStats().decrCurrStackDepth(dept);
-    }
-
-    public static void allocNew(String foo) {
-        getCurrentStats().incrNewCount();
-    }
-
-    public static void allocNewArray(String foo) {
-        getCurrentStats().incrNewArrayCount();
-    }
-
-    public static void allocMultiNewArray(String foo) {
-        getCurrentStats().incrMultiANewArrayCount();
-    }
-
-    public static void allocANewArray(String foo) {
-        getCurrentStats().incrANewArrayCount();
-    }
-
-    public static void load(String foo) {
-        getCurrentStats().incrLoadCount();
-    }
-
-    public static void loadField(String foo) {
-        getCurrentStats().incrFieldLoadCount();
-    }
-
-    public static void store(String foo) {
-        getCurrentStats().incrStoreCount();
-    }
-
-    public static void storeField(String foo) {
-        getCurrentStats().incrFieldStoreCount();
-    }
-
-    public static void updateBranch(String foo) {
-        getCurrentStats().incrBranchCount();
     }
 
     public static void main(String[] argv) {
