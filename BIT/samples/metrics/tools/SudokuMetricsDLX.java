@@ -46,16 +46,16 @@ public class SudokuMetricsDLX {
             int opcode = instr.getOpcode();
             switch (opcode) {
                 case InstructionTable.NEW:
-                    instr.addBefore("metrics/tools/SudokuMetricsTool", "allocNew", "null");
+                    instr.addBefore("metrics/tools/SudokuMetricsDLX", "allocNew", "null");
                     break;
                 case InstructionTable.newarray:
-                    instr.addBefore("metrics/tools/SudokuMetricsTool", "allocNewArray", "null");
+                    instr.addBefore("metrics/tools/SudokuMetricsDLX", "allocNewArray", "null");
                     break;
                 case InstructionTable.anewarray:
-                    instr.addBefore("metrics/tools/SudokuMetricsTool", "allocANewArray", "null");
+                    instr.addBefore("metrics/tools/SudokuMetricsDLX", "allocANewArray", "null");
                     break;
                 case InstructionTable.multianewarray:
-                    instr.addBefore("metrics/tools/SudokuMetricsTool", "allocMultiNewArray", "null");
+                    instr.addBefore("metrics/tools/SudokuMetricsDLX", "allocMultiNewArray", "null");
                     break;
             }
         }
@@ -66,15 +66,15 @@ public class SudokuMetricsDLX {
             Instruction instr = (Instruction) instrs.nextElement();
             int opcode = instr.getOpcode();
             if (opcode == InstructionTable.getfield)
-                instr.addBefore("metrics/tools/SudokuMetricsTool", "loadField", "null");
+                instr.addBefore("metrics/tools/SudokuMetricsDLX", "loadField", "null");
             else if (opcode == InstructionTable.putfield)
-                instr.addBefore("metrics/tools/SudokuMetricsTool", "storeField", "null");
+                instr.addBefore("metrics/tools/SudokuMetricsDLX", "storeField", "null");
             else {
                 short instr_type = InstructionTable.InstructionTypeTable[opcode];
                 if (instr_type == InstructionTable.LOAD_INSTRUCTION) {
-                    instr.addBefore("metrics/tools/SudokuMetricsTool", "load", "null");
+                    instr.addBefore("metrics/tools/SudokuMetricsDLX", "load", "null");
                 } else if (instr_type == InstructionTable.STORE_INSTRUCTION) {
-                    instr.addBefore("metrics/tools/SudokuMetricsTool", "store", "null");
+                    instr.addBefore("metrics/tools/SudokuMetricsDLX", "store", "null");
                 }
             }
         }
@@ -85,22 +85,17 @@ public class SudokuMetricsDLX {
             Instruction instr = (Instruction) instrs.nextElement();
             short instr_type = InstructionTable.InstructionTypeTable[instr.getOpcode()];
             if (instr_type == InstructionTable.CONDITIONAL_INSTRUCTION) {
-                instr.addBefore("metrics/tools/SudokuMetricsTool", "updateBranch", "null");
+                instr.addBefore("metrics/tools/SudokuMetricsDLX", "updateBranch", "null");
             }
         }
     }
 
     public static void doInstr(Routine routine, Enumeration blocks) {
-        routine.addBefore("metrics/tools/SudokuMetricsTool", "method", 1);
+        routine.addBefore("metrics/tools/SudokuMetricsDLX", "method", 1);
         for (Enumeration b = blocks; b.hasMoreElements(); ) {
             BasicBlock bb = (BasicBlock) b.nextElement();
-            bb.addBefore("metrics/tools/SudokuMetricsTool", "instructions", bb.size());
+            bb.addBefore("metrics/tools/SudokuMetricsDLX", "instructions", bb.size());
         }
-    }
-
-    public static void doStackDepth(Routine routine) {
-        routine.addBefore("metrics/tools/SudokuMetricsTool", "addStackDepth", new Integer(routine.getMaxStack()));
-        routine.addAfter("metrics/tools/SudokuMetricsTool", "removeStackDepth", new Integer(routine.getMaxStack()));
     }
 
     public static void addInstrumentation(File in_file) {
@@ -117,7 +112,6 @@ public class SudokuMetricsDLX {
                 doLoadStore(instructions);
                 doBranch(instructions);
                 doInstr(routine, blocks);
-                doStackDepth(routine);
             }
             ci.write(in_filename);
         }
@@ -162,13 +156,6 @@ public class SudokuMetricsDLX {
     }
 
 
-    public static void addStackDepth(int depth) {
-        getCurrentStats().incrCurrStackDepth(depth);
-    }
-
-    public static void removeStackDepth(int dept) {
-        getCurrentStats().decrCurrStackDepth(dept);
-    }
 
     public static void allocNew(String foo) {
         getCurrentStats().incrNewCount();

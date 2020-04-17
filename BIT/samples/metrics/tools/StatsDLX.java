@@ -19,9 +19,6 @@ public class StatsDLX implements Stats {
 
     private long branchCount = 0;
 
-    private long currStackDepth = 0;
-    private long maxStackDepth = 0;
-
     public long getMethodCount() {
         return methodCount;
     }
@@ -133,28 +130,7 @@ public class StatsDLX implements Stats {
         obj.put("Field Load Count", getFieldLoadCount());
         obj.put("Field Store Count", getFieldStoreCount());
         obj.put("Branch Count", getBranchCount());
-        obj.put("Stack Depth", getMaxStackDepth());
         return obj;
     }
 
-    public long getCurrStackDepth() {
-        return currStackDepth;
-    }
-
-    public void incrCurrStackDepth(long depth) {
-        this.currStackDepth += depth;
-    }
-
-    public void decrCurrStackDepth(long depth) {
-        this.maxStackDepth = Math.max(currStackDepth, maxStackDepth);
-        this.currStackDepth -= depth;
-    }
-
-    public long getMaxStackDepth() {
-        return maxStackDepth;
-    }
-
-    public void setMaxStackDepth(long maxStackDepth) {
-        this.maxStackDepth = maxStackDepth;
-    }
 }
