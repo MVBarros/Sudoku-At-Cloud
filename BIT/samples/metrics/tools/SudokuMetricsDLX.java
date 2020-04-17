@@ -124,7 +124,7 @@ public class SudokuMetricsDLX {
         stats.remove(getCurrentThreadId());
     }
 
-    public static void writeToFile(Stats stats, SolverArgumentParser parser) {
+    public static void writeToFile(StatsDLX stats, SolverArgumentParser parser) {
         JSONObject object = stats.toJSON();
         object.put("Board", MetricUtils.toJSON(parser));
 
