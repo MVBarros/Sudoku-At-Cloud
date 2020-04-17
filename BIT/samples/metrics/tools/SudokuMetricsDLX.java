@@ -100,9 +100,8 @@ public class SudokuMetricsDLX {
 
     public static void addInstrumentation(File in_file) {
         String filename = in_file.getName();
-
         if (filename.endsWith(".class")) {
-            String in_filename = in_file.getAbsolutePath() + System.getProperty("file.separator") + filename;
+            String in_filename = in_file.getAbsolutePath();
             ClassInfo ci = new ClassInfo(in_filename);
             for (Enumeration e = ci.getRoutines().elements(); e.hasMoreElements(); ) {
                 Routine routine = (Routine) e.nextElement();
