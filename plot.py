@@ -4,14 +4,16 @@ from matplotlib import pyplot as plt
 import re
 numbers = re.compile(r'(\d+)')
 
-paths = ['./out/9x9/1-BFS/*.json', './out/9x9/1-CP/*.json', './out/9x9/1-DLX/*.json', \
- './out/9x9/2-BFS/*.json', './out/9x9/2-CP/*.json', './out/9x9/2-DLX/*.json',\
-  './out/9x9/3-BFS/*.json', './out/9x9/3-CP/*.json', './out/9x9/3-DLX/*.json', \
+paths = [ \
+'./out/9x9/1-BFS/*.json', './out/9x9/1-CP/*.json', './out/9x9/1-DLX/*.json', \
+'./out/9x9/2-BFS/*.json', './out/9x9/2-CP/*.json', './out/9x9/2-DLX/*.json',\
+'./out/9x9/3-BFS/*.json', './out/9x9/3-CP/*.json', './out/9x9/3-DLX/*.json', \
 './out/16x16/1-BFS/*.json', './out/16x16/1-CP/*.json', './out/16x16/1-DLX/*.json', \
- './out/16x16/2-BFS/*.json', './out/16x16/2-CP/*.json', './out/16x16/2-DLX/*.json', \
-'./out/16x16/3-CP/*.json', './out/16x16/3-CP/*.json', './out/16x16/3-DLX/*.json', \
+'./out/16x16/2-BFS/*.json', './out/16x16/2-CP/*.json', './out/16x16/2-DLX/*.json', \
+'./out/16x16/3-BFS/*.json', './out/16x16/3-CP/*.json', './out/16x16/3-DLX/*.json', \
 './out/25x25/1-BFS/*.json', './out/25x25/1-CP/*.json', './out/25x25/1-DLX/*.json', \
- './out/25x25/2-BFS/*.json', './out/25x25/2-CP/*.json', './out/25x25/2-DLX/*.json']
+'./out/25x25/2-BFS/*.json', './out/25x25/2-CP/*.json', './out/25x25/2-DLX/*.json' \
+]
 
 metric_keys = ['A New Array Count', "Instruction Count", "Store Count", \
  "Field Store Count", "New Count", "Load Count", "New Array Count", "Basic Block Count", \
