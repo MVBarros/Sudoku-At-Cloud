@@ -19,7 +19,9 @@ import java.util.ArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ConcurrentHashMap;
 
-import metrics.tools.SudokuMetricsTool;
+import metrics.tools.SudokuMetricsBFS;
+import metrics.tools.SudokuMetricsCP;
+import metrics.tools.SudokuMetricsDLX;
 
 public class WebServer {
 
@@ -78,6 +80,22 @@ public class WebServer {
 		return boards.get(name);
 	}
 
+	public static void WriteBack(SolverArgumentParser parser) {
+		SolverFactory.SolverType type = parser.getSolverStrategy();
+
+		switch (type) {
+			case BFS:
+				SudokuMetricsBFS.saveStats();
+				break;
+			case CP:
+				SudokuMetricsCP.saveStats();
+				break;
+			case DLX:
+				SudokuMetricsDLX.saveStats();
+				break;
+		}
+	}
+
 	static class MyHandler implements HttpHandler {
 		@Override
 		public void handle(final HttpExchange t) throws IOException {
@@ -119,7 +137,7 @@ public class WebServer {
 			//Solve sudoku puzzle
 			JSONArray solution = s.solveSudoku();
 
-			SudokuMetricsTool.saveStats();
+			WriteBack(getCurrentThreadBoard());
 			// Send response to browser.
 			final Headers hdrs = t.getResponseHeaders();
 
