@@ -3,20 +3,10 @@ package metrics.tools;
 import org.json.JSONObject;
 
 public class StatsBFS implements Stats {
+
     private long methodCount = 0;
-    private long basicBlockCount = 0;
-    private long instructionCount = 0;
-
-
-    private long loadCount = 0;
     private long storeCount = 0;
     private long fieldLoadCount = 0;
-    private long fieldStoreCount = 0;
-
-    private long branchCount = 0;
-
-    private long currStackDepth = 0;
-    private long maxStackDepth = 0;
 
     public long getMethodCount() {
         return methodCount;
@@ -24,30 +14,6 @@ public class StatsBFS implements Stats {
 
     public void incrMethodCount() {
         this.methodCount++;
-    }
-
-    public long getBasicBlockCount() {
-        return basicBlockCount;
-    }
-
-    public void incrBasicBlockCount() {
-        this.basicBlockCount++;
-    }
-
-    public long getInstructionCount() {
-        return instructionCount;
-    }
-
-    public void incrInstructionCount(long count) {
-        this.instructionCount += count;
-    }
-
-    public long getLoadCount() {
-        return loadCount;
-    }
-
-    public void incrLoadCount() {
-        this.loadCount++;
     }
 
     public long getStoreCount() {
@@ -66,55 +32,11 @@ public class StatsBFS implements Stats {
         this.fieldLoadCount++;
     }
 
-    public long getFieldStoreCount() {
-        return fieldStoreCount;
-    }
-
-    public void incrFieldStoreCount() {
-        this.fieldStoreCount++;
-    }
-
-
-    public long getBranchCount() {
-        return branchCount;
-    }
-
-    public void incrBranchCount() {
-        this.branchCount++;
-    }
-
     public JSONObject toJSON() {
         JSONObject obj = new JSONObject();
         obj.put("Method Count", getMethodCount());
-        obj.put("Basic Block Count", getBasicBlockCount());
-        obj.put("Instruction Count", getInstructionCount());
-        obj.put("Load Count", getLoadCount());
         obj.put("Store Count", getStoreCount());
         obj.put("Field Load Count", getFieldLoadCount());
-        obj.put("Field Store Count", getFieldStoreCount());
-        obj.put("Branch Count", getBranchCount());
-        obj.put("Stack Depth", getMaxStackDepth());
         return obj;
-    }
-
-    public long getCurrStackDepth() {
-        return currStackDepth;
-    }
-
-    public void incrCurrStackDepth(long depth) {
-        this.currStackDepth += depth;
-    }
-
-    public void decrCurrStackDepth(long depth) {
-        this.maxStackDepth = Math.max(currStackDepth, maxStackDepth);
-        this.currStackDepth -= depth;
-    }
-
-    public long getMaxStackDepth() {
-        return maxStackDepth;
-    }
-
-    public void setMaxStackDepth(long maxStackDepth) {
-        this.maxStackDepth = maxStackDepth;
     }
 }
