@@ -1,78 +1,43 @@
 
 
-Strategy :BFS
+Strategy : BFS
 
 
-Correlation between [Store Count] and [Instruction Count] : {0.999930530249048}
-Correlation between [Load Count] and [Instruction Count] : {0.9999968412076665}
-Correlation between [Load Count] and [Store Count] : {0.9999031343479879}
-Correlation between [Basic Block Count] and [Instruction Count] : {0.999985065916138}
-Correlation between [Basic Block Count] and [Store Count] : {0.9998513088464267}
-Correlation between [Basic Block Count] and [Load Count] : {0.999992942955844}
-Correlation between [Branch Count] and [Instruction Count] : {0.9999943886792849}
-Correlation between [Branch Count] and [Store Count] : {0.9998939850552563}
-Correlation between [Branch Count] and [Load Count] : {0.9999936423942636}
-Correlation between [Branch Count] and [Basic Block Count] : {0.999994099028939}
-Correlation between [Method Count] and [Instruction Count] : {0.9586230189683808}
-Correlation between [Method Count] and [Store Count] : {0.9580264511643743}
-Correlation between [Method Count] and [Load Count] : {0.9584704952638313}
-Correlation between [Method Count] and [Basic Block Count] : {0.9589457185053488}
-Correlation between [Method Count] and [Branch Count] : {0.959126792748689}
-Correlation between [Field Load Count] and [Instruction Count] : {0.9985563273014089}
-Correlation between [Field Load Count] and [Store Count] : {0.9981800011076786}
-Correlation between [Field Load Count] and [Load Count] : {0.9985389865860751}
-Correlation between [Field Load Count] and [Basic Block Count] : {0.9986887759687555}
-Correlation between [Field Load Count] and [Branch Count] : {0.9987158577013303}
-Correlation between [Field Load Count] and [Method Count] : {0.9658770182518271}
+Correlation between [ Instruction Count ] and [ Instruction Count ] : { 1.0 }
+Correlation between [ Instruction Count ] and [ Store Count ] : { 0.9765120117253236 }
+Correlation between [ Instruction Count ] and [ Load Count ] : { 0.9999576851604354 }
+Correlation between [ Instruction Count ] and [ Basic Block Count ] : { 0.9999641180788007 }
+Correlation between [ Instruction Count ] and [ Branch Count ] : { 0.9999528111151367 }
+Correlation between [ Instruction Count ] and [ Method Count ] : { 0.9800186090725928 }
+Correlation between [ Instruction Count ] and [ Field Load Count ] : { 0.9997994696335535 }
+Correlation between [ Instruction Count ] and [ Stack Depth ] : { 0.7308975117079184 }
 
 
-Strategy :CP
+Strategy : CP
 
 
-Correlation between [Store Count] and [Instruction Count] : {0.999930530249048}
-Correlation between [Load Count] and [Instruction Count] : {0.9999968412076665}
-Correlation between [Load Count] and [Store Count] : {0.9999031343479879}
-Correlation between [Basic Block Count] and [Instruction Count] : {0.999985065916138}
-Correlation between [Basic Block Count] and [Store Count] : {0.9998513088464267}
-Correlation between [Basic Block Count] and [Load Count] : {0.999992942955844}
-Correlation between [Branch Count] and [Instruction Count] : {0.9999943886792849}
-Correlation between [Branch Count] and [Store Count] : {0.9998939850552563}
-Correlation between [Branch Count] and [Load Count] : {0.9999936423942636}
-Correlation between [Branch Count] and [Basic Block Count] : {0.999994099028939}
-Correlation between [Method Count] and [Instruction Count] : {0.9586230189683808}
-Correlation between [Method Count] and [Store Count] : {0.9580264511643743}
-Correlation between [Method Count] and [Load Count] : {0.9584704952638313}
-Correlation between [Method Count] and [Basic Block Count] : {0.9589457185053488}
-Correlation between [Method Count] and [Branch Count] : {0.959126792748689}
-Correlation between [Field Load Count] and [Instruction Count] : {0.9985563273014089}
-Correlation between [Field Load Count] and [Store Count] : {0.9981800011076786}
-Correlation between [Field Load Count] and [Load Count] : {0.9985389865860751}
-Correlation between [Field Load Count] and [Basic Block Count] : {0.9986887759687555}
-Correlation between [Field Load Count] and [Branch Count] : {0.9987158577013303}
-Correlation between [Field Load Count] and [Method Count] : {0.9658770182518271}
+Correlation between [ Instruction Count ] and [ Instruction Count ] : { 1.0 }
+Correlation between [ Instruction Count ] and [ Store Count ] : { 0.9885132349366549 }
+Correlation between [ Instruction Count ] and [ New Count ] : { 0.9970954347963071 }
+Correlation between [ Instruction Count ] and [ Load Count ] : { 0.999945919858501 }
+Correlation between [ Instruction Count ] and [ Basic Block Count ] : { 0.9998836121546241 }
+Correlation between [ Instruction Count ] and [ Branch Count ] : { 0.9998940735324124 }
+Correlation between [ Instruction Count ] and [ Method Count ] : { 0.9950644461373765 }
+Correlation between [ Instruction Count ] and [ Field Load Count ] : { 0.9998913547736942 }
+Correlation between [ Instruction Count ] and [ Stack Depth ] : { 0.622180606247869 }
 
 
-Strategy :DLX
+Strategy : DLX
 
 
-Correlation between [Store Count] and [Instruction Count] : {0.999930530249048}
-Correlation between [Load Count] and [Instruction Count] : {0.9999968412076665}
-Correlation between [Load Count] and [Store Count] : {0.9999031343479879}
-Correlation between [Basic Block Count] and [Instruction Count] : {0.999985065916138}
-Correlation between [Basic Block Count] and [Store Count] : {0.9998513088464267}
-Correlation between [Basic Block Count] and [Load Count] : {0.999992942955844}
-Correlation between [Branch Count] and [Instruction Count] : {0.9999943886792849}
-Correlation between [Branch Count] and [Store Count] : {0.9998939850552563}
-Correlation between [Branch Count] and [Load Count] : {0.9999936423942636}
-Correlation between [Branch Count] and [Basic Block Count] : {0.999994099028939}
-Correlation between [Method Count] and [Instruction Count] : {0.9586230189683808}
-Correlation between [Method Count] and [Store Count] : {0.9580264511643743}
-Correlation between [Method Count] and [Load Count] : {0.9584704952638313}
-Correlation between [Method Count] and [Basic Block Count] : {0.9589457185053488}
-Correlation between [Method Count] and [Branch Count] : {0.959126792748689}
-Correlation between [Field Load Count] and [Instruction Count] : {0.9985563273014089}
-Correlation between [Field Load Count] and [Store Count] : {0.9981800011076786}
-Correlation between [Field Load Count] and [Load Count] : {0.9985389865860751}
-Correlation between [Field Load Count] and [Basic Block Count] : {0.9986887759687555}
-Correlation between [Field Load Count] and [Branch Count] : {0.9987158577013303}
-Correlation between [Field Load Count] and [Method Count] : {0.9658770182518271}
+Correlation between [ Instruction Count ] and [ Instruction Count ] : { 0.9999999999999999 }
+Correlation between [ Instruction Count ] and [ Store Count ] : { 0.9999096980439809 }
+Correlation between [ Instruction Count ] and [ Field Store Count ] : { 0.9160413041705806 }
+Correlation between [ Instruction Count ] and [ New Count ] : { 0.9638292559168714 }
+Correlation between [ Instruction Count ] and [ Load Count ] : { 0.9999958939574376 }
+Correlation between [ Instruction Count ] and [ New Array Count ] : { 0.9654791635277874 }
+Correlation between [ Instruction Count ] and [ Basic Block Count ] : { 0.9999806749023454 }
+Correlation between [ Instruction Count ] and [ Branch Count ] : { 0.9999928265453673 }
+Correlation between [ Instruction Count ] and [ Method Count ] : { 0.960178866289465 }
+Correlation between [ Instruction Count ] and [ Field Load Count ] : { 0.998133358997317 }
+Correlation between [ Instruction Count ] and [ Stack Depth ] : { 0.3055655953988849 }

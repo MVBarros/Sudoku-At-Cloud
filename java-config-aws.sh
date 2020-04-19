@@ -7,4 +7,3 @@ export SDK_HOME=/usr/lib/jvm/java-7-openjdk/
 export _JAVA_OPTIONS="-XX:-UseSplitVerifier "$_JAVA_OPTIONS
 
 export CLASSPATH="$CLASSPATH:/home/ec2-user/Sudoku-At-Cloud/BIT/BIT:/home/ec2-user/Sudoku-At-Cloud/BIT/samples:/home/ec2-user/Sudoku-At-Cloud/BIT:/home/ec2-user/Sudoku-At-Cloud/sudoku"
-
