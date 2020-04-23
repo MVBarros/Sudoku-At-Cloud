@@ -34,6 +34,7 @@ public class WebServer {
 
 
 		server.createContext("/sudoku", new MyHandler());
+		server.createContext("/lb", new LBHandler());
 
 		// be aware! infinite pool of threads!
 		server.setExecutor(Executors.newCachedThreadPool());
@@ -76,6 +77,16 @@ public class WebServer {
 
 	public static SolverArgumentParser getBoardForThread(String name) {
 		return boards.get(name);
+	}
+
+	static class LBHandler implements HttpHandler {
+		@Override
+		public void handle(HttpExchange t) throws IOException {
+			t.sendResponseHeaders(200, 0);
+			OutputStream os = t.getResponseBody();
+			os.write(new byte[0]);
+			os.close();
+		}
 	}
 
 	static class MyHandler implements HttpHandler {
