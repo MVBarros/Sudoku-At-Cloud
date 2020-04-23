@@ -1,9 +1,0 @@
-Load Balancer: Para cada puzzle associar um custo de memoria e um custo de tempo (i.e. instruções).
-                Quando recebemos um puzzle:
-                    Se ja o vimos entao ja sabemos o custo 
-                    Se não o vimos ainda, então assumimos o pior custo observado para puzzles com os mesmos parametros.
-                Se o custo de memoria for maior que o custo de tempo:
-                    Enviar para o servidor com menor custo de memoria observado.
-                Else:
-                    Enviar para o servidor com menor custo de tempo associado.
-                Quando o load balancer observar uma resposta de parte de um servidor retira o custo associado a esse pedido.
