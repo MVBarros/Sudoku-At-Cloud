@@ -28,18 +28,17 @@ Healthy threshold - 10
 
 ## Decrease Group Size:
 
-Execute policy when: CPUUtilization >= 40 for 300 seconds
+Execute policy when: CPUUtilization >= 30 for 180 seconds
 
-Take the action: Remove 1 capacity units when 40 <= CPUUtilization < +infinity
+Take the action: Remove 1 capacity units when 30 <= CPUUtilization < +infinity
 
 ## Increase Group Size:
 
-CPUUtilization >= 80 for 300 seconds
+CPUUtilization >= 60 for 180 seconds
 
-Add 1 capacity unit when 80 <= CPUUtilization <= + infinity 
+Add 1 capacity unit when 60 <= CPUUtilization <= + infinity 
 
 Instances need 30 seconds to warm up after each step
-
 
 Grace Period: 30 seconds
 
