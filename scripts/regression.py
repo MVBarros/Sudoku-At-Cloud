@@ -39,10 +39,7 @@ def getMetricsForStrat(strat):
             with open(filename, 'r') as f:
                 items = json.load(f)
                 ret.append(items[metric])
-                if (strat == "DLX"):
-                    ret[0].append(items[metric])
-                else:
-                    ret[0].append(items[metric])
+                ret[0].append(items[metric])
                 ret[1].append(items["Instruction Count"])
     return ret
 
@@ -50,28 +47,20 @@ def getMetricsForStrat(strat):
 for strat in strats:
     print("\n\nStrategy : " + strat + "\n\n")
     a = getMetricsForStrat(strat)
-    print(a)
     x = np.array(a[0]).reshape((-1, 1))    
     y = np.array(a[1])
     print("Simple linear regression")
 
     model = LinearRegression()
+    model.fit_intercept = False #we're removing intercept to avoid negative costs
     model.fit(x, y)
     r_sq = model.score(x, y)
     print('coefficient of determination:', r_sq)
     print('intercept:', model.intercept_)
     print('slope:', model.coef_)
-    print("\n")
+    y_predict = model.predict(x)
+    #for i in range(0, y.size):
+    #    print("\tPredicted: ", y_predict[i])
+    #    print("\tReal:      ", y[i])
 
-    for i in range(2, 10):
-        print(f"Polinomial linear regression degree {i}")
-        transformer = PolynomialFeatures(degree=i, include_bias=False)
-        transformer.fit(x)
-        x_ = transformer.transform(x)
-        model = LinearRegression().fit(x_, y)
-        r_sq = model.score(x_, y)
-        print('coefficient of determination:', r_sq)
-        print('intercept:', model.intercept_)
-        print('slope:', model.coef_)
-        print("\n")
         

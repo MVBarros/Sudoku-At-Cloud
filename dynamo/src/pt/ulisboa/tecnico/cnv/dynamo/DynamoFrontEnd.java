@@ -15,6 +15,7 @@ import pt.ulisboa.tecnico.cnv.solver.SolverArgumentParser;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 public class DynamoFrontEnd {
     private static final String REGION = "us-east-1";
@@ -64,6 +65,7 @@ public class DynamoFrontEnd {
         item.put(KEY_UN_PARAMETER, new AttributeValue().withN(Integer.toString(parser.getUn())));
         item.put(KEY_UNASSIGNED_ENTRIES, new AttributeValue().withN(Integer.toString(MetricUtils.getBoardZeros(parser))));
         item.put(KEY_REQUEST_COST, new AttributeValue().withN(Long.toString(stats.getCost())));
+        item.put(KEY_ATTRIBUTE_NAME, new AttributeValue(randomKey()));
         PutItemRequest putItemRequest = new PutItemRequest(stats.getTableName(), item);
         dynamoDB.putItem(putItemRequest);
     }
@@ -76,6 +78,10 @@ public class DynamoFrontEnd {
 
         TableUtils.createTableIfNotExists(dynamoDB, createTableRequest);
         TableUtils.waitUntilActive(dynamoDB, name);
+    }
+
+    private static String randomKey() {
+        return UUID.randomUUID().toString();
     }
 
 
