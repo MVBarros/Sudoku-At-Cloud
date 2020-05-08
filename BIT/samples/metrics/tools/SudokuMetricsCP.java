@@ -21,7 +21,7 @@ public class SudokuMetricsCP {
         return Thread.currentThread().getId();
     }
 
-    private static StatsCP getCurrentStats() {
+    public static StatsCP getCurrentStats() {
         //no thread tries to access the same key at the same time
         Long id = getCurrentThreadId();
         StatsCP stat = stats.get(id);
@@ -50,22 +50,9 @@ public class SudokuMetricsCP {
         }
     }
 
-    public static void doLoadStore(InstructionArray instructions) {
-        for (Enumeration instrs = instructions.elements(); instrs.hasMoreElements(); ) {
-            Instruction instr = (Instruction) instrs.nextElement();
-            int opcode = instr.getOpcode();
-            if (opcode == InstructionTable.getfield)
-                instr.addBefore("metrics/tools/SudokuMetricsCP", "loadField", "null");
-        }
-    }
-
-    public static void doInstr(Routine routine) {
-        routine.addBefore("metrics/tools/SudokuMetricsCP", "method", 1);
-    }
 
     public static void addInstrumentation(File in_file) {
         String filename = in_file.getName();
-
         if (filename.endsWith(".class")) {
             String in_filename = in_file.getAbsolutePath();
             ClassInfo ci = new ClassInfo(in_filename);
@@ -73,50 +60,17 @@ public class SudokuMetricsCP {
                 Routine routine = (Routine) e.nextElement();
                 InstructionArray instructions = routine.getInstructionArray();
                 doAlloc(instructions);
-                doLoadStore(instructions);
-                doInstr(routine);
             }
             ci.write(in_filename);
         }
     }
 
-    public static void saveStats() {
-        SolverArgumentParser parser = WebServer.getCurrentThreadBoard();
-        writeToFile(getCurrentStats(), parser);
-        //Thread is effectively finished after SolveSudoku and will not call more solver code
-        stats.remove(getCurrentThreadId());
-    }
 
-    public static void writeToFile(StatsCP stats, SolverArgumentParser parser) {
-        JSONObject object = stats.toJSON();
-        object.put("Board", MetricUtils.toJSON(parser));
-
-        String outputDir = "out";
-
-        String strat = parser.getSolverStrategy().toString();
-        String name = parser.getInputBoard();
-        String un = parser.getUn().toString();
-        name += "-" + strat + "-" + un + "-" + UUID.randomUUID().toString();
-
-        String path = outputDir + System.getProperty("file.separator") + name + ".json";
-        try (PrintWriter out = new PrintWriter(path)) {
-            out.println(object.toString());
-        } catch (FileNotFoundException e) {
-            System.out.println(e.getMessage());
-        }
-    }
-
-    public static void method(int foo) {
-        getCurrentStats().incrMethodCount();
-    }
 
     public static void allocNew(String foo) {
         getCurrentStats().incrNewCount();
     }
 
-    public static void loadField(String foo) {
-        getCurrentStats().incrFieldLoadCount();
-    }
 
     public static void main(String[] argv) {
         if (argv.length != 1) {

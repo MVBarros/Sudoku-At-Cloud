@@ -4,36 +4,37 @@ import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
+import metrics.tools.*;
 import org.json.JSONArray;
+import pt.ulisboa.tecnico.cnv.server.task.UploadBFSTask;
+import pt.ulisboa.tecnico.cnv.server.task.UploadCPStatsTask;
+import pt.ulisboa.tecnico.cnv.server.task.UploadDLXStatsTask;
 import pt.ulisboa.tecnico.cnv.solver.Solver;
 import pt.ulisboa.tecnico.cnv.solver.SolverArgumentParser;
 import pt.ulisboa.tecnico.cnv.solver.SolverFactory;
+import pt.ulisboa.tecnico.cnv.dynamo.DynamoFrontEnd;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.InetSocketAddress;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ConcurrentHashMap;
-
-
-import metrics.tools.SudokuMetricsBFS;
-import metrics.tools.SudokuMetricsCP;
-import metrics.tools.SudokuMetricsDLX;
 
 public class WebServer {
 
 	private static ConcurrentHashMap<String, SolverArgumentParser> boards = new ConcurrentHashMap<>();
 
+	/**One thread should be enough to upload request metrics*/
+	private static Executor metricsUploadExecutor = Executors.newSingleThreadExecutor();
+
 	public static void main(final String[] args) throws Exception {
 
-		//final HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 8000), 0);
+		//Create tables if they don't already exist
+		//TODO PUT THIS IN LOAD BALANCER/AUTO SCALER
+		DynamoFrontEnd.createTables();
 
 		final HttpServer server = HttpServer.create(new InetSocketAddress(8000), 0);
-
 
 
 		server.createContext("/sudoku", new MyHandler());
@@ -46,7 +47,7 @@ public class WebServer {
 		System.out.println(server.getAddress().toString());
 	}
 
-	public static String parseRequestBody(InputStream is) throws IOException {
+	private static String parseRequestBody(InputStream is) throws IOException {
         InputStreamReader isr =  new InputStreamReader(is,"utf-8");
         BufferedReader br = new BufferedReader(isr);
 
@@ -65,11 +66,11 @@ public class WebServer {
         return buf.toString();
     }
 
-	public static ConcurrentHashMap<String, SolverArgumentParser> getBoards() {
+	private static ConcurrentHashMap<String, SolverArgumentParser> getBoards() {
 		return boards;
 	}
 
-	public static String getCurrentThreadName() {
+	private static String getCurrentThreadName() {
 		return String.valueOf(Thread.currentThread().getId());
 	}
 
@@ -78,18 +79,21 @@ public class WebServer {
 		return boards.get(name);
 	}
 
-	public static void writeBack(SolverArgumentParser parser) {
+	private static void writeBack(SolverArgumentParser parser) {
 		SolverFactory.SolverType type = parser.getSolverStrategy();
 
 		switch (type) {
 			case BFS:
-				SudokuMetricsBFS.saveStats();
+				StatsBFS statsBFS = SudokuMetricsBFS.getCurrentStats();
+				metricsUploadExecutor.execute(new UploadBFSTask(parser, statsBFS));
 				break;
 			case CP:
-				SudokuMetricsCP.saveStats();
+				StatsCP statsCP = SudokuMetricsCP.getCurrentStats();
+				metricsUploadExecutor.execute(new UploadCPStatsTask(parser, statsCP));
 				break;
 			case DLX:
-				SudokuMetricsDLX.saveStats();
+				StatsDLX statsDLX = SudokuMetricsDLX.getCurrentStats();
+				metricsUploadExecutor.execute(new UploadDLXStatsTask(parser, statsDLX));
 				break;
 		}
 	}

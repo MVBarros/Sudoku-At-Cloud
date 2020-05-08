@@ -4,6 +4,4 @@ import org.json.JSONObject;
 
 public interface Stats {
 
-    JSONObject toJSON();
-
 }

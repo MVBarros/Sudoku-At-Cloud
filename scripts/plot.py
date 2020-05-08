@@ -5,9 +5,9 @@ import re
 numbers = re.compile(r'(\d+)')
 
 
-paths = ['./out/9x9/101/BFS/*.json', './out/9x9/101/CP/*.json', './out/9x9/101/DLX/*.json', './out/9x9/102/BFS/*.json', './out/9x9/102/CP/*.json', './out/9x9/102/DLX/*.json',\
-'./out/16x16/1-BFS/*.json', './out/16x16/1-CP/*.json', './out/16x16/1-DLX/*.json', './out/16x16/2-BFS/*.json', './out/16x16/2-CP/*.json', './out/16x16/2-DLX/*.json', \
-'./out/25x25/1-BFS/*.json', './out/25x25/1-CP/*.json', './out/25x25/1-DLX/*.json', './out/25x25/2-BFS/*.json', './out/25x25/2-CP/*.json', './out/25x25/2-DLX/*.json']
+paths = ['../docs/out/9x9/101/BFS/*.json', '../docs/out/9x9/101/CP/*.json', '../docs/out/9x9/101/DLX/*.json', '../docs/out/9x9/102/BFS/*.json', '../docs/out/9x9/102/CP/*.json', '../docs/out/9x9/102/DLX/*.json',\
+'../docs/out/16x16/1-BFS/*.json', '../docs/out/16x16/1-CP/*.json', '../docs/out/16x16/1-DLX/*.json', '../docs/out/16x16/2-BFS/*.json', '../docs/out/16x16/2-CP/*.json', '../docs/out/16x16/2-DLX/*.json', \
+'../docs/out/25x25/1-BFS/*.json', '../docs/out/25x25/1-CP/*.json', '../docs/out/25x25/1-DLX/*.json', '../docs/out/25x25/2-BFS/*.json', '../docs/out/25x25/2-CP/*.json', '../docs/out/25x25/2-DLX/*.json']
 
 titles = ['9x9-1-BFS', '9x9-1-CP', '9x9-1-DLX', '9x9-2-BFS', '9x9-2-CP', '9x9-2-DLX', \
 '16x16-1-BFS', '16x16-1-CP', '16x16-1-DLX', '16x16-2-BFS', '16x16-2-CP', '16x16-2-DLX', \
@@ -15,7 +15,7 @@ titles = ['9x9-1-BFS', '9x9-1-CP', '9x9-1-DLX', '9x9-2-BFS', '9x9-2-CP', '9x9-2-
 
 metric_keys = ['A New Array Count', "Instruction Count", "Store Count", "Field Store Count", "New Count", "Load Count", "New Array Count", "Basic Block Count", "Branch Count", "Method Count", "Multi New Array Count", "Field Load Count", "Stack Depth"]
 
-out_dir = "./graphics/"
+out_dir = "../docs/graphics/"
 
 strats = ['BFS', 'CP', 'DLX']
 
