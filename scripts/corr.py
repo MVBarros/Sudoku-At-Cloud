@@ -7,14 +7,14 @@ numbers = re.compile(r'(\d+)')
 
 
 paths = [ \
-'../docs/out/9x9/1-BFS/*.json', '../docs/out/9x9/1-CP/*.json', '../docs/out/9x9/1-DLX/*.json', \
-'../docs/out/9x9/2-BFS/*.json', '../docs/out/9x9/2-CP/*.json', '../docs/out/9x9/2-DLX/*.json',\
-'../docs/out/9x9/3-BFS/*.json', '../docs/out/9x9/3-CP/*.json', '../docs/out/9x9/3-DLX/*.json', \
-'../docs/out/16x16/1-BFS/*.json', '../docs/out/16x16/1-CP/*.json', '../docs/out/16x16/1-DLX/*.json', \
-'../docs/out/16x16/2-BFS/*.json', '../docs/out/16x16/2-CP/*.json', '../docs/out/16x16/2-DLX/*.json', \
-'../docs/out/16x16/3-BFS/*.json', '../docs/out/16x16/3-CP/*.json', '../docs/out/16x16/3-DLX/*.json', \
-'../docs/out/25x25/1-BFS/*.json', '../docs/out/25x25/1-CP/*.json', '../docs/out/25x25/1-DLX/*.json', \
-'../docs/out/25x25/2-BFS/*.json', '../docs/out/25x25/2-CP/*.json', '../docs/out/25x25/2-DLX/*.json' \
+'../docs/metric-results/9x9/1-BFS/*.json', '../docs/metric-results/9x9/1-CP/*.json', '../docs/metric-results/9x9/1-DLX/*.json', \
+'../docs/metric-results/9x9/2-BFS/*.json', '../docs/metric-results/9x9/2-CP/*.json', '../docs/metric-results/9x9/2-DLX/*.json',\
+'../docs/metric-results/9x9/3-BFS/*.json', '../docs/metric-results/9x9/3-CP/*.json', '../docs/metric-results/9x9/3-DLX/*.json', \
+'../docs/metric-results/16x16/1-BFS/*.json', '../docs/metric-results/16x16/1-CP/*.json', '../docs/metric-results/16x16/1-DLX/*.json', \
+'../docs/metric-results/16x16/2-BFS/*.json', '../docs/metric-results/16x16/2-CP/*.json', '../docs/metric-results/16x16/2-DLX/*.json', \
+'../docs/metric-results/16x16/3-BFS/*.json', '../docs/metric-results/16x16/3-CP/*.json', '../docs/metric-results/16x16/3-DLX/*.json', \
+'../docs/metric-results/25x25/1-BFS/*.json', '../docs/metric-results/25x25/1-CP/*.json', '../docs/metric-results/25x25/1-DLX/*.json', \
+'../docs/metric-results/25x25/2-BFS/*.json', '../docs/metric-results/25x25/2-CP/*.json', '../docs/metric-results/25x25/2-DLX/*.json' \
 ]
 
 metric_keys_bfs = ["Instruction Count", "Store Count", "Load Count", "Basic Block Count", "Branch Count", "Method Count", "Field Load Count", "Stack Depth"]

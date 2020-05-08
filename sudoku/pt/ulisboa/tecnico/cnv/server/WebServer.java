@@ -6,9 +6,7 @@ import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import metrics.tools.*;
 import org.json.JSONArray;
-import pt.ulisboa.tecnico.cnv.server.task.UploadBFSTask;
-import pt.ulisboa.tecnico.cnv.server.task.UploadCPStatsTask;
-import pt.ulisboa.tecnico.cnv.server.task.UploadDLXStatsTask;
+import pt.ulisboa.tecnico.cnv.server.task.UploadStatsTask;
 import pt.ulisboa.tecnico.cnv.solver.Solver;
 import pt.ulisboa.tecnico.cnv.solver.SolverArgumentParser;
 import pt.ulisboa.tecnico.cnv.solver.SolverFactory;
@@ -81,21 +79,23 @@ public class WebServer {
 
 	private static void writeBack(SolverArgumentParser parser) {
 		SolverFactory.SolverType type = parser.getSolverStrategy();
-
+		Stats stats;
 		switch (type) {
 			case BFS:
-				StatsBFS statsBFS = SudokuMetricsBFS.getCurrentStats();
-				metricsUploadExecutor.execute(new UploadBFSTask(parser, statsBFS));
+				stats = SudokuMetricsBFS.getCurrentStats();
 				break;
 			case CP:
-				StatsCP statsCP = SudokuMetricsCP.getCurrentStats();
-				metricsUploadExecutor.execute(new UploadCPStatsTask(parser, statsCP));
+				stats = SudokuMetricsCP.getCurrentStats();
 				break;
 			case DLX:
-				StatsDLX statsDLX = SudokuMetricsDLX.getCurrentStats();
-				metricsUploadExecutor.execute(new UploadDLXStatsTask(parser, statsDLX));
+				stats = SudokuMetricsDLX.getCurrentStats();
 				break;
+			default:
+				System.out.println("ERROR: Invalid Stats type found: " + type);
+				return;
 		}
+		metricsUploadExecutor.execute(new UploadStatsTask(parser, stats));
+
 	}
 
 	public static SolverArgumentParser getBoardForThread(String name) {

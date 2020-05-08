@@ -1,16 +1,9 @@
 package metrics.tools;
 
 import BIT.highBIT.*;
-import org.json.JSONObject;
-import pt.ulisboa.tecnico.cnv.server.MetricUtils;
-import pt.ulisboa.tecnico.cnv.server.WebServer;
-import pt.ulisboa.tecnico.cnv.solver.SolverArgumentParser;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
 import java.util.Enumeration;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class SudokuMetricsDLX {
@@ -65,7 +58,6 @@ public class SudokuMetricsDLX {
             ci.write(in_filename);
         }
     }
-
 
 
     public static void allocNewArray(String foo) {

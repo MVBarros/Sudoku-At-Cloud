@@ -1,0 +1,11 @@
+BFS:
+Instruction count = 196.60388922 * method_count - 41020.3661539
+coeficiente de determinação: 0.921468021115
+
+CP: 
+Instruction count = 294.42221265 * new_count - 1532.31767553
+coeficiente de determinação: 0.994199306092
+
+DLX: 
+Instruction count = 2608062.05699572 * new_array_count - 282459324.512
+coeficiente de determinação: 0.932150015206

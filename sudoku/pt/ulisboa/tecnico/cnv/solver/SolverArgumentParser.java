@@ -2,12 +2,8 @@ package pt.ulisboa.tecnico.cnv.solver;
 
 import org.apache.commons.cli.Option;
 import org.json.JSONArray;
-import org.json.JSONObject;
 import org.json.JSONException;
 import pt.ulisboa.tecnico.cnv.util.AbstractArgumentParser;
-import java.util.Collections;
-import java.util.Arrays;
-
 
 public class SolverArgumentParser extends AbstractArgumentParser {
     public enum SolverParameters {

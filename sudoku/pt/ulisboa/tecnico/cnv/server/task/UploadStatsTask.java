@@ -1,22 +1,22 @@
 package pt.ulisboa.tecnico.cnv.server.task;
 
-import metrics.tools.StatsDLX;
+import metrics.tools.Stats;
+import metrics.tools.StatsBFS;
 import pt.ulisboa.tecnico.cnv.dynamo.DynamoFrontEnd;
 import pt.ulisboa.tecnico.cnv.solver.SolverArgumentParser;
 
-public class UploadDLXStatsTask implements Runnable {
+public class UploadStatsTask implements Runnable {
 
-
-    private StatsDLX stats;
+    private Stats stats;
     private SolverArgumentParser parser;
 
-    public UploadDLXStatsTask(SolverArgumentParser parser, StatsDLX stats) {
+    public UploadStatsTask(SolverArgumentParser parser, Stats stats) {
         this.stats = stats;
         this.parser = parser;
     }
 
     @Override
     public void run() {
-        DynamoFrontEnd.uploadStatsDLX(parser, stats);
+        DynamoFrontEnd.uploadStats(parser, stats);
     }
 }

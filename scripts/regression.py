@@ -9,14 +9,14 @@ numbers = re.compile(r'(\d+)')
 
 
 paths = [ \
-'../docs/out/9x9/1-BFS/*.json', '../docs/out/9x9/1-CP/*.json', '../docs/out/9x9/1-DLX/*.json', \
-'../docs/out/9x9/2-BFS/*.json', '../docs/out/9x9/2-CP/*.json', '../docs/out/9x9/2-DLX/*.json',\
-'../docs/out/9x9/3-BFS/*.json', '../docs/out/9x9/3-CP/*.json', '../docs/out/9x9/3-DLX/*.json', \
-'../docs/out/16x16/1-BFS/*.json', '../docs/out/16x16/1-CP/*.json', '../docs/out/16x16/1-DLX/*.json', \
-'../docs/out/16x16/2-BFS/*.json', '../docs/out/16x16/2-CP/*.json', '../docs/out/16x16/2-DLX/*.json', \
-'../docs/out/16x16/3-BFS/*.json', '../docs/out/16x16/3-CP/*.json', '../docs/out/16x16/3-DLX/*.json', \
-'../docs/out/25x25/1-BFS/*.json', '../docs/out/25x25/1-CP/*.json', '../docs/out/25x25/1-DLX/*.json', \
-'../docs/out/25x25/2-BFS/*.json', '../docs/out/25x25/2-CP/*.json', '../docs/out/25x25/2-DLX/*.json' \
+'../docs/metric-results/9x9/1-BFS/*.json', '../docs/metric-results/9x9/1-CP/*.json', '../docs/metric-results/9x9/1-DLX/*.json', \
+'../docs/metric-results/9x9/2-BFS/*.json', '../docs/metric-results/9x9/2-CP/*.json', '../docs/metric-results/9x9/2-DLX/*.json',\
+'../docs/metric-results/9x9/3-BFS/*.json', '../docs/metric-results/9x9/3-CP/*.json', '../docs/metric-results/9x9/3-DLX/*.json', \
+'../docs/metric-results/16x16/1-BFS/*.json', '../docs/metric-results/16x16/1-CP/*.json', '../docs/metric-results/16x16/1-DLX/*.json', \
+'../docs/metric-results/16x16/2-BFS/*.json', '../docs/metric-results/16x16/2-CP/*.json', '../docs/metric-results/16x16/2-DLX/*.json', \
+'../docs/metric-results/16x16/3-BFS/*.json', '../docs/metric-results/16x16/3-CP/*.json', '../docs/metric-results/16x16/3-DLX/*.json', \
+'../docs/metric-results/25x25/1-BFS/*.json', '../docs/metric-results/25x25/1-CP/*.json', '../docs/metric-results/25x25/1-DLX/*.json', \
+'../docs/metric-results/25x25/2-BFS/*.json', '../docs/metric-results/25x25/2-CP/*.json', '../docs/metric-results/25x25/2-DLX/*.json' \
 ]
 
 strats = ['BFS', 'CP', 'DLX']
@@ -64,7 +64,7 @@ for strat in strats:
     print("\n")
 
     for i in range(2, 10):
-        print(f"Polinomial linear regression degree {i}.")
+        print(f"Polinomial linear regression degree {i}")
         transformer = PolynomialFeatures(degree=i, include_bias=False)
         transformer.fit(x)
         x_ = transformer.transform(x)

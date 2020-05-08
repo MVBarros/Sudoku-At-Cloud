@@ -1,16 +1,9 @@
 package metrics.tools;
 
 import BIT.highBIT.*;
-import org.json.JSONObject;
-import pt.ulisboa.tecnico.cnv.server.MetricUtils;
-import pt.ulisboa.tecnico.cnv.server.WebServer;
-import pt.ulisboa.tecnico.cnv.solver.SolverArgumentParser;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
 import java.util.Enumeration;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class SudokuMetricsCP {
@@ -44,7 +37,7 @@ public class SudokuMetricsCP {
         for (Enumeration instrs = instructions.elements(); instrs.hasMoreElements(); ) {
             Instruction instr = (Instruction) instrs.nextElement();
             int opcode = instr.getOpcode();
-            if(opcode == InstructionTable.NEW){
+            if (opcode == InstructionTable.NEW) {
                 instr.addBefore("metrics/tools/SudokuMetricsCP", "allocNew", "null");
             }
         }
@@ -64,7 +57,6 @@ public class SudokuMetricsCP {
             ci.write(in_filename);
         }
     }
-
 
 
     public static void allocNew(String foo) {
