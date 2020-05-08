@@ -2,6 +2,8 @@ import glob
 import json
 import numpy as np
 import re
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import PolynomialFeatures
 
 numbers = re.compile(r'(\d+)')
 
@@ -17,14 +19,8 @@ paths = [ \
 '../docs/out/25x25/2-BFS/*.json', '../docs/out/25x25/2-CP/*.json', '../docs/out/25x25/2-DLX/*.json' \
 ]
 
-metric_keys_bfs = ["Instruction Count", "Store Count", "Load Count", "Basic Block Count", "Branch Count", "Method Count", "Field Load Count", "Stack Depth"]
-metric_keys_cp = ["Instruction Count", "Store Count", "New Count", "Load Count", "Basic Block Count", "Branch Count", "Method Count", "Field Load Count", "Stack Depth"]
-metric_keys_dlx = ["Instruction Count", "Store Count", "Field Store Count", "New Count", "Load Count", "New Array Count", "Basic Block Count", "Branch Count", "Method Count", "Field Load Count", "Stack Depth"]
-
 strats = ['BFS', 'CP', 'DLX']
-
-metric_keys = {'BFS' : metric_keys_bfs, 'CP' : metric_keys_cp, 'DLX' : metric_keys_dlx}
-
+metrics = {'BFS' : "Method Count", 'CP' : "New Count", 'DLX' : "New Array Count"}
 
 def numericalSort(value):
     parts = numbers.split(value)
@@ -34,26 +30,48 @@ def numericalSort(value):
 
 
 
-def getMetricsForStrat(strat, metric):
-    ret = list()
+def getMetricsForStrat(strat):
+    ret = [[], []]
+    metric = metrics[strat]
     curr_paths = [s for s in paths if strat in s]
     for path in curr_paths:
         for filename in sorted(glob.iglob(path), key=numericalSort):
             with open(filename, 'r') as f:
                 items = json.load(f)
                 ret.append(items[metric])
+                if (strat == "DLX"):
+                    ret[0].append(items[metric])
+                else:
+                    ret[0].append(items[metric])
+                ret[1].append(items["Instruction Count"])
     return ret
 
 
 for strat in strats:
     print("\n\nStrategy : " + strat + "\n\n")
+    a = getMetricsForStrat(strat)
+    print(a)
+    x = np.array(a[0]).reshape((-1, 1))    
+    y = np.array(a[1])
+    print("Simple linear regression")
 
-    a = []
-    for metric in metric_keys[strat]:
-        a.append(getMetricsForStrat(strat, metric))
-    corr = np.corrcoef(a)
-    baseline = metric_keys[strat][0]
-    e = 0
-    for metric in metric_keys[strat]:
-        print("Correlation between [ " + baseline + " ] and [ " + metric + " ] : { " + str(corr[0,e]) + " }")
-        e += 1
+    model = LinearRegression()
+    model.fit(x, y)
+    r_sq = model.score(x, y)
+    print('coefficient of determination:', r_sq)
+    print('intercept:', model.intercept_)
+    print('slope:', model.coef_)
+    print("\n")
+
+    for i in range(2, 10):
+        print(f"Polinomial linear regression degree {i}.")
+        transformer = PolynomialFeatures(degree=i, include_bias=False)
+        transformer.fit(x)
+        x_ = transformer.transform(x)
+        model = LinearRegression().fit(x_, y)
+        r_sq = model.score(x_, y)
+        print('coefficient of determination:', r_sq)
+        print('intercept:', model.intercept_)
+        print('slope:', model.coef_)
+        print("\n")
+        
