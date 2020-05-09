@@ -82,7 +82,7 @@ public class WebServer {
         return boards.get(name);
     }
 
-    private static void writeBack(SolverArgumentParser parser, String query) {
+    private static void writeBack(SolverArgumentParser parser) {
         SolverFactory.SolverType type = parser.getSolverStrategy();
         Stats stats;
         switch (type) {
@@ -99,7 +99,7 @@ public class WebServer {
                 System.out.println("ERROR: Invalid Stats type found: " + type);
                 return;
         }
-        metricsUploadExecutor.execute(new UploadStatsTask(parser, stats, query));
+        metricsUploadExecutor.execute(new UploadStatsTask(parser, stats));
 
     }
 
@@ -154,7 +154,7 @@ public class WebServer {
             //Solve sudoku puzzle
             JSONArray solution = s.solveSudoku();
 
-            writeBack(getCurrentThreadBoard(), query);
+            writeBack(getCurrentThreadBoard());
             // Send response to browser.
             final Headers hdrs = t.getResponseHeaders();
 

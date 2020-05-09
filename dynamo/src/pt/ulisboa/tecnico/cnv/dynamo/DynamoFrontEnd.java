@@ -18,7 +18,8 @@ import java.util.Map;
 public class DynamoFrontEnd {
     private static final String REGION = "us-east-1";
     private static final String KEY_REQUEST_PRIMARY_KEY = "RequestQuery";
-    private static final String KEY_BOARD_SIZE = "BoardSize";
+    private static final String KEY_BOARD_SIZE_N1 = "BoardSizeN1";
+    private static final String KEY_BOARD_SIZE_N2 = "BoardSizeN2";
     private static final String KEY_UNASSIGNED_ENTRIES = "UnassignedEntries";
     private static final String KEY_BOARD_IDENTIFIER = "BoardIdentifier";
     private static final String KEY_REQUEST_COST = "RequestCost";
@@ -59,10 +60,12 @@ public class DynamoFrontEnd {
         }
     }
 
-    public static void uploadStats(SolverArgumentParser parser, Stats stats, String query) {
+    public static void uploadStats(SolverArgumentParser parser, Stats stats) {
         Map<String, AttributeValue> item = new HashMap<>();
-        item.put(KEY_REQUEST_PRIMARY_KEY, new AttributeValue(query));
-        item.put(KEY_BOARD_SIZE, new AttributeValue().withN(Integer.toString(parser.getN1())));
+        String key = getKey(parser);
+        item.put(KEY_REQUEST_PRIMARY_KEY, new AttributeValue(key));
+        item.put(KEY_BOARD_SIZE_N1, new AttributeValue().withN(Integer.toString(parser.getN1())));
+        item.put(KEY_BOARD_SIZE_N2, new AttributeValue().withN(Integer.toString(parser.getN2())));
         item.put(KEY_BOARD_IDENTIFIER, new AttributeValue(parser.getInputBoard()));
         item.put(KEY_UNASSIGNED_ENTRIES, new AttributeValue().withN(Integer.toString(parser.getUn())));
         item.put(KEY_REQUEST_COST, new AttributeValue().withN(Long.toString(stats.getCost())));
@@ -72,7 +75,7 @@ public class DynamoFrontEnd {
             dynamoDB.putItem(putItemRequest);
         } catch (ConditionalCheckFailedException e) {
             //Item with that key already exists
-            System.out.println("Key already existed: " + query);
+            System.out.println("Key already existed: " + key);
         }
     }
 
@@ -83,6 +86,10 @@ public class DynamoFrontEnd {
                 .withProvisionedThroughput(new ProvisionedThroughput().withReadCapacityUnits(1L).withWriteCapacityUnits(1L));
 
         TableUtils.createTableIfNotExists(dynamoDB, createTableRequest);
+    }
+
+    private static String getKey(SolverArgumentParser parser) {
+        return String.format("N1:%d&N2:%d&UN:%d&BOARD:%s", parser.getN1(), parser.getN2(), parser.getUn(), parser.getInputBoard());
     }
 
     //Prevent utility class initialization
