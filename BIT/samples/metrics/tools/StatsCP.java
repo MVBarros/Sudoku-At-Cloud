@@ -20,4 +20,5 @@ public class StatsCP implements Stats {
     public String getTableName() {
         return CP_TABLE_NAME;
     }
+
 }

@@ -25,6 +25,10 @@ public class SudokuMetricsDLX {
         return stat;
     }
 
+    public static StatsDLX getAndRemoveCurrentStats() {
+        return stats.remove(getCurrentThreadId());
+    }
+
     public static void printUsage() {
         System.out.println("Syntax: java SudokuMetricsTool in_path ");
         System.out.println();

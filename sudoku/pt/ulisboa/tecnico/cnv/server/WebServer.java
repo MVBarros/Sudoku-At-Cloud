@@ -87,13 +87,13 @@ public class WebServer {
         Stats stats;
         switch (type) {
             case BFS:
-                stats = SudokuMetricsBFS.getCurrentStats();
+                stats = SudokuMetricsBFS.getAndRemoveCurrentStats();
                 break;
             case CP:
-                stats = SudokuMetricsCP.getCurrentStats();
+                stats = SudokuMetricsCP.getAndRemoveCurrentStats();
                 break;
             case DLX:
-                stats = SudokuMetricsDLX.getCurrentStats();
+                stats = SudokuMetricsDLX.getAndRemoveCurrentStats();
                 break;
             default:
                 System.out.println("ERROR: Invalid Stats type found: " + type);

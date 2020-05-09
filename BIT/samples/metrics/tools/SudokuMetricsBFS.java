@@ -26,6 +26,10 @@ public class SudokuMetricsBFS {
         return stat;
     }
 
+    public static StatsBFS getAndRemoveCurrentStats() {
+        return stats.remove(getCurrentThreadId());
+    }
+
     public static void printUsage() {
         System.out.println("Syntax: java SudokuMetricsBFS in_file ");
         System.out.println();

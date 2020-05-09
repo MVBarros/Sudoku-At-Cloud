@@ -25,6 +25,10 @@ public class SudokuMetricsCP {
         return stat;
     }
 
+    public static StatsCP getAndRemoveCurrentStats() {
+        return stats.remove(getCurrentThreadId());
+    }
+
     public static void printUsage() {
         System.out.println("Syntax: java SudokuMetricsCP in_path ");
         System.out.println();
