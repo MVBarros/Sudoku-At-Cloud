@@ -22,14 +22,12 @@ public class Instance {
 
     private final URL address;
     private final URL LBAddress;
-    private final URL sudokuAddress;
 
     private final Set<SudokuRequest> requests;
 
     public Instance(String address) throws MalformedURLException {
         this.address = new URL(address);
         this.LBAddress = new URL(address + LB_HANDLER);
-        this.sudokuAddress = new URL(address + SUDOKU_HANDLER);
         this.requests = Collections.synchronizedSet(new HashSet<SudokuRequest>());
     }
 
