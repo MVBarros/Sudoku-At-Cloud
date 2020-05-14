@@ -4,7 +4,6 @@ import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import pt.ulisboa.tecnico.cnv.dynamo.DynamoFrontEnd;
 import pt.ulisboa.tecnico.cnv.loadbalancer.instance.Instance;
-import pt.ulisboa.tecnico.cnv.loadbalancer.instance.InstanceManager;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -32,9 +31,6 @@ public class SudokuRequest {
         return cost;
     }
 
-    public HttpExchange getHttpExchange() {
-        return httpExchange;
-    }
 
     /**
      * Sends Sudoku Request to instance on the other side of @conn

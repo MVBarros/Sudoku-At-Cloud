@@ -80,7 +80,6 @@ public class Instance {
             URL sudokuAddress = new URL(sudokuPath(parameters));
             conn = (HttpURLConnection) sudokuAddress.openConnection();
             conn.setRequestMethod(SUDOKU_REQUEST_METHOD);
-            //conn.connect();
             return conn;
         } catch (Exception e) {
             return null;
