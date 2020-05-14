@@ -15,6 +15,7 @@ public class Main {
 
         final HttpServer server = HttpServer.create(new InetSocketAddress(PORT), 0);
         server.createContext("/newInstance", new NewInstanceHandler());
+        server.createContext("/sudoku", new SudokuHandler());
         server.setExecutor(Executors.newCachedThreadPool());
         server.start();
 

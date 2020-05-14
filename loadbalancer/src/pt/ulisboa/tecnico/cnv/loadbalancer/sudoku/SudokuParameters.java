@@ -11,6 +11,10 @@ public class SudokuParameters {
         Strategy(String strategy) {
             this.strategy = strategy;
         }
+
+        public String getStrategy() {
+            return strategy;
+        }
     }
 
     private final int n1;
@@ -55,6 +59,11 @@ public class SudokuParameters {
 
     public static SudokuParametersBuilder newBuilder() {
         return new SudokuParametersBuilder();
+    }
+
+    @Override
+    public String toString() {
+        return String.format("s=%s&un=%d&n1=%d&n2=%d&i=%s", getStrategy().name(), getUn(), getN1(), getN2(), getInputBoard());
     }
 }
 
