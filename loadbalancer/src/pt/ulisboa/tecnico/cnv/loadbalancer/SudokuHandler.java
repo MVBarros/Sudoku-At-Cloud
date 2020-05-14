@@ -2,8 +2,10 @@ package pt.ulisboa.tecnico.cnv.loadbalancer;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import pt.ulisboa.tecnico.cnv.loadbalancer.instance.InstanceManager;
 import pt.ulisboa.tecnico.cnv.loadbalancer.sudoku.SudokuParameters;
 import pt.ulisboa.tecnico.cnv.loadbalancer.sudoku.SudokuParametersBuilder;
+import pt.ulisboa.tecnico.cnv.loadbalancer.sudoku.SudokuRequest;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -21,13 +23,13 @@ public class SudokuHandler implements HttpHandler {
     @Override
     public void handle(HttpExchange t) throws IOException {
         final String query = t.getRequestURI().getQuery();
-        System.out.println("> Health Check Query:\t" + query);
+        System.out.println("> Sudoku Query:\t" + query);
         String body = parseRequestBody(t.getRequestBody());
+
         SudokuParameters parameters = parseRequest(query, body);
+        SudokuRequest request = new SudokuRequest(parameters, t);
 
-        System.out.println("Parameters: " + parameters);
-        System.out.println("Board: " + parameters.getPuzzleBoard());
-
+        InstanceManager.getInstance().sendRequest(request);
     }
 
 

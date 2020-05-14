@@ -10,9 +10,11 @@ import metrics.tools.Stats;
 import metrics.tools.StatsBFS;
 import metrics.tools.StatsCP;
 import metrics.tools.StatsDLX;
+import pt.ulisboa.tecnico.cnv.loadbalancer.sudoku.SudokuParameters;
 import pt.ulisboa.tecnico.cnv.solver.SolverArgumentParser;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class DynamoFrontEnd {
@@ -79,6 +81,22 @@ public class DynamoFrontEnd {
         }
     }
 
+    //FIXME Do the full getCost, this for now is just for testing
+    public static long getCost(SudokuParameters parameters) {
+        String key = getKey(parameters);
+        HashMap<String, Condition> scanFilter = new HashMap<>();
+        Condition condition = new Condition()
+                .withComparisonOperator(ComparisonOperator.EQ.toString())
+                .withAttributeValueList(new AttributeValue(key));
+        scanFilter.put(KEY_REQUEST_PRIMARY_KEY, condition);
+        ScanRequest scanRequest = new ScanRequest(parameters.getTableName()).withScanFilter(scanFilter);
+        ScanResult scanResult = dynamoDB.scan(scanRequest);
+        List<Map<String, AttributeValue>> items = scanResult.getItems();
+        Map<String, AttributeValue> item = items.get(0);
+        return Long.parseLong(item.get(KEY_REQUEST_COST).getN());
+    }
+
+
     private static void createStatsTable(String name) {
         CreateTableRequest createTableRequest = new CreateTableRequest().withTableName(name)
                 .withKeySchema(new KeySchemaElement().withAttributeName(KEY_REQUEST_PRIMARY_KEY).withKeyType(KeyType.HASH))
@@ -90,6 +108,11 @@ public class DynamoFrontEnd {
 
     private static String getKey(SolverArgumentParser parser) {
         return String.format("N1:%d&N2:%d&UN:%d&BOARD:%s", parser.getN1(), parser.getN2(), parser.getUn(), parser.getInputBoard());
+    }
+
+
+    private static String getKey(SudokuParameters parameters) {
+        return String.format("N1:%d&N2:%d&UN:%d&BOARD:%s", parameters.getN1(), parameters.getN2(), parameters.getUn(), parameters.getInputBoard());
     }
 
     //Prevent utility class initialization

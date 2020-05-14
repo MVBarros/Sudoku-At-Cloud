@@ -1,7 +1,10 @@
 package pt.ulisboa.tecnico.cnv.loadbalancer.instance;
 
+import pt.ulisboa.tecnico.cnv.loadbalancer.sudoku.SudokuRequest;
 import pt.ulisboa.tecnico.cnv.loadbalancer.task.HealthCheckTask;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -35,6 +38,32 @@ public class InstanceManager {
     }
 
     public void removeInstance(String address) {
-        instances.remove(address);
+       instances.remove(address);
+        //FIXME send requests that were on that instance to other servers
+
+    }
+
+    public void sendRequest(SudokuRequest request) {
+        Instance instance;
+        synchronized (instances) {
+            instance = getBestInstance();
+            request.setInstance(instance);
+        }
+
+        HttpURLConnection connection = instance.getSudokuRequestConn(request.getParameters());
+        request.sendRequest(connection);
+    }
+
+    //FIXME ask if we can assume at least one instance at a time
+    private Instance getBestInstance() {
+        synchronized (instances) {
+            Instance bestInstance = null;
+            for (Instance instance : instances.values()) {
+                if (bestInstance == null || bestInstance.getLoad() > instance.getLoad()) {
+                    bestInstance = instance;
+                }
+            }
+            return bestInstance;
+        }
     }
 }

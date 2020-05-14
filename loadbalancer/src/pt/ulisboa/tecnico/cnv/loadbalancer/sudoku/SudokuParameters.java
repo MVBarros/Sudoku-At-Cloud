@@ -1,5 +1,9 @@
 package pt.ulisboa.tecnico.cnv.loadbalancer.sudoku;
 
+import metrics.tools.StatsBFS;
+import metrics.tools.StatsCP;
+import metrics.tools.StatsDLX;
+
 public class SudokuParameters {
     enum Strategy {
         BFS("BFS"),
@@ -64,6 +68,19 @@ public class SudokuParameters {
     @Override
     public String toString() {
         return String.format("s=%s&un=%d&n1=%d&n2=%d&i=%s", getStrategy().name(), getUn(), getN1(), getN2(), getInputBoard());
+    }
+
+    public String getTableName() {
+        switch (strategy) {
+            case BFS:
+                return StatsBFS.BFS_TABLE_NAME;
+            case CP:
+                return StatsCP.CP_TABLE_NAME;
+            case DLX:
+                return StatsDLX.DLX_TABLE_NAME;
+        }
+        //Should never reach here, but just in case assume BFS
+        return StatsBFS.BFS_TABLE_NAME;
     }
 }
 
