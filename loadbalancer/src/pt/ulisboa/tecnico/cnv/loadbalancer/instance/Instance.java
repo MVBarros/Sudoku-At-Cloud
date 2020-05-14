@@ -63,6 +63,7 @@ public class Instance {
         }
     }
 
+    //FIXME Take into account time expiring
     public long getLoad() {
         long load = 0;
         synchronized (requests) {
@@ -88,5 +89,9 @@ public class Instance {
 
     private String sudokuPath(SudokuParameters parameters) {
         return address.toString() + SUDOKU_HANDLER + "?" + parameters.toString();
+    }
+
+    public Set<SudokuRequest> getRequests() {
+        return requests;
     }
 }

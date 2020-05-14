@@ -38,9 +38,12 @@ public class InstanceManager {
     }
 
     public void removeInstance(String address) {
-       instances.remove(address);
-        //FIXME send requests that were on that instance to other servers
-
+       Instance instance = instances.remove(address);
+        if (instance != null) {
+            for (SudokuRequest request: instance.getRequests()) {
+                sendRequest(request);
+            }
+        }
     }
 
     public void sendRequest(SudokuRequest request) {

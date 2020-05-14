@@ -54,12 +54,13 @@ public class SudokuRequest {
             int status = conn.getResponseCode();
             if (status == SUDOKU_REQUEST_SUCCESS) {
                 forwardReply(conn);
+            } else {
+                //When the health check fails the request will be sent to another machine so can just return
+                conn.disconnect();
             }
         } catch (IOException e) {
             //Try and send to a new instance immediately
             conn.disconnect();
-            instance.removeRequest(this);
-            InstanceManager.getInstance().sendRequest(this);
         }
     }
 
