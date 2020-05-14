@@ -41,6 +41,8 @@ public class SudokuRequest {
      */
     public void sendRequest(HttpURLConnection conn) {
         try {
+            conn.setRequestProperty("Content-Type", "application/json");
+
             conn.setDoOutput(true);
 
             //Write body
@@ -48,8 +50,6 @@ public class SudokuRequest {
             out.writeBytes(this.parameters.getPuzzleBoard());
             out.flush();
             out.close();
-
-            conn.setRequestProperty("Content-Type", "application/json");
 
             int status = conn.getResponseCode();
             if (status == SUDOKU_REQUEST_SUCCESS) {
@@ -60,7 +60,6 @@ public class SudokuRequest {
             conn.disconnect();
             instance.removeRequest(this);
             InstanceManager.getInstance().sendRequest(this);
-
         }
     }
 
