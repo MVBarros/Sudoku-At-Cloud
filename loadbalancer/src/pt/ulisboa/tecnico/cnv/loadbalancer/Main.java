@@ -2,6 +2,7 @@ package pt.ulisboa.tecnico.cnv.loadbalancer;
 
 import com.sun.net.httpserver.HttpServer;
 import pt.ulisboa.tecnico.cnv.dynamo.DynamoFrontEnd;
+import pt.ulisboa.tecnico.cnv.loadbalancer.sudoku.SudokuParameters;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
