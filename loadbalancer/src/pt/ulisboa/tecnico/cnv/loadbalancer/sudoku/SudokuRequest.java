@@ -68,28 +68,33 @@ public class SudokuRequest {
      * Forward sudoku reply from @conn to client that made the request
      */
     public void forwardReply(HttpURLConnection conn) throws IOException {
-        String reply = getReply(conn);
+        try {
+            String reply = getReply(conn);
 
-        //Send headers
-        final Headers headers = this.httpExchange.getResponseHeaders();
-        headers.add("Content-Type", "application/json");
-        headers.add("Access-Control-Allow-Origin", "*");
-        headers.add("Access-Control-Allow-Credentials", "true");
-        headers.add("Access-Control-Allow-Methods", "POST, GET, HEAD, OPTIONS");
-        headers.add("Access-Control-Allow-Headers", "Origin, Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers");
-        this.httpExchange.sendResponseHeaders(200, reply.length());
+            //Send headers
+            final Headers headers = this.httpExchange.getResponseHeaders();
+            headers.add("Content-Type", "application/json");
+            headers.add("Access-Control-Allow-Origin", "*");
+            headers.add("Access-Control-Allow-Credentials", "true");
+            headers.add("Access-Control-Allow-Methods", "POST, GET, HEAD, OPTIONS");
+            headers.add("Access-Control-Allow-Headers", "Origin, Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers");
+            this.httpExchange.sendResponseHeaders(200, reply.length());
 
-        //Send content
-        final OutputStream os = httpExchange.getResponseBody();
-        OutputStreamWriter out = new OutputStreamWriter(os, "UTF-8");
-        out.write(reply);
-        out.flush();
-        out.close();
-        os.close();
+            //Send content
+            final OutputStream os = httpExchange.getResponseBody();
+            OutputStreamWriter out = new OutputStreamWriter(os, "UTF-8");
+            out.write(reply);
+            out.flush();
+            out.close();
+            os.close();
 
-        System.out.println("Sent sudoku response to " + this.httpExchange.getRemoteAddress().toString());
-        this.instance.removeRequest(this);
-        conn.disconnect();
+            System.out.println("Sent sudoku response to " + this.httpExchange.getRemoteAddress().toString());
+
+        } finally {
+            conn.disconnect();
+            System.out.println("Instance finished request: " + instance);
+            this.instance.removeRequest(this);
+        }
     }
 
     private String getReply(HttpURLConnection conn) throws IOException {
