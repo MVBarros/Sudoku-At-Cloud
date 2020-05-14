@@ -1,88 +1,37 @@
 package pt.ulisboa.tecnico.cnv.loadbalancer.task;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
+import pt.ulisboa.tecnico.cnv.loadbalancer.instance.Instance;
+import pt.ulisboa.tecnico.cnv.loadbalancer.instance.InstanceManager;
+
 
 public class HealthCheckTask implements Runnable {
-    private static final int TIMEOUT = 5000; //5 seconds
     private static final int INTERVAL = 10000; //10 seconds
-    private static final int UNEALTHY_THRESHOLD = 3; //3 timeouts before declaring instance as dead
-    private static final String LB_HANDLER = "/lb";
-    private static final String REQUEST_METHOD = "GET";
-    private static final String REQUEST_PROTOCOL = "http://";
-    private static final int SUCCESS_CODE = 200;
+    //private static final int GRACE_PERIOD = 30000; //30 seconds
+    private static final int UNHEALTHY_THRESHOLD = 3; //3 timeouts before declaring instance as dead
 
-    private final String addr;
+
+    private final Instance instance;
     private int failureCounter;
-    private URL url;
-    private boolean running;
-    public HealthCheckTask(String addr) throws MalformedURLException {
-        this.addr = REQUEST_PROTOCOL + addr + LB_HANDLER;
+
+    public HealthCheckTask(Instance instance) {
+        this.instance = instance;
         this.failureCounter = 0;
-        this.url = new URL(this.addr);
-        this.running = true;
     }
 
     @Override
     public void run() {
         while (true) {
-            HttpURLConnection conn = null;
             try {
-                if (!running) {
+                failureCounter = instance.healthCheck() ? 0 : failureCounter + 1;
+                if (failureCounter == UNHEALTHY_THRESHOLD) {
+                    System.out.println("Instance " + instance.getAddress() + " has been marked dead");
+                    InstanceManager.getInstance().removeInstance(instance.getAddress());
                     return;
                 }
-                try {
-                    Thread.sleep(INTERVAL);
-                } catch (InterruptedException e) {
-                    System.out.println("Error: Health check thread for address " + addr + " was sleeping and was interrupted");
-                }
-
-                conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestMethod(REQUEST_METHOD);
-                conn.setReadTimeout(TIMEOUT);
-                conn.setConnectTimeout(TIMEOUT);
-                conn.connect();
-            } catch (IOException e) {
-                System.out.println("Could not connect to url " + addr + " got error: " + e.getMessage());
-                healthCheckFailure(conn);
-                if (conn != null) {
-                    conn.disconnect();
-                }
-                continue;
+                Thread.sleep(INTERVAL);
+            } catch (InterruptedException e) {
+                System.out.println("Error: health check thread for instance " + instance.getAddress() + " was interrupted");
             }
-            try {
-                int status = conn.getResponseCode();
-                if (status == SUCCESS_CODE) {
-                    healthCheckSuccess();
-                } else {
-                    healthCheckFailure(conn);
-                }
-            } catch (IOException e) {
-                System.out.println("Error sending request to url " + addr + "\nError message: " + e.getMessage());
-                healthCheckFailure(conn);
-            }
-
-            conn.disconnect();
-        }
-    }
-
-    private void healthCheckSuccess() {
-        failureCounter = 0;
-        System.out.println("Success sending health check to addr " + addr);
-    }
-
-
-    private void healthCheckFailure(HttpURLConnection conn) {
-        failureCounter++;
-        System.out.println("Failure sending health check to addr " + addr + "\nCurrent counter: " + failureCounter);
-        if (failureCounter == UNEALTHY_THRESHOLD) {
-            System.out.println("Address is dead: " + addr);
-            if (conn != null) {
-                conn.disconnect();
-            }
-            running = false;
         }
     }
 }
