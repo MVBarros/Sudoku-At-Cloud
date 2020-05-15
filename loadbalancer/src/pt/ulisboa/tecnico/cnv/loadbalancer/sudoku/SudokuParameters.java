@@ -107,7 +107,7 @@ public class SudokuParameters {
                     sendBody(reply);
                     System.out.println("Request finished: " + this.toString());
                 } catch (IOException e) {
-                    System.out.println("client disconnected");
+                    System.out.println("client disconnected for request " + this.toString());
                 } finally {
                     this.answered = true;
                 }
