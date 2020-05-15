@@ -5,10 +5,7 @@ import pt.ulisboa.tecnico.cnv.loadbalancer.task.HealthCheckTask;
 
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -19,6 +16,7 @@ public class InstanceManager {
     private final Map<String, Instance> instances = new ConcurrentHashMap<>();
     private final Executor healthCheckExecutor = Executors.newCachedThreadPool();
     private final List<SudokuRequest> requestQueue = Collections.synchronizedList(new ArrayList<SudokuRequest>());
+
     private InstanceManager() {
     }
 
@@ -27,6 +25,14 @@ public class InstanceManager {
             instance = new InstanceManager();
         }
         return instance;
+    }
+
+    public long getTotalLoad() {
+        long totalLoad = 0;
+        for(Instance instance : instances.values()){
+            totalLoad += instance.getLoad();
+        }
+        return totalLoad;
     }
 
     public void addInstance(String address, String id) throws MalformedURLException {
@@ -91,5 +97,10 @@ public class InstanceManager {
             }
             return bestInstance;
         }
+    }
+
+    public String getInstanceToRemove() {
+        //TODO - Make actual selection of instance to remove
+        return instances.values().iterator().next().getId();
     }
 }
