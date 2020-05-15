@@ -34,9 +34,10 @@ public class DynamoFrontEnd {
     private static final long TABLE_READ_CAPACITY = 5;
     private static final long TABLE_WRITE_CAPACITY = 5;
 
-    private static final double BFS_N1_SLOPE =  -298.2783986;
-    private static final double BFS_N2_SLOPE =  -298.2783986;
-    private static final double BFS_UN_SLOPE = 927.19685145;;
+    private static final double BFS_N1_SLOPE = -298.2783986;
+    private static final double BFS_N2_SLOPE = -298.2783986;
+    private static final double BFS_UN_SLOPE = 927.19685145;
+    ;
     private static final double CP_N1_SLOPE = -1905.43807419;
     private static final double CP_N2_SLOPE = -1905.43807419;
     private static final double CP_UN_SLOPE = 1641.30725146;
@@ -194,15 +195,15 @@ public class DynamoFrontEnd {
     }
 
     private static long unknownFixedCostBFS(SudokuParameters parameters) {
-        return (long)  Math.abs(BFS_N1_SLOPE * parameters.getN1() + BFS_N2_SLOPE * parameters.getN2() + BFS_UN_SLOPE * parameters.getUn());
+        return (long) Math.abs(BFS_N1_SLOPE * parameters.getN1() + BFS_N2_SLOPE * parameters.getN2() + BFS_UN_SLOPE * parameters.getUn());
     }
 
     private static long unknownFixedCostCP(SudokuParameters parameters) {
-        return (long)  Math.abs(CP_N1_SLOPE * parameters.getN1() + CP_N2_SLOPE * parameters.getN2() + CP_UN_SLOPE * parameters.getUn());
+        return (long) Math.abs(CP_N1_SLOPE * parameters.getN1() + CP_N2_SLOPE * parameters.getN2() + CP_UN_SLOPE * parameters.getUn());
     }
 
     private static long unknownFixedCostDLX(SudokuParameters parameters) {
-        return (long)  Math.abs(DLX_N1_SLOPE * parameters.getN1() + DLX_N2_SLOPE * parameters.getN2() + DLX_UN_SLOPE * parameters.getUn());
+        return (long) Math.abs(DLX_N1_SLOPE * parameters.getN1() + DLX_N2_SLOPE * parameters.getN2() + DLX_UN_SLOPE * parameters.getUn());
     }
 
     /**
