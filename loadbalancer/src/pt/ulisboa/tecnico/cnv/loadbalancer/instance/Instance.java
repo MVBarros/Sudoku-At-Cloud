@@ -103,6 +103,9 @@ public class Instance {
                 newState = state;
             }
         }
+        if (newState != null) {
+            System.out.println("Instance " + id + " is in state " + newState.name());
+        }
         if (newState == InstanceState.HEALTHY) {
             //Wake threads waiting for instance has a new one has just appeared
             InstanceManager.repeatWaitingRequests();

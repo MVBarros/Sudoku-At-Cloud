@@ -24,7 +24,7 @@ public class SudokuRequest implements Runnable {
 
     public SudokuRequest(SudokuParameters parameters, Instance instance) {
         this.parameters = parameters;
-        this.cost = DynamoFrontEnd.inferCost(parameters);
+        this.cost = parameters.getCost();
         this.minCost = (long) (cost * MIN_COST_SCALE);
         System.out.println("Inferred cost for parameters " + parameters + " --> " + this.cost);
         this.instance = instance;

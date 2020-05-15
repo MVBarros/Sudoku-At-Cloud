@@ -5,9 +5,11 @@ import com.sun.net.httpserver.HttpExchange;
 import metrics.tools.StatsBFS;
 import metrics.tools.StatsCP;
 import metrics.tools.StatsDLX;
+import pt.ulisboa.tecnico.cnv.dynamo.DynamoFrontEnd;
 
-import java.io.*;
-import java.net.HttpURLConnection;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 
 
@@ -21,6 +23,7 @@ public class SudokuParameters {
     private final int n1;
     private final int n2;
     private final int un;
+    private final long cost;
     private final String inputBoard;
     private final String puzzleBoard;
     private final Strategy strategy;
@@ -36,6 +39,7 @@ public class SudokuParameters {
         this.strategy = strategy;
         this.exchange = exchange;
         this.answered = false;
+        this.cost = DynamoFrontEnd.inferCost(this);
     }
 
     public int getN1() {
@@ -64,6 +68,10 @@ public class SudokuParameters {
 
     public static SudokuParametersBuilder newBuilder() {
         return new SudokuParametersBuilder();
+    }
+
+    public long getCost() {
+        return cost;
     }
 
     @Override
