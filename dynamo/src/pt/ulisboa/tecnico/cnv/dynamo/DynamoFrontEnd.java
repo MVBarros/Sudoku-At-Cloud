@@ -29,7 +29,7 @@ public class DynamoFrontEnd {
     private static final String KEY_BOARD_IDENTIFIER = "BoardIdentifier";
     private static final String KEY_REQUEST_COST = "RequestCost";
     private static final int CACHE_CAPACITY = 200;
-    //private static final int SCAN_RESULT_LIMIT = 1;
+    private static final int SCAN_RESULT_LIMIT = 1;
     private static final int UN_ACCEPTABLE_INTERVAL = 20;
     private static final long TABLE_READ_CAPACITY = 5;
     private static final long TABLE_WRITE_CAPACITY = 5;
@@ -91,46 +91,59 @@ public class DynamoFrontEnd {
         }
     }
 
-    //FIXME Do the full getCost, this for now is just for testing
     public static long getCost(SudokuParameters parameters) {
         Long cost = requestCostSameBoard(parameters);
         if (cost != null) {
             return cost;
         } else {
-            //TODO REST OF QUERIES
-            return 0;
-        }
-    }
-
-    private static Long requestCostSameBoard(SudokuParameters parameters) {
-        String key = getKey(parameters);
-        String tableName = parameters.getTableName();
-        String cacheKey = getCacheKey(key, tableName);
-        Long value = requestCostCache.get(cacheKey);
-        if (value != null) {
-            return value;
-        } else {
-            HashMap<String, Condition> scanFilter = sameBoardFilter(parameters);
-            ScanRequest scanRequest = new ScanRequest(tableName).withScanFilter(scanFilter);
-            ScanResult scanResult = dynamoDB.scan(scanRequest);
-            List<Map<String, AttributeValue>> items = scanResult.getItems();
-            if (items.size() > 0) {
-                Map<String, AttributeValue> item = items.get(0);
-                value = Long.parseLong(item.get(KEY_REQUEST_COST).getN());
-                long un = Long.parseLong(item.get(KEY_UNASSIGNED_ENTRIES).getN());
-                if (un > parameters.getUn() + UN_ACCEPTABLE_INTERVAL) {
-                    return null;
-                } else {
-                    requestCostCache.put(cacheKey, value);
-                    return value;
-                }
+            cost = requestCostAnyBoard(parameters);
+            if (cost != null) {
+                return cost;
             } else {
-                return null;
+                return 0; //FIXME DO CONSTANT COSTS
             }
         }
     }
 
+    private static Long requestCostSameBoard(SudokuParameters parameters) {
+        String cacheKey = getCacheKey(parameters);
+        Long value = getCostFromCache(cacheKey);
+        return  value != null ? value : sameBoardQuery(parameters);
+    }
+
+    private static Long getCostFromCache(String cacheKey) {
+        return requestCostCache.get(cacheKey);
+    }
+
+
+    private static Long requestCostAnyBoard(SudokuParameters parameters) {
+        return requestCostQuery(anyBoardFilter(parameters), parameters.getTableName());
+    }
+
+    private static Long sameBoardQuery(SudokuParameters parameters) {
+        Long value = requestCostQuery(sameBoardFilter(parameters), parameters.getTableName());
+        if (value != null) {
+            requestCostCache.put(getCacheKey(parameters), value);
+        }
+        return value;
+    }
+
+    private static Long requestCostQuery(HashMap<String, Condition> scanFilter, String tableName) {
+        ScanRequest scanRequest = new ScanRequest(tableName).withScanFilter(scanFilter);
+        ScanResult scanResult = dynamoDB.scan(scanRequest).withCount(SCAN_RESULT_LIMIT);
+        List<Map<String, AttributeValue>> items = scanResult.getItems();
+        return items.size() == 0 ? null : Long.parseLong(items.get(0).get(KEY_REQUEST_COST).getN());
+    }
+
     private static HashMap<String, Condition> sameBoardFilter(SudokuParameters parameters) {
+        return parameterFilter(parameters, true);
+    }
+
+    private static HashMap<String, Condition> anyBoardFilter(SudokuParameters parameters) {
+        return parameterFilter(parameters, false);
+    }
+
+    private static HashMap<String, Condition> parameterFilter(SudokuParameters parameters, boolean filterBoard) {
         HashMap<String, Condition> scanFilter = new HashMap<>();
 
         Condition equalN1Condition = new Condition()
@@ -143,10 +156,12 @@ public class DynamoFrontEnd {
                 .withAttributeValueList(new AttributeValue().withN(Integer.toString(parameters.getN2())));
         scanFilter.put(KEY_BOARD_SIZE_N2, equalN2Condition);
 
-        Condition equalBoardCondition = new Condition()
-                .withComparisonOperator(ComparisonOperator.EQ.toString())
-                .withAttributeValueList(new AttributeValue(parameters.getInputBoard()));
-        scanFilter.put(KEY_BOARD_IDENTIFIER, equalBoardCondition);
+        if (filterBoard) {
+            Condition equalBoardCondition = new Condition()
+                    .withComparisonOperator(ComparisonOperator.EQ.toString())
+                    .withAttributeValueList(new AttributeValue(parameters.getInputBoard()));
+            scanFilter.put(KEY_BOARD_IDENTIFIER, equalBoardCondition);
+        }
 
         Condition unBetweenCondition = new Condition()
                 .withComparisonOperator(ComparisonOperator.BETWEEN.toString())
@@ -182,8 +197,8 @@ public class DynamoFrontEnd {
         return String.format("N1:%d&N2:%d&UN:%d&BOARD:%s", parameters.getN1(), parameters.getN2(), parameters.getUn(), parameters.getInputBoard());
     }
 
-    private static String getCacheKey(String key, String tableName) {
-        return key + tableName;
+    private static String getCacheKey(SudokuParameters parameters) {
+        return getKey(parameters) + parameters.getTableName();
     }
 
     //Prevent utility class initialization
