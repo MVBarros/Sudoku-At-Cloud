@@ -34,16 +34,15 @@ public class DynamoFrontEnd {
     private static final long TABLE_READ_CAPACITY = 5;
     private static final long TABLE_WRITE_CAPACITY = 5;
 
-    //FIXME DO CONSTANT COSTS
     private static final long COST_9x9_BFS = (long) (4 * Math.pow(10, 8));
-    private static final long COST_9x9_CP = (long) (2.7 * Math.pow(10, 9));
-    private static final long COST_9x9_DLX = 0;
-    private static final long COST_16x16_BFS = 0;
-    private static final long COST_16x16_CP = 0;
-    private static final long COST_16x16_DLX = 0;
-    private static final long COST_25x25_BFS = 0;
-    private static final long COST_25x25_CP = 0;
-    private static final long COST_25x25_DLX = 0;
+    private static final long COST_9x9_CP = (long) (3 * Math.pow(10, 8));
+    private static final long COST_9x9_DLX = (long) (5 * Math.pow(10, 8));
+    private static final long COST_16x16_BFS = (long) (2.7 * Math.pow(10, 9));
+    private static final long COST_16x16_CP = (long) (2.5 * Math.pow(10, 9));
+    private static final long COST_16x16_DLX = (long) (1.9 * Math.pow(10, 9));
+    private static final long COST_25x25_BFS = (long) (3.9 * Math.pow(10, 9));
+    private static final long COST_25x25_CP = (long) (Math.pow(10, 10));
+    private static final long COST_25x25_DLX = (long) (5.6 * Math.pow(10, 9));
 
     private static Map<String, Long> requestCostCache = Collections.synchronizedMap(new LRUCache<String, Long>(CACHE_CAPACITY));
     private static AmazonDynamoDB dynamoDB;
