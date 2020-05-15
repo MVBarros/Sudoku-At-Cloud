@@ -14,10 +14,7 @@ import pt.ulisboa.tecnico.cnv.dynamo.cache.LRUCache;
 import pt.ulisboa.tecnico.cnv.loadbalancer.sudoku.SudokuParameters;
 import pt.ulisboa.tecnico.cnv.solver.SolverArgumentParser;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class DynamoFrontEnd {
     private static final String REGION = "us-east-1";
@@ -87,8 +84,7 @@ public class DynamoFrontEnd {
 
     //FIXME Do the full getCost, this for now is just for testing
     public static long getCost(SudokuParameters parameters) {
-        String key = getKey(parameters);
-        Long cost = getExactCost(key, parameters.getTableName());
+        Long cost = getExactCost(parameters);
         if (cost != null) {
             return cost;
         } else {
@@ -97,17 +93,15 @@ public class DynamoFrontEnd {
         }
     }
 
-    private static Long getExactCost(String key, String tableName) {
+    private static Long getExactCost(SudokuParameters parameters) {
+        String key = getKey(parameters);
+        String tableName = parameters.getTableName();
         String cacheKey = getCacheKey(key, tableName);
         Long value = requestCostCache.get(cacheKey);
         if (value != null) {
             return value;
         } else {
-            HashMap<String, Condition> scanFilter = new HashMap<>();
-            Condition condition = new Condition()
-                    .withComparisonOperator(ComparisonOperator.EQ.toString())
-                    .withAttributeValueList(new AttributeValue(key));
-            scanFilter.put(KEY_REQUEST_PRIMARY_KEY, condition);
+            HashMap<String, Condition> scanFilter = getExactCostConditionsFilter(parameters);
             ScanRequest scanRequest = new ScanRequest(tableName).withScanFilter(scanFilter);
             ScanResult scanResult = dynamoDB.scan(scanRequest);
             List<Map<String, AttributeValue>> items = scanResult.getItems();
@@ -120,6 +114,32 @@ public class DynamoFrontEnd {
                 return null;
             }
         }
+    }
+
+    private static HashMap<String, Condition> getExactCostConditionsFilter(SudokuParameters parameters) {
+        HashMap<String, Condition> scanFilter = new HashMap<>();
+
+        Condition equalN1Condition = new Condition()
+                .withComparisonOperator(ComparisonOperator.EQ.toString())
+                .withAttributeValueList(new AttributeValue().withN(Integer.toString(parameters.getN1())));
+        scanFilter.put(KEY_BOARD_SIZE_N1, equalN1Condition);
+
+        Condition equalN2Condition = new Condition()
+                .withComparisonOperator(ComparisonOperator.EQ.toString())
+                .withAttributeValueList(new AttributeValue().withN(Integer.toString(parameters.getN2())));
+        scanFilter.put(KEY_BOARD_SIZE_N2, equalN2Condition);
+
+        Condition equalBoardCondition = new Condition()
+                .withComparisonOperator(ComparisonOperator.EQ.toString())
+                .withAttributeValueList(new AttributeValue(parameters.getInputBoard()));
+        scanFilter.put(KEY_BOARD_IDENTIFIER, equalBoardCondition);
+
+        Condition equalUNCondition = new Condition()
+                .withComparisonOperator(ComparisonOperator.EQ.toString())
+                .withAttributeValueList(new AttributeValue().withN(Integer.toString(parameters.getUn())));
+        scanFilter.put(KEY_UNASSIGNED_ENTRIES, equalUNCondition);
+
+        return scanFilter;
     }
 
 
