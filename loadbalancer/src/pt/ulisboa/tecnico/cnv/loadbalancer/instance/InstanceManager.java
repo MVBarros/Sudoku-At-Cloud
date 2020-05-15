@@ -3,7 +3,6 @@ package pt.ulisboa.tecnico.cnv.loadbalancer.instance;
 import pt.ulisboa.tecnico.cnv.loadbalancer.sudoku.SudokuRequest;
 import pt.ulisboa.tecnico.cnv.loadbalancer.task.HealthCheckTask;
 
-import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.util.Map;
@@ -38,9 +37,9 @@ public class InstanceManager {
     }
 
     public void removeInstance(String address) {
-       Instance instance = instances.remove(address);
+        Instance instance = instances.remove(address);
         if (instance != null) {
-            for (SudokuRequest request: instance.getRequests()) {
+            for (SudokuRequest request : instance.getRequests()) {
                 sendRequest(request);
             }
         }
@@ -62,8 +61,10 @@ public class InstanceManager {
         synchronized (instances) {
             Instance bestInstance = null;
             for (Instance instance : instances.values()) {
-                if (bestInstance == null || bestInstance.getLoad() > instance.getLoad()) {
-                    bestInstance = instance;
+                if (instance.getState() == Instance.InstanceState.HEALTHY) {
+                    if (bestInstance == null || bestInstance.getLoad() > instance.getLoad()) {
+                        bestInstance = instance;
+                    }
                 }
             }
             return bestInstance;
