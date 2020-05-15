@@ -14,7 +14,10 @@ import pt.ulisboa.tecnico.cnv.dynamo.cache.LRUCache;
 import pt.ulisboa.tecnico.cnv.loadbalancer.sudoku.SudokuParameters;
 import pt.ulisboa.tecnico.cnv.solver.SolverArgumentParser;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class DynamoFrontEnd {
     private static final String REGION = "us-east-1";
@@ -22,9 +25,15 @@ public class DynamoFrontEnd {
     private static final String KEY_BOARD_SIZE_N1 = "BoardSizeN1";
     private static final String KEY_BOARD_SIZE_N2 = "BoardSizeN2";
     private static final String KEY_UNASSIGNED_ENTRIES = "UnassignedEntries";
+    private static final String KEY_SHORT_KEY = KEY_UNASSIGNED_ENTRIES;
     private static final String KEY_BOARD_IDENTIFIER = "BoardIdentifier";
     private static final String KEY_REQUEST_COST = "RequestCost";
     private static final int CACHE_CAPACITY = 200;
+    //private static final int SCAN_RESULT_LIMIT = 1;
+    private static final int UN_ACCEPTABLE_INTERVAL = 20;
+    private static final long TABLE_READ_CAPACITY = 5;
+    private static final long TABLE_WRITE_CAPACITY = 5;
+
 
     private static Map<String, Long> requestCostCache = Collections.synchronizedMap(new LRUCache<String, Long>(CACHE_CAPACITY));
     private static AmazonDynamoDB dynamoDB;
@@ -84,7 +93,7 @@ public class DynamoFrontEnd {
 
     //FIXME Do the full getCost, this for now is just for testing
     public static long getCost(SudokuParameters parameters) {
-        Long cost = getExactCost(parameters);
+        Long cost = requestCostSameBoard(parameters);
         if (cost != null) {
             return cost;
         } else {
@@ -93,7 +102,7 @@ public class DynamoFrontEnd {
         }
     }
 
-    private static Long getExactCost(SudokuParameters parameters) {
+    private static Long requestCostSameBoard(SudokuParameters parameters) {
         String key = getKey(parameters);
         String tableName = parameters.getTableName();
         String cacheKey = getCacheKey(key, tableName);
@@ -101,22 +110,27 @@ public class DynamoFrontEnd {
         if (value != null) {
             return value;
         } else {
-            HashMap<String, Condition> scanFilter = getExactCostConditionsFilter(parameters);
+            HashMap<String, Condition> scanFilter = sameBoardFilter(parameters);
             ScanRequest scanRequest = new ScanRequest(tableName).withScanFilter(scanFilter);
             ScanResult scanResult = dynamoDB.scan(scanRequest);
             List<Map<String, AttributeValue>> items = scanResult.getItems();
             if (items.size() > 0) {
                 Map<String, AttributeValue> item = items.get(0);
                 value = Long.parseLong(item.get(KEY_REQUEST_COST).getN());
-                requestCostCache.put(cacheKey, value);
-                return value;
+                long un = Long.parseLong(item.get(KEY_UNASSIGNED_ENTRIES).getN());
+                if (un > parameters.getUn() + UN_ACCEPTABLE_INTERVAL) {
+                    return null;
+                } else {
+                    requestCostCache.put(cacheKey, value);
+                    return value;
+                }
             } else {
                 return null;
             }
         }
     }
 
-    private static HashMap<String, Condition> getExactCostConditionsFilter(SudokuParameters parameters) {
+    private static HashMap<String, Condition> sameBoardFilter(SudokuParameters parameters) {
         HashMap<String, Condition> scanFilter = new HashMap<>();
 
         Condition equalN1Condition = new Condition()
@@ -134,20 +148,27 @@ public class DynamoFrontEnd {
                 .withAttributeValueList(new AttributeValue(parameters.getInputBoard()));
         scanFilter.put(KEY_BOARD_IDENTIFIER, equalBoardCondition);
 
-        Condition equalUNCondition = new Condition()
-                .withComparisonOperator(ComparisonOperator.EQ.toString())
-                .withAttributeValueList(new AttributeValue().withN(Integer.toString(parameters.getUn())));
-        scanFilter.put(KEY_UNASSIGNED_ENTRIES, equalUNCondition);
+        Condition unBetweenCondition = new Condition()
+                .withComparisonOperator(ComparisonOperator.BETWEEN.toString())
+                .withAttributeValueList(new AttributeValue().withN(Integer.toString(parameters.getUn())),
+                        new AttributeValue().withN(Integer.toString(parameters.getUn() + UN_ACCEPTABLE_INTERVAL)));
+
+        scanFilter.put(KEY_UNASSIGNED_ENTRIES, unBetweenCondition);
 
         return scanFilter;
     }
 
-
+    /**
+     * Stats tables: Primary key is unique combination of board and unassigned entrie
+     * Sort key is unassigned entries
+     */
     private static void createStatsTable(String name) {
         CreateTableRequest createTableRequest = new CreateTableRequest().withTableName(name)
-                .withKeySchema(new KeySchemaElement().withAttributeName(KEY_REQUEST_PRIMARY_KEY).withKeyType(KeyType.HASH))
-                .withAttributeDefinitions(new AttributeDefinition().withAttributeName(KEY_REQUEST_PRIMARY_KEY).withAttributeType(ScalarAttributeType.S))
-                .withProvisionedThroughput(new ProvisionedThroughput().withReadCapacityUnits(1L).withWriteCapacityUnits(1L));
+                .withKeySchema(new KeySchemaElement().withAttributeName(KEY_REQUEST_PRIMARY_KEY).withKeyType(KeyType.HASH),
+                        new KeySchemaElement().withAttributeName(KEY_SHORT_KEY).withKeyType(KeyType.RANGE))
+                .withAttributeDefinitions(new AttributeDefinition().withAttributeName(KEY_REQUEST_PRIMARY_KEY).withAttributeType(ScalarAttributeType.S),
+                        new AttributeDefinition().withAttributeName(KEY_SHORT_KEY).withAttributeType(ScalarAttributeType.N))
+                .withProvisionedThroughput(new ProvisionedThroughput().withReadCapacityUnits(TABLE_READ_CAPACITY).withWriteCapacityUnits(TABLE_WRITE_CAPACITY));
 
         TableUtils.createTableIfNotExists(dynamoDB, createTableRequest);
     }
