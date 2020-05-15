@@ -18,6 +18,8 @@ public class SudokuRequest {
     private final long cost;
     private final HttpExchange httpExchange;
     private Instance instance;
+    private long sentTime = System.currentTimeMillis();
+    private static final long COST_LOSS_PER_MILLISECOND = 0; //TODO
 
     public SudokuRequest(SudokuParameters parameters, HttpExchange httpExchange) {
         this.parameters = parameters;
@@ -31,7 +33,7 @@ public class SudokuRequest {
     }
 
     public long getCost() {
-        return cost;
+        return cost - COST_LOSS_PER_MILLISECOND * (System.currentTimeMillis() - sentTime);
     }
 
 
@@ -40,6 +42,7 @@ public class SudokuRequest {
      */
     public void sendRequest(HttpURLConnection conn) {
         try {
+            sentTime = System.currentTimeMillis();
             conn.setRequestProperty("Content-Type", "application/json");
 
             conn.setDoOutput(true);
