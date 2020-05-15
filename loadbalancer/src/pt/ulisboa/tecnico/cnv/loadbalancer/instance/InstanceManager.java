@@ -3,33 +3,25 @@ package pt.ulisboa.tecnico.cnv.loadbalancer.instance;
 import pt.ulisboa.tecnico.cnv.loadbalancer.sudoku.SudokuParameters;
 import pt.ulisboa.tecnico.cnv.loadbalancer.sudoku.SudokuRequest;
 import pt.ulisboa.tecnico.cnv.loadbalancer.task.HealthCheckTask;
+import pt.ulisboa.tecnico.cnv.loadbalancer.task.ThreadManager;
 
-import com.sun.net.httpserver.HttpExchange;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 public class InstanceManager {
-    private static InstanceManager instance;
 
-    private final Map<String, Instance> instances = new ConcurrentHashMap<>();
-    private final Executor healthCheckExecutor = Executors.newCachedThreadPool();
-    private final Set<SudokuParameters> requestQueue = Collections.synchronizedSet(new HashSet<SudokuParameters>());
+    private static final Map<String, Instance> instances = new ConcurrentHashMap<>();
+    private static final Set<SudokuParameters> requestQueue = Collections.synchronizedSet(new HashSet<SudokuParameters>());
 
     private InstanceManager() {
     }
 
-    public static InstanceManager getInstance() {
-        if (instance == null) {
-            instance = new InstanceManager();
-        }
-        return instance;
-    }
 
-    public long getTotalLoad() {
+    public static long getTotalLoad() {
         long totalLoad = 0;
         synchronized (instances) {
             for (Instance instance : instances.values()) {
@@ -39,18 +31,18 @@ public class InstanceManager {
         return totalLoad;
     }
 
-    public void addInstance(String address, String id) throws MalformedURLException {
+    public static void addInstance(String address, String id) throws MalformedURLException {
         synchronized (instances) {
             if (!instances.containsKey(id)) {
                 Instance instance = new Instance(address, id);
                 instances.put(instance.getId(), instance);
-                healthCheckExecutor.execute(new HealthCheckTask(instance));
+                ThreadManager.execute(new HealthCheckTask(instance));
                 notifyWaitingRequests();
             }
         }
     }
 
-    public void removeInstance(String id) {
+    public static void removeInstance(String id) {
         Instance instance = instances.remove(id);
         if (instance != null) {
             for (SudokuRequest request : instance.getRequests()) {
@@ -60,8 +52,7 @@ public class InstanceManager {
     }
 
 
-
-    public void sendRequest(SudokuParameters parameters) {
+    public static void sendRequest(SudokuParameters parameters) {
         Instance instance;
         synchronized (instances) { //Otherwise we might add a request to the queue just as it is getting evicted
             instance = getBestInstance();
@@ -71,13 +62,11 @@ public class InstanceManager {
                 return;
             }
         }
-        SudokuRequest request = new SudokuRequest(parameters, instance);
-        HttpURLConnection connection = instance.getSudokuRequestConn(request.getParameters());
-        request.sendRequest(connection);
+        new SudokuRequest(parameters, instance).run();
     }
 
 
-    public void notifyWaitingRequests() {
+    public static void notifyWaitingRequests() {
         synchronized (instances) {
             for (SudokuParameters parameters : requestQueue) {
                 sendRequest(parameters);
@@ -86,7 +75,7 @@ public class InstanceManager {
         }
     }
 
-    private Instance getBestInstance() {
+    private static Instance getBestInstance() {
         synchronized (instances) {
             Instance bestInstance = null;
             for (Instance instance : instances.values()) {
@@ -100,7 +89,7 @@ public class InstanceManager {
         }
     }
 
-    public String getInstanceToRemove() {
+    public static String getInstanceToRemove() {
         //TODO - Make actual selection of instance to remove
         return instances.values().iterator().next().getId();
     }

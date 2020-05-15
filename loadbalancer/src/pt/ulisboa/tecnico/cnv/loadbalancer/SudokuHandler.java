@@ -5,7 +5,6 @@ import com.sun.net.httpserver.HttpHandler;
 import pt.ulisboa.tecnico.cnv.loadbalancer.instance.InstanceManager;
 import pt.ulisboa.tecnico.cnv.loadbalancer.sudoku.SudokuParameters;
 import pt.ulisboa.tecnico.cnv.loadbalancer.sudoku.SudokuParametersBuilder;
-import pt.ulisboa.tecnico.cnv.loadbalancer.sudoku.SudokuRequest;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -27,8 +26,7 @@ public class SudokuHandler implements HttpHandler {
         String body = parseRequestBody(t.getRequestBody());
 
         SudokuParameters parameters = parseRequest(query, body, t);
-
-        InstanceManager.getInstance().sendRequest(parameters, t);
+        InstanceManager.sendRequest(parameters);
     }
 
 

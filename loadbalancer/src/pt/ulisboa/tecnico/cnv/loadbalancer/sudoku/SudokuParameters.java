@@ -1,26 +1,21 @@
 package pt.ulisboa.tecnico.cnv.loadbalancer.sudoku;
 
+import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import metrics.tools.StatsBFS;
 import metrics.tools.StatsCP;
 import metrics.tools.StatsDLX;
 
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.nio.charset.StandardCharsets;
+
 
 public class SudokuParameters {
     public enum Strategy {
-        BFS("BFS"),
-        CP("CP"),
-        DLX("DLX");
-
-        private final String strategy;
-
-        Strategy(String strategy) {
-            this.strategy = strategy;
-        }
-
-        public String getStrategy() {
-            return strategy;
-        }
+        BFS,
+        CP,
+        DLX;
     }
 
     private final int n1;
@@ -30,6 +25,7 @@ public class SudokuParameters {
     private final String puzzleBoard;
     private final Strategy strategy;
     private final HttpExchange exchange;
+    private boolean answered;
 
     SudokuParameters(int n1, int n2, int un, String inputBoard, String puzzleBoard, Strategy strategy, HttpExchange exchange) {
         this.n1 = n1;
@@ -39,6 +35,7 @@ public class SudokuParameters {
         this.un = un;
         this.strategy = strategy;
         this.exchange = exchange;
+        this.answered = false;
     }
 
     public int getN1() {
@@ -71,7 +68,7 @@ public class SudokuParameters {
 
     @Override
     public String toString() {
-        return String.format("s=%s&un=%d&n1=%d&n2=%d&i=%s", getStrategy().name(), getUn(), getN1(), getN2(), getInputBoard());
+        return String.format("s=%s\tun=%d\tn1=%d\tn2=%d\ti=%s", getStrategy().name(), getUn(), getN1(), getN2(), getInputBoard());
     }
 
     public String getTableName() {
@@ -91,5 +88,43 @@ public class SudokuParameters {
         return exchange;
     }
 
+    /**
+     * Forward sudoku reply from @conn to client that made the request
+     */
+    public void forwardReply(String reply) {
+        synchronized (this) {
+            if (!this.answered) {
+                try {
+                    sendHeaders(reply);
+                    sendBody(reply);
+                    System.out.println("Request finished: " + this.toString());
+                } catch (IOException e) {
+                    System.out.println("client disconnected");
+                } finally {
+                    this.answered = true;
+                }
+            }
+        }
+    }
+
+    private void sendHeaders(String reply) throws IOException {
+        //Send headers
+        final Headers headers = exchange.getResponseHeaders();
+        headers.add("Content-Type", "application/json");
+        headers.add("Access-Control-Allow-Origin", "*");
+        headers.add("Access-Control-Allow-Credentials", "true");
+        headers.add("Access-Control-Allow-Methods", "POST, GET, HEAD, OPTIONS");
+        headers.add("Access-Control-Allow-Headers", "Origin, Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers");
+        exchange.sendResponseHeaders(200, reply.length());
+    }
+
+    private void sendBody(String reply) throws IOException {
+        final OutputStream os = exchange.getResponseBody();
+        OutputStreamWriter out = new OutputStreamWriter(os, StandardCharsets.UTF_8);
+        out.write(reply);
+        out.flush();
+        out.close();
+        os.close();
+    }
 }
 

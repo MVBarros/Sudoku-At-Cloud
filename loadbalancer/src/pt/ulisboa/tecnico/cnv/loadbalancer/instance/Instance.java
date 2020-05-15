@@ -54,7 +54,6 @@ public class Instance {
 
     public void addRequest(SudokuRequest request) {
         requests.add(request);
-
     }
 
     public void removeRequest(SudokuRequest request) {
@@ -105,10 +104,9 @@ public class Instance {
             }
         }
         if (newState == InstanceState.HEALTHY) {
-            //Wake threads waiting for instance has a new one as come online
-            InstanceManager.getInstance().notifyWaitingRequests();
+            //Wake threads waiting for instance has a new one has come online
+            InstanceManager.notifyWaitingRequests();
         }
-
     }
 
 

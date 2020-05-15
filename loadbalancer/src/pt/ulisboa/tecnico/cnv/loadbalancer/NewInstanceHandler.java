@@ -33,7 +33,7 @@ public class NewInstanceHandler implements HttpHandler {
 
     private void addInstance(HttpExchange t, String address, String id) throws IOException {
         try {
-            InstanceManager.getInstance().addInstance(address, id);
+            InstanceManager.addInstance(address, id);
             requestSuccess(t);
         } catch (MalformedURLException e) {
             System.out.println("Address provided was malformed: " + address);
