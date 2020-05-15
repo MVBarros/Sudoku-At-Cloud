@@ -5,10 +5,7 @@ import pt.ulisboa.tecnico.cnv.loadbalancer.task.HealthCheckTask;
 
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -18,7 +15,7 @@ public class InstanceManager {
 
     private final Map<String, Instance> instances = new ConcurrentHashMap<>();
     private final Executor healthCheckExecutor = Executors.newCachedThreadPool();
-    private final List<SudokuRequest> requestQueue = Collections.synchronizedList(new ArrayList<SudokuRequest>());
+    private final Set<SudokuRequest> requestQueue = Collections.synchronizedSet(new HashSet<SudokuRequest>());
     private InstanceManager() {
     }
 
@@ -51,7 +48,7 @@ public class InstanceManager {
 
     public boolean sendRequest(SudokuRequest request) {
         Instance instance;
-        synchronized (requestQueue) { //Otherwise we might add a request to the queue just as it is getting evicted
+        synchronized (instances) { //Otherwise we might add a request to the queue just as it is getting evicted
             instance = getBestInstance();
             if (instance == null) {
                 //No instance currently available, wait
@@ -68,10 +65,14 @@ public class InstanceManager {
 
 
     public void notifyWaitingRequests() {
-        synchronized (requestQueue) {
+        synchronized (instances) {
+            for (SudokuRequest request : requestQueue) {
+                sendRequest(request);
+            }
+            //Clean queue by seeing which requests where successful and removing them
             List<SudokuRequest> sentRequests = new ArrayList<>();
             for (SudokuRequest request : requestQueue) {
-                if (sendRequest(request)) {
+                if (request.isFinised()) {
                     sentRequests.add(request);
                 }
             }

@@ -13,20 +13,22 @@ import java.nio.charset.StandardCharsets;
 
 public class SudokuRequest {
     private static final int SUDOKU_REQUEST_SUCCESS = 200;
+    private static final long COST_LOSS_PER_MILLISECOND = 0; //TODO
+    private static final double MIN_COST_SCALE = 0.1;
 
     private final SudokuParameters parameters;
     private final long cost;
     private final HttpExchange httpExchange;
     private Instance instance;
     private long sentTime = System.currentTimeMillis();
-    private static final long COST_LOSS_PER_MILLISECOND = 0; //TODO
-    private static final double MIN_COST_SCALE = 0.1; //TODO
+    private boolean finised;
 
     public SudokuRequest(SudokuParameters parameters, HttpExchange httpExchange) {
         this.parameters = parameters;
         this.cost = DynamoFrontEnd.inferCost(parameters);
         System.out.println("Inferred cost for parameters " + parameters + " --> " + this.cost);
         this.httpExchange = httpExchange;
+        this.finised = false;
     }
 
     public SudokuParameters getParameters() {
@@ -93,15 +95,15 @@ public class SudokuRequest {
             os.close();
 
             System.out.println("Sent sudoku response to " + this.httpExchange.getRemoteAddress().toString());
+            System.out.println("Instance finished request: " + instance);
 
         } catch (IOException e) {
-            conn.disconnect();
             System.out.println("Instance finished request but client disconnected: " + instance);
-            this.instance.removeRequest(this);
         } finally {
             conn.disconnect();
             System.out.println("Instance finished request: " + instance);
             this.instance.removeRequest(this);
+            this.finised = true;
         }
     }
 
@@ -127,5 +129,9 @@ public class SudokuRequest {
     public void setInstance(Instance instance) {
         this.instance = instance;
         instance.addRequest(this);
+    }
+
+    public boolean isFinised() {
+        return finised;
     }
 }

@@ -54,6 +54,7 @@ public class Instance {
 
     public void addRequest(SudokuRequest request) {
         requests.add(request);
+
     }
 
     public void removeRequest(SudokuRequest request) {
@@ -80,7 +81,6 @@ public class Instance {
         }
     }
 
-    //FIXME Take into account time expiring
     public long getLoad() {
         long load = 0;
         synchronized (requests) {
@@ -96,14 +96,19 @@ public class Instance {
     }
 
     public void setState(InstanceState state) {
-        if (this.state != InstanceState.DEAD && state != this.state) {
-            //Once dead can never be undead
-            this.state = state;
-            if (this.state == InstanceState.HEALTHY) {
-                //Wake threads waiting for instance has a new one as come online
-                InstanceManager.getInstance().notifyWaitingRequests();
+        InstanceState newState = null;
+        synchronized (this) {
+            if (this.state != InstanceState.DEAD && state != this.state) {
+                //Once dead can never be undead
+                this.state = state;
+                newState = state;
             }
         }
+        if (newState == InstanceState.HEALTHY) {
+            //Wake threads waiting for instance has a new one as come online
+            InstanceManager.getInstance().notifyWaitingRequests();
+        }
+
     }
 
 
@@ -129,22 +134,19 @@ public class Instance {
 
 
     public void resetFailureCounter() {
-        synchronized (failureCounter) {
-            this.failureCounter.set(0);
-            setState(InstanceState.HEALTHY);
-        }
+        this.failureCounter.set(0);
+        setState(InstanceState.HEALTHY);
+
     }
 
     public void incrFailureCounter() {
-        synchronized (failureCounter) {
-            int failureCounter = this.failureCounter.incrementAndGet();
-            if (failureCounter == DEAD_THRESHOLD) {
-                setState(InstanceState.DEAD);
-            }
-            else if (failureCounter == UNHEALTHY_THRESHOLD) {
-                setState(InstanceState.UNHEALTHY);
-            }
+        int failureCounter = this.failureCounter.incrementAndGet();
+        if (failureCounter == DEAD_THRESHOLD) {
+            setState(InstanceState.DEAD);
+        } else if (failureCounter == UNHEALTHY_THRESHOLD) {
+            setState(InstanceState.UNHEALTHY);
         }
+
     }
 
     @Override
