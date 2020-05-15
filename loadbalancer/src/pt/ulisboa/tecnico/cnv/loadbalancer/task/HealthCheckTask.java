@@ -26,6 +26,7 @@ public class HealthCheckTask implements Runnable {
                     instance.incrFailureCounter();
                 }
                 if (instance.getState() == Instance.InstanceState.DEAD) {
+                    System.out.println("Instance " + instance.getId() + " was marked dead");
                     InstanceManager.getInstance().removeInstance(instance.getId());
                     return;
                 }

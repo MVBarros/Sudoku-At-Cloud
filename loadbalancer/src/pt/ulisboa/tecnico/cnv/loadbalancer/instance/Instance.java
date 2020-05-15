@@ -49,7 +49,7 @@ public class Instance {
     }
 
     public String getId() {
-        return null;
+        return id;
     }
 
     public void addRequest(SudokuRequest request) {
@@ -96,7 +96,7 @@ public class Instance {
     }
 
     public void setState(InstanceState state) {
-        if (state != InstanceState.DEAD && state != this.state) {
+        if (this.state != InstanceState.DEAD && state != this.state) {
             //Once dead can never be undead
             this.state = state;
             if (this.state == InstanceState.HEALTHY) {
