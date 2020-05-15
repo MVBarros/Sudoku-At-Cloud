@@ -10,9 +10,11 @@ import metrics.tools.Stats;
 import metrics.tools.StatsBFS;
 import metrics.tools.StatsCP;
 import metrics.tools.StatsDLX;
+import pt.ulisboa.tecnico.cnv.dynamo.cache.LRUCache;
 import pt.ulisboa.tecnico.cnv.loadbalancer.sudoku.SudokuParameters;
 import pt.ulisboa.tecnico.cnv.solver.SolverArgumentParser;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +27,9 @@ public class DynamoFrontEnd {
     private static final String KEY_UNASSIGNED_ENTRIES = "UnassignedEntries";
     private static final String KEY_BOARD_IDENTIFIER = "BoardIdentifier";
     private static final String KEY_REQUEST_COST = "RequestCost";
+    private static final int CACHE_CAPACITY = 200;
 
+    private static Map<String, Long> requestCostCache = Collections.synchronizedMap(new LRUCache<String, Long>(CACHE_CAPACITY));
     private static AmazonDynamoDB dynamoDB;
 
     static {
@@ -84,16 +88,38 @@ public class DynamoFrontEnd {
     //FIXME Do the full getCost, this for now is just for testing
     public static long getCost(SudokuParameters parameters) {
         String key = getKey(parameters);
-        HashMap<String, Condition> scanFilter = new HashMap<>();
-        Condition condition = new Condition()
-                .withComparisonOperator(ComparisonOperator.EQ.toString())
-                .withAttributeValueList(new AttributeValue(key));
-        scanFilter.put(KEY_REQUEST_PRIMARY_KEY, condition);
-        ScanRequest scanRequest = new ScanRequest(parameters.getTableName()).withScanFilter(scanFilter);
-        ScanResult scanResult = dynamoDB.scan(scanRequest);
-        List<Map<String, AttributeValue>> items = scanResult.getItems();
-        Map<String, AttributeValue> item = items.get(0);
-        return Long.parseLong(item.get(KEY_REQUEST_COST).getN());
+        Long cost = getExactCost(key, parameters.getTableName());
+        if (cost != null) {
+            return cost;
+        } else {
+            //TODO REST OF QUERIES
+            return 0;
+        }
+    }
+
+    private static Long getExactCost(String key, String tableName) {
+        String cacheKey = getCacheKey(key, tableName);
+        Long value = requestCostCache.get(cacheKey);
+        if (value != null) {
+            return value;
+        } else {
+            HashMap<String, Condition> scanFilter = new HashMap<>();
+            Condition condition = new Condition()
+                    .withComparisonOperator(ComparisonOperator.EQ.toString())
+                    .withAttributeValueList(new AttributeValue(key));
+            scanFilter.put(KEY_REQUEST_PRIMARY_KEY, condition);
+            ScanRequest scanRequest = new ScanRequest(tableName).withScanFilter(scanFilter);
+            ScanResult scanResult = dynamoDB.scan(scanRequest);
+            List<Map<String, AttributeValue>> items = scanResult.getItems();
+            if (items.size() > 0) {
+                Map<String, AttributeValue> item = items.get(0);
+                value = Long.parseLong(item.get(KEY_REQUEST_COST).getN());
+                requestCostCache.put(cacheKey, value);
+                return value;
+            } else {
+                return null;
+            }
+        }
     }
 
 
@@ -113,6 +139,10 @@ public class DynamoFrontEnd {
 
     private static String getKey(SudokuParameters parameters) {
         return String.format("N1:%d&N2:%d&UN:%d&BOARD:%s", parameters.getN1(), parameters.getN2(), parameters.getUn(), parameters.getInputBoard());
+    }
+
+    private static String getCacheKey(String key, String tableName) {
+        return key + tableName;
     }
 
     //Prevent utility class initialization
