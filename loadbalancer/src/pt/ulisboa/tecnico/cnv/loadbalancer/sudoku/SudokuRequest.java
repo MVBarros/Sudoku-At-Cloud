@@ -4,6 +4,7 @@ import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import pt.ulisboa.tecnico.cnv.dynamo.DynamoFrontEnd;
 import pt.ulisboa.tecnico.cnv.loadbalancer.instance.Instance;
+import pt.ulisboa.tecnico.cnv.loadbalancer.instance.InstanceManager;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -52,10 +53,16 @@ public class SudokuRequest {
             if (status == SUDOKU_REQUEST_SUCCESS) {
                 forwardReply(conn);
             } else {
+                this.instance.incrFailureCounter();
+                this.instance.removeRequest(this);
+                InstanceManager.getInstance().sendRequest(this);
                 //When the health check fails the request will be sent to another machine so can just return
                 conn.disconnect();
             }
         } catch (IOException e) {
+            this.instance.incrFailureCounter();
+            this.instance.removeRequest(this);
+            InstanceManager.getInstance().sendRequest(this);
             //Try and send to a new instance immediately
             conn.disconnect();
         }
@@ -65,9 +72,9 @@ public class SudokuRequest {
      * Forward sudoku reply from @conn to client that made the request
      */
     public void forwardReply(HttpURLConnection conn) throws IOException {
-        try {
-            String reply = getReply(conn);
 
+        String reply = getReply(conn);
+        try {
             //Send headers
             final Headers headers = this.httpExchange.getResponseHeaders();
             headers.add("Content-Type", "application/json");
@@ -87,6 +94,10 @@ public class SudokuRequest {
 
             System.out.println("Sent sudoku response to " + this.httpExchange.getRemoteAddress().toString());
 
+        } catch (IOException e) {
+            conn.disconnect();
+            System.out.println("Instance finished request but client disconnected: " + instance);
+            this.instance.removeRequest(this);
         } finally {
             conn.disconnect();
             System.out.println("Instance finished request: " + instance);
