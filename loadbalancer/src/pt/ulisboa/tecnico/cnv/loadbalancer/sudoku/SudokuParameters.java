@@ -1,8 +1,10 @@
 package pt.ulisboa.tecnico.cnv.loadbalancer.sudoku;
 
+import com.sun.net.httpserver.HttpExchange;
 import metrics.tools.StatsBFS;
 import metrics.tools.StatsCP;
 import metrics.tools.StatsDLX;
+
 
 public class SudokuParameters {
     public enum Strategy {
@@ -27,14 +29,16 @@ public class SudokuParameters {
     private final String inputBoard;
     private final String puzzleBoard;
     private final Strategy strategy;
+    private final HttpExchange exchange;
 
-    SudokuParameters(int n1, int n2, int un, String inputBoard, String puzzleBoard, Strategy strategy) {
+    SudokuParameters(int n1, int n2, int un, String inputBoard, String puzzleBoard, Strategy strategy, HttpExchange exchange) {
         this.n1 = n1;
         this.n2 = n2;
         this.inputBoard = inputBoard;
         this.puzzleBoard = puzzleBoard;
         this.un = un;
         this.strategy = strategy;
+        this.exchange = exchange;
     }
 
     public int getN1() {
@@ -82,5 +86,10 @@ public class SudokuParameters {
         //Should never reach here, but just in case assume BFS
         return StatsBFS.BFS_TABLE_NAME;
     }
+
+    public HttpExchange getExchange() {
+        return exchange;
+    }
+
 }
 

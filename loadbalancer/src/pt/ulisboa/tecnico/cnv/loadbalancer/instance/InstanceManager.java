@@ -1,8 +1,10 @@
 package pt.ulisboa.tecnico.cnv.loadbalancer.instance;
 
+import pt.ulisboa.tecnico.cnv.loadbalancer.sudoku.SudokuParameters;
 import pt.ulisboa.tecnico.cnv.loadbalancer.sudoku.SudokuRequest;
 import pt.ulisboa.tecnico.cnv.loadbalancer.task.HealthCheckTask;
 
+import com.sun.net.httpserver.HttpExchange;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.util.*;
@@ -15,7 +17,7 @@ public class InstanceManager {
 
     private final Map<String, Instance> instances = new ConcurrentHashMap<>();
     private final Executor healthCheckExecutor = Executors.newCachedThreadPool();
-    private final Set<SudokuRequest> requestQueue = Collections.synchronizedSet(new HashSet<SudokuRequest>());
+    private final Set<SudokuParameters> requestQueue = Collections.synchronizedSet(new HashSet<SudokuParameters>());
 
     private InstanceManager() {
     }
@@ -52,42 +54,35 @@ public class InstanceManager {
         Instance instance = instances.remove(id);
         if (instance != null) {
             for (SudokuRequest request : instance.getRequests()) {
-                sendRequest(request);
+                sendRequest(request.getParameters());
             }
         }
     }
 
-    public boolean sendRequest(SudokuRequest request) {
+
+
+    public void sendRequest(SudokuParameters parameters) {
         Instance instance;
         synchronized (instances) { //Otherwise we might add a request to the queue just as it is getting evicted
             instance = getBestInstance();
             if (instance == null) {
                 //No instance currently available, wait
-                requestQueue.add(request);
-                return false;
-            } else {
-                request.setInstance(instance);
+                requestQueue.add(parameters);
+                return;
             }
         }
+        SudokuRequest request = new SudokuRequest(parameters, instance);
         HttpURLConnection connection = instance.getSudokuRequestConn(request.getParameters());
         request.sendRequest(connection);
-        return true;
     }
 
 
     public void notifyWaitingRequests() {
         synchronized (instances) {
-            for (SudokuRequest request : requestQueue) {
-                sendRequest(request);
+            for (SudokuParameters parameters : requestQueue) {
+                sendRequest(parameters);
             }
-            //Clean queue by seeing which requests where successful and removing them
-            List<SudokuRequest> sentRequests = new ArrayList<>();
-            for (SudokuRequest request : requestQueue) {
-                if (request.isFinised()) {
-                    sentRequests.add(request);
-                }
-            }
-            requestQueue.removeAll(sentRequests);
+            requestQueue.clear();
         }
     }
 

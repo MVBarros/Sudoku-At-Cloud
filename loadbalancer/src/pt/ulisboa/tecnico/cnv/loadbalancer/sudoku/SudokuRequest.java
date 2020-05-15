@@ -19,16 +19,17 @@ public class SudokuRequest {
     private final SudokuParameters parameters;
     private final long cost;
     private final HttpExchange httpExchange;
-    private Instance instance;
+    private final Instance instance;
     private long sentTime = System.currentTimeMillis();
-    private boolean finised;
+    private boolean finished;
 
-    public SudokuRequest(SudokuParameters parameters, HttpExchange httpExchange) {
+    public SudokuRequest(SudokuParameters parameters, Instance instance) {
         this.parameters = parameters;
         this.cost = DynamoFrontEnd.inferCost(parameters);
         System.out.println("Inferred cost for parameters " + parameters + " --> " + this.cost);
-        this.httpExchange = httpExchange;
-        this.finised = false;
+        this.httpExchange = parameters.getExchange();
+        this.instance = instance;
+        this.finished = false;
     }
 
     public SudokuParameters getParameters() {
@@ -44,6 +45,7 @@ public class SudokuRequest {
      * Sends Sudoku Request to instance on the other side of @conn
      */
     public void sendRequest(HttpURLConnection conn) {
+        this.instance.addRequest(this);
         try {
             sentTime = System.currentTimeMillis();
             conn.setRequestProperty("Content-Type", "application/json");
@@ -60,11 +62,11 @@ public class SudokuRequest {
             if (status == SUDOKU_REQUEST_SUCCESS) {
                 forwardReply(conn);
             } else {
-                instanceError(conn);
+                instanceError(conn, instance);
                 conn.disconnect();
             }
         } catch (IOException e) {
-            instanceError(conn);
+            instanceError(conn, instance);
             conn.disconnect();
 
         }
@@ -96,21 +98,19 @@ public class SudokuRequest {
 
             System.out.println("Sent sudoku response to " + this.httpExchange.getRemoteAddress().toString());
             System.out.println("Instance finished request: " + instance);
-
         } catch (IOException e) {
-            System.out.println("Instance finished request but client disconnected: " + instance);
+            System.out.println("client disconnected");
         } finally {
             conn.disconnect();
-            System.out.println("Instance finished request: " + instance);
             this.instance.removeRequest(this);
-            this.finised = true;
+            this.finished = true;
         }
     }
 
-    private void instanceError(HttpURLConnection conn) {
+    private void instanceError(HttpURLConnection conn, Instance instance) {
         conn.disconnect();
-        this.instance.setState(Instance.InstanceState.UNHEALTHY);
-        this.instance.removeRequest(this);
+        instance.setState(Instance.InstanceState.UNHEALTHY);
+        instance.removeRequest(this);
         InstanceManager.getInstance().sendRequest(this);
     }
 
@@ -127,11 +127,14 @@ public class SudokuRequest {
     }
 
     public void setInstance(Instance instance) {
-        this.instance = instance;
         instance.addRequest(this);
     }
 
-    public boolean isFinised() {
-        return finised;
+    public boolean isFinished() {
+        return finished;
+    }
+
+    public HttpExchange getHttpExchange() {
+        return httpExchange;
     }
 }

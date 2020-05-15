@@ -26,18 +26,17 @@ public class SudokuHandler implements HttpHandler {
         System.out.println("> Sudoku Query:\t" + query);
         String body = parseRequestBody(t.getRequestBody());
 
-        SudokuParameters parameters = parseRequest(query, body);
-        SudokuRequest request = new SudokuRequest(parameters, t);
+        SudokuParameters parameters = parseRequest(query, body, t);
 
-        InstanceManager.getInstance().sendRequest(request);
+        InstanceManager.getInstance().sendRequest(parameters, t);
     }
 
 
-    private SudokuParameters parseRequest(String query, String body) {
+    private SudokuParameters parseRequest(String query, String body, HttpExchange exchange) {
         SudokuParametersBuilder builder = SudokuParameters.newBuilder();
         String[] parameters = query.split("&");
 
-        for(String parameter: parameters) {
+        for (String parameter : parameters) {
             String[] splitParam = parameter.split("=");
             String key = splitParam[0];
             String value = splitParam[1];
@@ -62,8 +61,9 @@ public class SudokuHandler implements HttpHandler {
                     break;
             }
         }
-        builder.setPuzzleBoard(body);
-        return builder.build();
+        return builder.setPuzzleBoard(body)
+                .setExchange(exchange)
+                .build();
     }
 
     /**
