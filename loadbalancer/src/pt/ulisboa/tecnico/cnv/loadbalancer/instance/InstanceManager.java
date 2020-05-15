@@ -15,11 +15,10 @@ import java.util.concurrent.ConcurrentHashMap;
 public class InstanceManager {
 
     private static final Map<String, Instance> instances = new ConcurrentHashMap<>();
-    private static final Set<SudokuParameters> requestQueue = Collections.synchronizedSet(new HashSet<SudokuParameters>());
+    private static final Set<SudokuParameters> waitingQueue = Collections.synchronizedSet(new HashSet<SudokuParameters>());
 
     private InstanceManager() {
     }
-
 
     public static long getTotalLoad() {
         long totalLoad = 0;
@@ -31,15 +30,18 @@ public class InstanceManager {
         return totalLoad;
     }
 
-    public static void addInstance(String address, String id) throws MalformedURLException {
+    public static void addInstance(Instance instance) {
         synchronized (instances) {
-            if (!instances.containsKey(id)) {
-                Instance instance = new Instance(address, id);
+            if (!instances.containsKey(instance.getId())) {
                 instances.put(instance.getId(), instance);
                 ThreadManager.execute(new HealthCheckTask(instance));
-                notifyWaitingRequests();
+                repeatWaitingRequests();
             }
         }
+    }
+
+    public static void addInstance(String address, String id) throws MalformedURLException {
+        addInstance(new Instance(address, id));
     }
 
     public static void removeInstance(String id) {
@@ -51,42 +53,54 @@ public class InstanceManager {
         }
     }
 
-
-    public static void sendRequest(SudokuParameters parameters) {
-        Instance instance;
-        synchronized (instances) { //Otherwise we might add a request to the queue just as it is getting evicted
-            instance = getBestInstance();
-            if (instance == null) {
-                //No instance currently available, wait
-                requestQueue.add(parameters);
-                return;
+    public static void retryRequest(SudokuParameters parameters) {
+        synchronized (instances) {
+            SudokuRequest request = createRequest(parameters);
+            if (request == null) {
+                waitingQueue.add(parameters);
+            } else {
+                ThreadManager.execute(request);
             }
         }
-        new SudokuRequest(parameters, instance).run();
     }
 
 
-    public static void notifyWaitingRequests() {
+    public static void sendRequest(SudokuParameters parameters) {
         synchronized (instances) {
-            for (SudokuParameters parameters : requestQueue) {
-                sendRequest(parameters);
+            SudokuRequest request = createRequest(parameters);
+            if (request == null) {
+                waitingQueue.add(parameters);
+            } else {
+                request.run();
             }
-            requestQueue.clear();
+        }
+    }
+
+    private static SudokuRequest createRequest(SudokuParameters parameters) {
+        Instance instance = getBestInstance();
+        return instance == null ? null : new SudokuRequest(parameters, instance);
+    }
+
+    public static void repeatWaitingRequests() {
+        synchronized (instances) {
+            Set<SudokuParameters> queueCopy = new HashSet<>(waitingQueue);
+            waitingQueue.clear();
+            for (SudokuParameters parameters : queueCopy) {
+                retryRequest(parameters);
+            }
         }
     }
 
     private static Instance getBestInstance() {
-        synchronized (instances) {
-            Instance bestInstance = null;
-            for (Instance instance : instances.values()) {
-                if (instance.getState() == Instance.InstanceState.HEALTHY) {
-                    if (bestInstance == null || bestInstance.getLoad() > instance.getLoad()) {
-                        bestInstance = instance;
-                    }
+        Instance bestInstance = null;
+        for (Instance instance : instances.values()) {
+            if (instance.getState() == Instance.InstanceState.HEALTHY) {
+                if (bestInstance == null || bestInstance.getLoad() > instance.getLoad()) {
+                    bestInstance = instance;
                 }
             }
-            return bestInstance;
         }
+        return bestInstance;
     }
 
     public static String getInstanceToRemove() {

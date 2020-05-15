@@ -104,8 +104,8 @@ public class Instance {
             }
         }
         if (newState == InstanceState.HEALTHY) {
-            //Wake threads waiting for instance has a new one has come online
-            InstanceManager.notifyWaitingRequests();
+            //Wake threads waiting for instance has a new one has just appeared
+            InstanceManager.repeatWaitingRequests();
         }
     }
 
