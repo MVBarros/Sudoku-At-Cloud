@@ -35,7 +35,7 @@ public class DynamoFrontEnd {
     private static final long TABLE_WRITE_CAPACITY = 5;
     private static final double BFS_N1_SLOPE = -298.2783986;
     private static final double BFS_N2_SLOPE = -298.2783986;
-    private static final double BFS_UN_SLOPE = 927.19685145;;
+    private static final double BFS_UN_SLOPE = 927.19685145;
     private static final double CP_N1_SLOPE = -1905.43807419;
     private static final double CP_N2_SLOPE = -1905.43807419;
     private static final double CP_UN_SLOPE = 1641.30725146;
