@@ -194,42 +194,16 @@ public class DynamoFrontEnd {
     }
 
     private static long unknownFixedCostBFS(SudokuParameters parameters) {
-        switch (parameters.getN1()) {
-            case 9:
-                return COST_9x9_BFS;
-            case 16:
-                return COST_16x16_BFS;
-            case 25:
-            default: //Should never be default
-                return COST_25x25_BFS;
-        }
+        return (long)  Math.abs(BFS_N1_SLOPE * parameters.getN1() + BFS_N2_SLOPE * parameters.getN2() + BFS_UN_SLOPE * parameters.getUn());
     }
 
     private static long unknownFixedCostCP(SudokuParameters parameters) {
-        switch (parameters.getN1()) {
-            case 9:
-                return COST_9x9_CP;
-            case 16:
-                return COST_16x16_CP;
-            case 25:
-            default: //Should never be default
-                return COST_25x25_CP;
-        }
+        return (long)  Math.abs(CP_N1_SLOPE * parameters.getN1() + CP_N2_SLOPE * parameters.getN2() + CP_UN_SLOPE * parameters.getUn());
     }
 
     private static long unknownFixedCostDLX(SudokuParameters parameters) {
-        switch (parameters.getN1()) {
-            case 9:
-                return COST_9x9_DLX;
-            case 16:
-                return COST_16x16_DLX;
-            case 25:
-            default: //Should never be default
-                return COST_25x25_DLX;
-        }
+        return (long)  Math.abs(DLX_N1_SLOPE * parameters.getN1() + DLX_N2_SLOPE * parameters.getN2() + DLX_UN_SLOPE * parameters.getUn());
     }
-
-
 
     /**
      * Stats tables: Primary key is unique combination of board and unassigned entrie
