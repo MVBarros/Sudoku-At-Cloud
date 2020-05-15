@@ -20,7 +20,6 @@ paths = [ \
 ]
 
 strats = ['BFS', 'CP', 'DLX']
-metrics = {'BFS' : "Method Count", 'CP' : "New Count", 'DLX' : "New Array Count"}
 
 def numericalSort(value):
     parts = numbers.split(value)
@@ -32,13 +31,12 @@ def numericalSort(value):
 
 def getMetricsForStrat(strat):
     ret = [[], []]
-    metric = metrics[strat]
     curr_paths = [s for s in paths if strat in s]
     for path in curr_paths:
         for filename in sorted(glob.iglob(path), key=numericalSort):
             with open(filename, 'r') as f:
                 items = json.load(f)
-                ret[0].append(items[metric])
+                ret[0].append([items["Board"]["UN"], items["Board"]["N1"], items["Board"]["N2"]])
                 ret[1].append(items["Instruction Count"])
     return ret
 
@@ -46,7 +44,7 @@ def getMetricsForStrat(strat):
 for strat in strats:
     print("\n\nStrategy : " + strat + "\n\n")
     a = getMetricsForStrat(strat)
-    x = np.array(a[0]).reshape((-1, 1))    
+    x = np.array(a[0])    
     y = np.array(a[1])
     print("Simple linear regression")
 
@@ -57,9 +55,9 @@ for strat in strats:
     print('coefficient of determination:', r_sq)
     print('intercept:', model.intercept_)
     print('slope:', model.coef_)
-    #y_predict = model.predict(x)
-    #for i in range(0, y.size):
-    #    print("\tPredicted: ", y_predict[i])
-    #    print("\tReal:      ", y[i])
+    y_predict = model.predict(x)
+    for i in range(0, y.size):
+        print("\tPredicted: ", y_predict[i])
+        print("\tReal:      ", y[i])
 
         

@@ -5,7 +5,7 @@ import metrics.tools.StatsCP;
 import metrics.tools.StatsDLX;
 
 public class SudokuParameters {
-    enum Strategy {
+    public enum Strategy {
         BFS("BFS"),
         CP("CP"),
         DLX("DLX");

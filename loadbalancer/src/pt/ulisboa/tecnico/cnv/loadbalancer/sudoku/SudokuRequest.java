@@ -19,7 +19,7 @@ public class SudokuRequest {
 
     public SudokuRequest(SudokuParameters parameters, HttpExchange httpExchange) {
         this.parameters = parameters;
-        this.cost = DynamoFrontEnd.getCost(parameters);
+        this.cost = DynamoFrontEnd.inferCost(parameters);
         this.httpExchange = httpExchange;
     }
 

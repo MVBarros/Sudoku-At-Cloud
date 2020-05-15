@@ -34,6 +34,16 @@ public class DynamoFrontEnd {
     private static final long TABLE_READ_CAPACITY = 5;
     private static final long TABLE_WRITE_CAPACITY = 5;
 
+    //FIXME DO CONSTANT COSTS
+    private static final long COST_9x9_BFS = (long) (4 * Math.pow(10, 8));
+    private static final long COST_9x9_CP = (long) (2.7 * Math.pow(10, 9));
+    private static final long COST_9x9_DLX = 0;
+    private static final long COST_16x16_BFS = 0;
+    private static final long COST_16x16_CP = 0;
+    private static final long COST_16x16_DLX = 0;
+    private static final long COST_25x25_BFS = 0;
+    private static final long COST_25x25_CP = 0;
+    private static final long COST_25x25_DLX = 0;
 
     private static Map<String, Long> requestCostCache = Collections.synchronizedMap(new LRUCache<String, Long>(CACHE_CAPACITY));
     private static AmazonDynamoDB dynamoDB;
@@ -91,51 +101,43 @@ public class DynamoFrontEnd {
         }
     }
 
-    public static long getCost(SudokuParameters parameters) {
-        Long cost = requestCostSameBoard(parameters);
+    public static long inferCost(SudokuParameters parameters) {
+        Long cost = inferCostFilterBoard(parameters);
         if (cost != null) {
             return cost;
         } else {
-            cost = requestCostAnyBoard(parameters);
+            cost = inferCostAnyBoard(parameters);
             if (cost != null) {
                 return cost;
             } else {
-                return 0; //FIXME DO CONSTANT COSTS
+                return unknownFixedCost(parameters);
             }
         }
     }
 
-    private static Long requestCostSameBoard(SudokuParameters parameters) {
+    private static Long inferCostFilterBoard(SudokuParameters parameters) {
         String cacheKey = getCacheKey(parameters);
         Long value = getCostFromCache(cacheKey);
-        return  value != null ? value : sameBoardQuery(parameters);
+        return value != null ? value : filterBoardQuery(parameters);
+    }
+
+    private static Long inferCostAnyBoard(SudokuParameters parameters) {
+        return costQuery(anyBoardFilter(parameters), parameters.getTableName());
     }
 
     private static Long getCostFromCache(String cacheKey) {
         return requestCostCache.get(cacheKey);
     }
 
-
-    private static Long requestCostAnyBoard(SudokuParameters parameters) {
-        return requestCostQuery(anyBoardFilter(parameters), parameters.getTableName());
-    }
-
-    private static Long sameBoardQuery(SudokuParameters parameters) {
-        Long value = requestCostQuery(sameBoardFilter(parameters), parameters.getTableName());
+    private static Long filterBoardQuery(SudokuParameters parameters) {
+        Long value = costQuery(filterBoardFilter(parameters), parameters.getTableName());
         if (value != null) {
             requestCostCache.put(getCacheKey(parameters), value);
         }
         return value;
     }
 
-    private static Long requestCostQuery(HashMap<String, Condition> scanFilter, String tableName) {
-        ScanRequest scanRequest = new ScanRequest(tableName).withScanFilter(scanFilter);
-        ScanResult scanResult = dynamoDB.scan(scanRequest).withCount(SCAN_RESULT_LIMIT);
-        List<Map<String, AttributeValue>> items = scanResult.getItems();
-        return items.size() == 0 ? null : Long.parseLong(items.get(0).get(KEY_REQUEST_COST).getN());
-    }
-
-    private static HashMap<String, Condition> sameBoardFilter(SudokuParameters parameters) {
+    private static HashMap<String, Condition> filterBoardFilter(SudokuParameters parameters) {
         return parameterFilter(parameters, true);
     }
 
@@ -172,6 +174,63 @@ public class DynamoFrontEnd {
 
         return scanFilter;
     }
+
+    private static Long costQuery(HashMap<String, Condition> scanFilter, String tableName) {
+        ScanRequest scanRequest = new ScanRequest(tableName).withScanFilter(scanFilter);
+        ScanResult scanResult = dynamoDB.scan(scanRequest).withCount(SCAN_RESULT_LIMIT);
+        List<Map<String, AttributeValue>> items = scanResult.getItems();
+        return items.size() == 0 ? null : Long.parseLong(items.get(0).get(KEY_REQUEST_COST).getN());
+    }
+
+    private static long unknownFixedCost(SudokuParameters parameters) {
+        switch (parameters.getStrategy()) {
+            case BFS:
+                return unknownFixedCostBFS(parameters);
+            case CP:
+                return unknownFixedCostCP(parameters);
+            case DLX:
+            default: //Should never be default
+                return unknownFixedCostDLX(parameters);
+        }
+    }
+
+    private static long unknownFixedCostBFS(SudokuParameters parameters) {
+        switch (parameters.getN1()) {
+            case 9:
+                return COST_9x9_BFS;
+            case 16:
+                return COST_16x16_BFS;
+            case 25:
+            default: //Should never be default
+                return COST_25x25_BFS;
+        }
+    }
+
+    private static long unknownFixedCostCP(SudokuParameters parameters) {
+        switch (parameters.getN1()) {
+            case 9:
+                return COST_9x9_CP;
+            case 16:
+                return COST_16x16_CP;
+            case 25:
+            default: //Should never be default
+                return COST_25x25_CP;
+        }
+    }
+
+    private static long unknownFixedCostDLX(SudokuParameters parameters) {
+        switch (parameters.getN1()) {
+            case 9:
+                return COST_9x9_DLX;
+            case 16:
+                return COST_16x16_DLX;
+            case 25:
+            default: //Should never be default
+                return COST_25x25_DLX;
+        }
+    }
+
+
 
     /**
      * Stats tables: Primary key is unique combination of board and unassigned entrie
