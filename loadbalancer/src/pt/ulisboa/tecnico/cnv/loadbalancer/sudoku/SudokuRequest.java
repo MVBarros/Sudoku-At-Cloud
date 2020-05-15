@@ -8,6 +8,7 @@ import pt.ulisboa.tecnico.cnv.loadbalancer.instance.InstanceManager;
 
 import java.io.*;
 import java.net.HttpURLConnection;
+import java.nio.charset.StandardCharsets;
 
 
 public class SudokuRequest {
@@ -53,25 +54,20 @@ public class SudokuRequest {
             if (status == SUDOKU_REQUEST_SUCCESS) {
                 forwardReply(conn);
             } else {
-                this.instance.incrFailureCounter();
-                this.instance.removeRequest(this);
-                InstanceManager.getInstance().sendRequest(this);
-                //When the health check fails the request will be sent to another machine so can just return
+                instanceError(conn);
                 conn.disconnect();
             }
         } catch (IOException e) {
-            this.instance.incrFailureCounter();
-            this.instance.removeRequest(this);
-            InstanceManager.getInstance().sendRequest(this);
-            //Try and send to a new instance immediately
+            instanceError(conn);
             conn.disconnect();
+
         }
     }
 
     /**
      * Forward sudoku reply from @conn to client that made the request
      */
-    public void forwardReply(HttpURLConnection conn) throws IOException {
+    private void forwardReply(HttpURLConnection conn) throws IOException {
 
         String reply = getReply(conn);
         try {
@@ -86,7 +82,7 @@ public class SudokuRequest {
 
             //Send content
             final OutputStream os = httpExchange.getResponseBody();
-            OutputStreamWriter out = new OutputStreamWriter(os, "UTF-8");
+            OutputStreamWriter out = new OutputStreamWriter(os, StandardCharsets.UTF_8);
             out.write(reply);
             out.flush();
             out.close();
@@ -105,11 +101,18 @@ public class SudokuRequest {
         }
     }
 
+    private void instanceError(HttpURLConnection conn) {
+        conn.disconnect();
+        this.instance.setState(Instance.InstanceState.UNHEALTHY);
+        this.instance.removeRequest(this);
+        InstanceManager.getInstance().sendRequest(this);
+    }
+
     private String getReply(HttpURLConnection conn) throws IOException {
         BufferedReader in = new BufferedReader(
                 new InputStreamReader(conn.getInputStream()));
         String inputLine;
-        StringBuffer content = new StringBuffer();
+        StringBuilder content = new StringBuilder();
         while ((inputLine = in.readLine()) != null) {
             content.append(inputLine);
         }
