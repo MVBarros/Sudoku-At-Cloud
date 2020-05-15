@@ -45,12 +45,7 @@ public class InstanceManager {
     }
 
     public static void removeInstance(String id) {
-        Instance instance = instances.remove(id);
-        if (instance != null) {
-            for (SudokuRequest request : instance.getRequests()) {
-                sendRequest(request.getParameters());
-            }
-        }
+        instances.remove(id);
     }
 
     public static void sendRequest(SudokuParameters parameters) {
