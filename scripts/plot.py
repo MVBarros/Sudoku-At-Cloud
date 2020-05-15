@@ -48,11 +48,11 @@ def grafico():
                     if key != 'Board':
                         d[key].append(value)
                     else:
-                        d['Zeros'].append(data['Board']['Board Zeros'])
+                        d['Zeros'].append(data['Board']['UN'])
 
         for key in metric_keys:
             plt.plot(d['Zeros'], d[key], label=key)
-            plt.xlabel('Numero de zeros')
+            plt.xlabel('Unassigned Entries')
             plt.title(title + "-" + key)
             plt.legend()
             plt.savefig(out_dir + title + "-" + key + ".png")
@@ -69,7 +69,7 @@ def grafico2():
                     with open(filename, 'r') as f:
                         items = json.load(f)
                         d[metric].append(items[metric])
-                        d['Zeros'].append(items['Board']['Board Zeros'])
+                        d['Zeros'].append(items['Board']['UN'])
                                     
                 plt.plot(d['Zeros'], d[metric], label=board + "-" + metric)
 
