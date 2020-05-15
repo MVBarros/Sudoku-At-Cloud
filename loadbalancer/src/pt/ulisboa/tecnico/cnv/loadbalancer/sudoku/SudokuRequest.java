@@ -20,6 +20,7 @@ public class SudokuRequest {
     private Instance instance;
     private long sentTime = System.currentTimeMillis();
     private static final long COST_LOSS_PER_MILLISECOND = 0; //TODO
+    private static final double MIN_COST_SCALE = 0.1; //TODO
 
     public SudokuRequest(SudokuParameters parameters, HttpExchange httpExchange) {
         this.parameters = parameters;
@@ -33,7 +34,7 @@ public class SudokuRequest {
     }
 
     public long getCost() {
-        return cost - COST_LOSS_PER_MILLISECOND * (System.currentTimeMillis() - sentTime);
+        return Math.min( (long) (cost * MIN_COST_SCALE), cost - COST_LOSS_PER_MILLISECOND * (System.currentTimeMillis() - sentTime));
     }
 
 
