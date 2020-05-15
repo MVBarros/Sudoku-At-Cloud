@@ -16,6 +16,7 @@ public class InstanceManager {
     private final Map<String, Instance> instances = new ConcurrentHashMap<>();
     private final Executor healthCheckExecutor = Executors.newCachedThreadPool();
     private final Set<SudokuRequest> requestQueue = Collections.synchronizedSet(new HashSet<SudokuRequest>());
+
     private InstanceManager() {
     }
 
@@ -24,6 +25,16 @@ public class InstanceManager {
             instance = new InstanceManager();
         }
         return instance;
+    }
+
+    public long getTotalLoad() {
+        long totalLoad = 0;
+        synchronized (instances) {
+            for (Instance instance : instances.values()) {
+                totalLoad += instance.getLoad();
+            }
+        }
+        return totalLoad;
     }
 
     public void addInstance(String address, String id) throws MalformedURLException {
@@ -92,5 +103,10 @@ public class InstanceManager {
             }
             return bestInstance;
         }
+    }
+
+    public String getInstanceToRemove() {
+        //TODO - Make actual selection of instance to remove
+        return instances.values().iterator().next().getId();
     }
 }
