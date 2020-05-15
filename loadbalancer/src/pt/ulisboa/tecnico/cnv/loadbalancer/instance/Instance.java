@@ -129,7 +129,6 @@ public class Instance {
         }
     }
 
-
     public void incrFailureCounter() {
         synchronized (failureCounter) {
             int failureCounter = this.failureCounter.incrementAndGet();
@@ -140,5 +139,10 @@ public class Instance {
                 setState(InstanceState.UNHEALTHY);
             }
         }
+    }
+
+    @Override
+    public String toString() {
+        return this.getAddress();
     }
 }
