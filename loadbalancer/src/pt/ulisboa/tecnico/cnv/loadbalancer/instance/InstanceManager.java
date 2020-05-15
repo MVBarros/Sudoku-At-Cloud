@@ -49,28 +49,33 @@ public class InstanceManager {
         }
     }
 
-    public void sendRequest(SudokuRequest request) {
+    public boolean sendRequest(SudokuRequest request) {
         Instance instance;
         synchronized (requestQueue) { //Otherwise we might add a request to the queue just as it is getting evicted
             instance = getBestInstance();
             if (instance == null) {
                 //No instance currently available, wait
                 requestQueue.add(request);
-                return;
+                return false;
             } else {
                 request.setInstance(instance);
             }
         }
         HttpURLConnection connection = instance.getSudokuRequestConn(request.getParameters());
         request.sendRequest(connection);
+        return true;
     }
 
 
     public void notifyWaitingRequests() {
         synchronized (requestQueue) {
+            List<SudokuRequest> sentRequests = new ArrayList<>();
             for (SudokuRequest request : requestQueue) {
-                sendRequest(request);
+                if (sendRequest(request)) {
+                    sentRequests.add(request);
+                }
             }
+            requestQueue.removeAll(sentRequests);
         }
     }
 
