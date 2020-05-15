@@ -5,6 +5,9 @@ import pt.ulisboa.tecnico.cnv.loadbalancer.task.HealthCheckTask;
 
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
@@ -15,8 +18,7 @@ public class InstanceManager {
 
     private final Map<String, Instance> instances = new ConcurrentHashMap<>();
     private final Executor healthCheckExecutor = Executors.newCachedThreadPool();
-    private final Byte monitor = 0;
-
+    private final List<SudokuRequest> requestQueue = Collections.synchronizedList(new ArrayList<SudokuRequest>());
     private InstanceManager() {
     }
 
@@ -33,7 +35,7 @@ public class InstanceManager {
                 Instance instance = new Instance(address, id);
                 instances.put(instance.getId(), instance);
                 healthCheckExecutor.execute(new HealthCheckTask(instance));
-                notifyMonitor();
+                notifyWaitingRequests();
             }
         }
     }
@@ -49,42 +51,30 @@ public class InstanceManager {
 
     public void sendRequest(SudokuRequest request) {
         Instance instance;
-        synchronized (instances) {
+        synchronized (requestQueue) { //Otherwise we might add a request to the queue just as it is getting evicted
             instance = getBestInstance();
-            request.setInstance(instance);
+            if (instance == null) {
+                //No instance currently available, wait
+                requestQueue.add(request);
+                return;
+            } else {
+                request.setInstance(instance);
+            }
         }
-
         HttpURLConnection connection = instance.getSudokuRequestConn(request.getParameters());
         request.sendRequest(connection);
     }
 
-    private Instance getBestInstance() {
-        Instance instance = searchBestInstance();
-        while (instance == null) {
-            waitMonitor();
-            instance = searchBestInstance();
-        }
-        return instance;
-    }
 
-    private void waitMonitor() {
-        synchronized (monitor) {
-            try {
-                monitor.wait();
-            } catch (InterruptedException e) {
-                //Do nothing
-                System.out.println("Error: Thread was interrupted waiting on lock");
+    public void notifyWaitingRequests() {
+        synchronized (requestQueue) {
+            for (SudokuRequest request : requestQueue) {
+                sendRequest(request);
             }
         }
     }
 
-    public void notifyMonitor() {
-        synchronized (monitor) {
-            monitor.notifyAll();
-        }
-    }
-
-    private Instance searchBestInstance() {
+    private Instance getBestInstance() {
         synchronized (instances) {
             Instance bestInstance = null;
             for (Instance instance : instances.values()) {

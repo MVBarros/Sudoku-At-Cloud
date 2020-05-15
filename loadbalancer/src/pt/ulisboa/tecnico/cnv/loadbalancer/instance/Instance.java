@@ -101,7 +101,7 @@ public class Instance {
             this.state = state;
             if (this.state == InstanceState.HEALTHY) {
                 //Wake threads waiting for instance has a new one as come online
-                InstanceManager.getInstance().notifyMonitor();
+                InstanceManager.getInstance().notifyWaitingRequests();
             }
         }
     }
