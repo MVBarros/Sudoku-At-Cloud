@@ -94,7 +94,8 @@ public class Instance {
             //Once dead can never be undead
             this.state = state;
             if (this.state == InstanceState.HEALTHY) {
-                //FIXME Wake up everyone waiting for instances
+                //Wake threads waiting for instance has a new one as come online
+                InstanceManager.getInstance().notifyMonitor();
             }
         }
     }

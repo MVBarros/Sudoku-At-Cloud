@@ -11,19 +11,20 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 public class InstanceManager {
-    private static InstanceManager instanceManager;
+    private static InstanceManager instance;
 
     private final Map<String, Instance> instances = new ConcurrentHashMap<>();
     private final Executor healthCheckExecutor = Executors.newCachedThreadPool();
+    private final Byte monitor = 0;
 
     private InstanceManager() {
     }
 
     public static InstanceManager getInstance() {
-        if (instanceManager == null) {
-            instanceManager = new InstanceManager();
+        if (instance == null) {
+            instance = new InstanceManager();
         }
-        return instanceManager;
+        return instance;
     }
 
     public void addInstance(String address) throws MalformedURLException {
@@ -32,6 +33,7 @@ public class InstanceManager {
                 Instance instance = new Instance(address);
                 instances.put(instance.getAddress(), instance);
                 healthCheckExecutor.execute(new HealthCheckTask(instance));
+                notifyMonitor();
             }
         }
     }
@@ -56,8 +58,34 @@ public class InstanceManager {
         request.sendRequest(connection);
     }
 
-    //FIXME do zero instances
     private Instance getBestInstance() {
+        Instance instance = searchBestInstance();
+        while (instance == null) {
+            waitMonitor();
+            instance = searchBestInstance();
+        }
+        return instance;
+    }
+
+    private void waitMonitor() {
+        synchronized (monitor) {
+            try {
+                monitor.wait();
+            } catch (InterruptedException e) {
+                //Do nothing
+                System.out.println("Error: Thread was interrupted waiting on lock");
+            }
+        }
+    }
+
+    public void notifyMonitor() {
+        synchronized (monitor) {
+            monitor.notifyAll();
+        }
+    }
+
+    //FIXME do zero instances
+    private Instance searchBestInstance() {
         synchronized (instances) {
             Instance bestInstance = null;
             for (Instance instance : instances.values()) {

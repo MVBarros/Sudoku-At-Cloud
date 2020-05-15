@@ -34,15 +34,15 @@ public class DynamoFrontEnd {
     private static final long TABLE_READ_CAPACITY = 5;
     private static final long TABLE_WRITE_CAPACITY = 5;
 
-    private static final long COST_9x9_BFS = (long) (4 * Math.pow(10, 8));
-    private static final long COST_9x9_CP = (long) (3 * Math.pow(10, 8));
-    private static final long COST_9x9_DLX = (long) (5 * Math.pow(10, 8));
-    private static final long COST_16x16_BFS = (long) (2.7 * Math.pow(10, 9));
-    private static final long COST_16x16_CP = (long) (2.5 * Math.pow(10, 9));
-    private static final long COST_16x16_DLX = (long) (1.9 * Math.pow(10, 9));
-    private static final long COST_25x25_BFS = (long) (3.9 * Math.pow(10, 9));
-    private static final long COST_25x25_CP = (long) (Math.pow(10, 10));
-    private static final long COST_25x25_DLX = (long) (5.6 * Math.pow(10, 9));
+    private static final double BFS_N1_SLOPE =  -298.2783986;
+    private static final double BFS_N2_SLOPE =  -298.2783986;
+    private static final double BFS_UN_SLOPE = 927.19685145;;
+    private static final double CP_N1_SLOPE = -1905.43807419;
+    private static final double CP_N2_SLOPE = -1905.43807419;
+    private static final double CP_UN_SLOPE = 1641.30725146;
+    private static final double DLX_N1_SLOPE = 8002346.72978024;
+    private static final double DLX_N2_SLOPE = 8002346.72978024;
+    private static final double DLX_UN_SLOPE = 1344284.95812563;
 
     private static Map<String, Long> requestCostCache = Collections.synchronizedMap(new LRUCache<String, Long>(CACHE_CAPACITY));
     private static AmazonDynamoDB dynamoDB;
