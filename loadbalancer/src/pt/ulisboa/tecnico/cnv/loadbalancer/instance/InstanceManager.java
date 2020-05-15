@@ -27,19 +27,19 @@ public class InstanceManager {
         return instance;
     }
 
-    public void addInstance(String address) throws MalformedURLException {
+    public void addInstance(String address, String id) throws MalformedURLException {
         synchronized (instances) {
-            if (!instances.containsKey(address)) {
-                Instance instance = new Instance(address);
-                instances.put(instance.getAddress(), instance);
+            if (!instances.containsKey(id)) {
+                Instance instance = new Instance(address, id);
+                instances.put(instance.getId(), instance);
                 healthCheckExecutor.execute(new HealthCheckTask(instance));
                 notifyMonitor();
             }
         }
     }
 
-    public void removeInstance(String address) {
-        Instance instance = instances.remove(address);
+    public void removeInstance(String id) {
+        Instance instance = instances.remove(id);
         if (instance != null) {
             for (SudokuRequest request : instance.getRequests()) {
                 sendRequest(request);
@@ -84,7 +84,6 @@ public class InstanceManager {
         }
     }
 
-    //FIXME do zero instances
     private Instance searchBestInstance() {
         synchronized (instances) {
             Instance bestInstance = null;

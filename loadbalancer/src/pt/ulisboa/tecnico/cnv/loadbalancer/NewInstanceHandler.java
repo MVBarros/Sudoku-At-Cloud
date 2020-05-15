@@ -14,6 +14,7 @@ import java.net.MalformedURLException;
 public class NewInstanceHandler implements HttpHandler {
 
     private static final String ADDRESS_PARAMETER = "addr";
+    private static final String ID_PARAMETER = "id";
 
     @Override
     public void handle(HttpExchange t) throws IOException {
@@ -21,17 +22,18 @@ public class NewInstanceHandler implements HttpHandler {
         System.out.println("> Health Check Query:\t" + query);
 
         String address = getAddress(query);
-        if (address != null) {
-            addInstance(t, address);
+        String id = getId(query);
+        if (address != null && id != null) {
+            addInstance(t, address, id);
         } else {
-            System.out.println("No address provided");
+            System.out.println("No address or id provided");
             requestError(t);
         }
     }
 
-    private void addInstance(HttpExchange t, String address) throws IOException {
+    private void addInstance(HttpExchange t, String address, String id) throws IOException {
         try {
-            InstanceManager.getInstance().addInstance(address);
+            InstanceManager.getInstance().addInstance(address, id);
             requestSuccess(t);
         } catch (MalformedURLException e) {
             System.out.println("Address provided was malformed: " + address);
@@ -65,5 +67,19 @@ public class NewInstanceHandler implements HttpHandler {
             }
         }
         return address;
+    }
+
+
+    private String getId(String query) {
+        final String[] params = query.split("&");
+        String id = null;
+        for (final String p : params) {
+            String[] splitParam = p.split("=");
+            if (splitParam[0].equals(ID_PARAMETER)) {
+                id = splitParam[1];
+                break;
+            }
+        }
+        return id;
     }
 }

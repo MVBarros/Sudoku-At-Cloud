@@ -33,17 +33,23 @@ public class Instance {
     private final AtomicInteger failureCounter;
     private final Set<SudokuRequest> requests;
     private InstanceState state;
+    private String id;
 
-    public Instance(String address) throws MalformedURLException {
+    public Instance(String address, String id) throws MalformedURLException {
         this.address = new URL(address);
         this.LBAddress = new URL(address + LB_HANDLER);
         this.requests = Collections.synchronizedSet(new HashSet<SudokuRequest>());
         this.failureCounter = new AtomicInteger(0);
         this.state = InstanceState.HEALTHY;
+        this.id = id;
     }
 
     public String getAddress() {
         return address.toString();
+    }
+
+    public String getId() {
+        return null;
     }
 
     public void addRequest(SudokuRequest request) {
