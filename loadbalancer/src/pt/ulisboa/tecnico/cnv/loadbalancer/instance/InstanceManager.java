@@ -53,25 +53,13 @@ public class InstanceManager {
         }
     }
 
-    public static void retryRequest(SudokuParameters parameters) {
-        synchronized (instances) {
-            SudokuRequest request = createRequest(parameters);
-            if (request == null) {
-                waitingQueue.add(parameters);
-            } else {
-                ThreadManager.execute(request);
-            }
-        }
-    }
-
-
     public static void sendRequest(SudokuParameters parameters) {
         synchronized (instances) {
             SudokuRequest request = createRequest(parameters);
             if (request == null) {
                 waitingQueue.add(parameters);
             } else {
-                request.run();
+                ThreadManager.execute(request);
             }
         }
     }
@@ -86,7 +74,7 @@ public class InstanceManager {
             Set<SudokuParameters> queueCopy = new HashSet<>(waitingQueue);
             waitingQueue.clear();
             for (SudokuParameters parameters : queueCopy) {
-                retryRequest(parameters);
+                sendRequest(parameters);
             }
         }
     }

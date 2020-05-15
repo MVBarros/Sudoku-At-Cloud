@@ -76,7 +76,7 @@ public class SudokuParameters {
 
     @Override
     public String toString() {
-        return String.format("s=%s\tun=%d\tn1=%d\tn2=%d\ti=%s", getStrategy().name(), getUn(), getN1(), getN2(), getInputBoard());
+        return String.format("s=%s&un=%d&n1=%d&n2=%d&i=%s", getStrategy().name(), getUn(), getN1(), getN2(), getInputBoard());
     }
 
     public String getTableName() {

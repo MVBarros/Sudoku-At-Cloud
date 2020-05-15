@@ -26,13 +26,12 @@ public class HealthCheckTask implements Runnable {
                     instance.incrFailureCounter();
                 }
                 if (instance.getState() == Instance.InstanceState.DEAD) {
-                    System.out.println("Instance " + instance.getId() + " was marked dead");
                     InstanceManager.removeInstance(instance.getId());
                     return;
                 }
                 Thread.sleep(INTERVAL);
             } catch (InterruptedException e) {
-                System.out.println("Error: health check thread for instance " + instance.getAddress() + " was interrupted");
+                System.out.println("Error: health check thread for instance " + instance.getId() + " was interrupted");
             }
         }
     }
@@ -41,7 +40,7 @@ public class HealthCheckTask implements Runnable {
         try {
             Thread.sleep(GRACE_PERIOD);
         } catch (InterruptedException e) {
-            System.out.println("Error: health check thread for instance " + instance.getAddress() + " was interrupted");
+            System.out.println("Error: health check thread for instance " + instance.getId() + " was interrupted");
         }
     }
 }

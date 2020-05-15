@@ -1,6 +1,5 @@
 package pt.ulisboa.tecnico.cnv.loadbalancer.sudoku;
 
-import pt.ulisboa.tecnico.cnv.dynamo.DynamoFrontEnd;
 import pt.ulisboa.tecnico.cnv.loadbalancer.instance.Instance;
 import pt.ulisboa.tecnico.cnv.loadbalancer.instance.InstanceManager;
 
@@ -26,7 +25,6 @@ public class SudokuRequest implements Runnable {
         this.parameters = parameters;
         this.cost = parameters.getCost();
         this.minCost = (long) (cost * MIN_COST_SCALE);
-        System.out.println("Inferred cost for parameters " + parameters + " --> " + this.cost);
         this.instance = instance;
         this.sentTime = System.currentTimeMillis();
     }
@@ -48,6 +46,7 @@ public class SudokuRequest implements Runnable {
      * Sends Sudoku Request to instance on the other side of @conn
      */
     public void sendRequest(HttpURLConnection conn) {
+        System.out.println("Request " + this.parameters + " going to instance" + instance.getId()); 
         this.instance.addRequest(this);
         try {
             conn.setRequestProperty("Content-Type", "application/json");
