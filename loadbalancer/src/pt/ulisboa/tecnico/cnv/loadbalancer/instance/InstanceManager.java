@@ -56,7 +56,7 @@ public class InstanceManager {
         request.sendRequest(connection);
     }
 
-    //FIXME ask if we can assume at least one instance at a time
+    //FIXME do zero instances
     private Instance getBestInstance() {
         synchronized (instances) {
             Instance bestInstance = null;

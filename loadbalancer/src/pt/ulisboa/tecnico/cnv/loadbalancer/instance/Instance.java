@@ -135,7 +135,7 @@ public class Instance {
             if (failureCounter == DEAD_THRESHOLD) {
                 setState(InstanceState.DEAD);
             }
-            if (failureCounter == UNHEALTHY_THRESHOLD) {
+            else if (failureCounter == UNHEALTHY_THRESHOLD) {
                 setState(InstanceState.UNHEALTHY);
             }
         }
