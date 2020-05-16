@@ -2,6 +2,7 @@ package pt.ulisboa.tecnico.cnv.loadbalancer.sudoku;
 
 import pt.ulisboa.tecnico.cnv.loadbalancer.instance.Instance;
 import pt.ulisboa.tecnico.cnv.loadbalancer.instance.InstanceManager;
+import pt.ulisboa.tecnico.cnv.loadbalancer.instance.RequestQueue;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -80,7 +81,7 @@ public class SudokuRequest implements Runnable {
         instance.removeRequest(this);
         conn.disconnect();
         instance.setState(Instance.InstanceState.UNHEALTHY);
-        InstanceManager.sendRequest(this.getParameters());
+        RequestQueue.addToQueue(this.getParameters());
     }
 
 

@@ -2,9 +2,13 @@ package pt.ulisboa.tecnico.cnv.loadbalancer;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import pt.ulisboa.tecnico.cnv.loadbalancer.instance.Instance;
 import pt.ulisboa.tecnico.cnv.loadbalancer.instance.InstanceManager;
+import pt.ulisboa.tecnico.cnv.loadbalancer.instance.RequestQueue;
 import pt.ulisboa.tecnico.cnv.loadbalancer.sudoku.SudokuParameters;
 import pt.ulisboa.tecnico.cnv.loadbalancer.sudoku.SudokuParametersBuilder;
+import pt.ulisboa.tecnico.cnv.loadbalancer.sudoku.SudokuRequest;
+import pt.ulisboa.tecnico.cnv.loadbalancer.task.ThreadManager;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -18,7 +22,6 @@ public class SudokuHandler implements HttpHandler {
     private static final String INPUT_BOARD_KEY = "i";
     private static final String STRATEGY_KEY = "s";
 
-
     @Override
     public void handle(HttpExchange t) throws IOException {
         final String query = t.getRequestURI().getQuery();
@@ -26,7 +29,13 @@ public class SudokuHandler implements HttpHandler {
         String body = parseRequestBody(t.getRequestBody());
 
         SudokuParameters parameters = parseRequest(query, body, t);
-        InstanceManager.sendRequest(parameters);
+        //Try and get instance, if failed add to queue and it will eventually be handled
+        Instance instance = InstanceManager.getBestInstance();
+        if (instance == null) {
+            RequestQueue.addToQueue(parameters);
+        } else {
+            ThreadManager.execute(new SudokuRequest(parameters, instance));
+        }
     }
 
 

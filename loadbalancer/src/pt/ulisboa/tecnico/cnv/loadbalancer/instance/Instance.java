@@ -1,5 +1,9 @@
 package pt.ulisboa.tecnico.cnv.loadbalancer.instance;
 
+import pt.ulisboa.tecnico.cnv.loadbalancer.instance.state.InstanceState;
+import pt.ulisboa.tecnico.cnv.loadbalancer.instance.state.InstanceStateDead;
+import pt.ulisboa.tecnico.cnv.loadbalancer.instance.state.InstanceStateHealthy;
+import pt.ulisboa.tecnico.cnv.loadbalancer.instance.state.InstanceStateSuspected;
 import pt.ulisboa.tecnico.cnv.loadbalancer.sudoku.SudokuParameters;
 import pt.ulisboa.tecnico.cnv.loadbalancer.sudoku.SudokuRequest;
 
@@ -12,12 +16,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Instance {
-
-    public enum InstanceState {
-        HEALTHY,
-        UNHEALTHY,
-        DEAD;
-    }
 
     private static final String LB_HANDLER = "/lb";
     private static final String SUDOKU_HANDLER = "/sudoku";
@@ -40,11 +38,11 @@ public class Instance {
         this.LBAddress = new URL(address + LB_HANDLER);
         this.requests = Collections.synchronizedSet(new HashSet<SudokuRequest>());
         this.failureCounter = new AtomicInteger(0);
-        this.state = InstanceState.HEALTHY;
         this.id = id;
+        setState(InstanceStateSuspected.getInstance()); //Only healthy after passing first health check
     }
 
-    public String getAddress() {
+    private String getAddress() {
         return address.toString();
     }
 
@@ -97,7 +95,7 @@ public class Instance {
     public void setState(InstanceState state) {
         InstanceState newState = null;
         synchronized (this) {
-            if (this.state != InstanceState.DEAD && state != this.state) {
+            if (this.state != InstanceStateDead.getInstance() && state != this.state) {
                 //Once dead can never be undead
                 this.state = state;
                 newState = state;
@@ -105,13 +103,9 @@ public class Instance {
         }
         if (newState != null) {
             System.out.println("Instance " + id + " is in state " + newState.name());
-        }
-        if (newState == InstanceState.HEALTHY) {
-            //Wake threads waiting for instance has a new one has just appeared
-            InstanceManager.repeatWaitingRequests();
+            newState.newState(this);
         }
     }
-
 
     public HttpURLConnection getSudokuRequestConn(SudokuParameters parameters) {
         HttpURLConnection conn;
@@ -136,16 +130,15 @@ public class Instance {
 
     public void resetFailureCounter() {
         this.failureCounter.set(0);
-        setState(InstanceState.HEALTHY);
-
+        setState(InstanceStateHealthy.getInstance());
     }
 
     public void incrFailureCounter() {
         int failureCounter = this.failureCounter.incrementAndGet();
         if (failureCounter == DEAD_THRESHOLD) {
-            setState(InstanceState.DEAD);
+            setState(InstanceStateDead.getInstance());
         } else if (failureCounter == UNHEALTHY_THRESHOLD) {
-            setState(InstanceState.UNHEALTHY);
+            setState(InstanceStateSuspected.getInstance());
         }
 
     }
@@ -153,5 +146,9 @@ public class Instance {
     @Override
     public String toString() {
         return this.getAddress();
+    }
+
+    public boolean isHealthy() {
+        return this.state == InstanceStateHealthy.getInstance();
     }
 }
