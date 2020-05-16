@@ -51,10 +51,12 @@ public class Instance {
     }
 
     public void addRequest(SudokuRequest request) {
+        System.out.println("Request " + request.getParameters() + " was added to instance " + this.id);
         requests.add(request);
     }
 
     public void removeRequest(SudokuRequest request) {
+        System.out.println("Request " + request.getParameters() + " was removed from instance " + this.id);
         requests.remove(request);
     }
 

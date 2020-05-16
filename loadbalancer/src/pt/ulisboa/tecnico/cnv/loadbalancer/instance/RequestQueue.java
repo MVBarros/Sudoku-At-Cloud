@@ -8,7 +8,9 @@ import pt.ulisboa.tecnico.cnv.loadbalancer.task.ThreadManager;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * Requests end up here when there are no instances available
@@ -16,8 +18,8 @@ import java.util.concurrent.locks.ReentrantLock;
 public class RequestQueue {
     private static final int NUMBER_REMOVAL_THREADS = 1;
     private static final BlockingQueue<SudokuParameters> queue = new LinkedBlockingQueue<>(); //Pretty much an infinite queue
-    private static final ReentrantLock queueLock = new ReentrantLock();
-    private static final Condition noInstanceCondition = queueLock.newCondition();
+    private static final ReadWriteLock queueLock = new ReentrantReadWriteLock();
+    private static final Condition noInstanceCondition = queueLock.writeLock().newCondition();
 
     //On class load create thread to remove entries from queue
     static {
@@ -37,17 +39,23 @@ public class RequestQueue {
     public static SudokuRequest removeFromQueue() throws InterruptedException {
         SudokuParameters parameters = queue.take();
         Instance instance;
+        queueLock.readLock().lock();
         while ((instance = InstanceManager.getBestInstance()) == null) {
-            queueLock.lock();
+            //Upgrade read lock to write lock (Java does not support out of the box lock upgrade)
+            queueLock.readLock().unlock();
+            queueLock.writeLock().lock();
             noInstanceCondition.await();
-            queueLock.unlock();
+            queueLock.writeLock().unlock();
+            queueLock.readLock().lock();
         }
+        queueLock.readLock().unlock();
         return new SudokuRequest(parameters, instance);
     }
 
     public static void notifyQueue() {
-        queueLock.lock();
+        queueLock.writeLock().lock();
+        System.out.println("Signalling queue of new instance");
         noInstanceCondition.signalAll();
-        queueLock.unlock();
+        queueLock.writeLock().unlock();
     }
 }
