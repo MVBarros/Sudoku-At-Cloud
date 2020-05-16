@@ -11,32 +11,39 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class InstanceManager {
 
     private static final Map<String, Instance> instances = new ConcurrentHashMap<>();
     private static final Set<SudokuParameters> waitingQueue = Collections.synchronizedSet(new HashSet<SudokuParameters>());
 
-    private InstanceManager() {
-    }
+    private static final ReadWriteLock instancesLock = new ReentrantReadWriteLock(); //Allows multiple threads to read together but isolates writers from readers
+
+    private InstanceManager() {}
 
     public static long getTotalLoad() {
         long totalLoad = 0;
-        synchronized (instances) {
-            for (Instance instance : instances.values()) {
-                totalLoad += instance.getLoad();
-            }
+        instancesLock.readLock().lock();
+        for (Instance instance : instances.values()) {
+            totalLoad += instance.getLoad();
         }
+        instancesLock.readLock().unlock();
         return totalLoad;
     }
 
-    public static void addInstance(Instance instance) {
-        synchronized (instances) {
-            if (!instances.containsKey(instance.getId())) {
-                instances.put(instance.getId(), instance);
-                ThreadManager.execute(new HealthCheckTask(instance));
-                repeatWaitingRequests();
-            }
+    private static void addInstance(Instance instance) {
+        instancesLock.writeLock().lock();
+        boolean containsInstance = instances.containsKey(instance.getId());
+        if (!containsInstance) {
+            instances.put(instance.getId(), instance);
+        }
+        instancesLock.writeLock().unlock();
+
+        if (!containsInstance) {
+            ThreadManager.execute(new HealthCheckTask(instance));
+            repeatWaitingRequests();
         }
     }
 
@@ -45,11 +52,13 @@ public class InstanceManager {
     }
 
     public static void removeInstance(String id) {
+        instancesLock.writeLock().lock();
         instances.remove(id);
+        instancesLock.writeLock().unlock();
     }
 
     public static void sendRequest(SudokuParameters parameters) {
-        synchronized (instances) {
+        synchronized (waitingQueue) { //Prevent adding to queue just after it was cleared and keeping request waiting
             SudokuRequest request = createRequest(parameters);
             if (request == null) {
                 waitingQueue.add(parameters);
@@ -65,17 +74,20 @@ public class InstanceManager {
     }
 
     public static void repeatWaitingRequests() {
-        synchronized (instances) {
-            Set<SudokuParameters> queueCopy = new HashSet<>(waitingQueue);
+        Set<SudokuParameters> queueCopy;
+        synchronized (waitingQueue) {
+            //Don't let any thread add to queue while copying
+            queueCopy = new HashSet<>(waitingQueue);
             waitingQueue.clear();
-            for (SudokuParameters parameters : queueCopy) {
-                sendRequest(parameters);
-            }
+        }
+        for (SudokuParameters parameters : queueCopy) {
+            sendRequest(parameters);
         }
     }
 
     private static Instance getBestInstance() {
         Instance bestInstance = null;
+        instancesLock.readLock().lock();
         for (Instance instance : instances.values()) {
             if (instance.getState() == Instance.InstanceState.HEALTHY) {
                 if (bestInstance == null || bestInstance.getLoad() > instance.getLoad()) {
@@ -83,6 +95,7 @@ public class InstanceManager {
                 }
             }
         }
+        instancesLock.readLock().unlock();
         return bestInstance;
     }
 
