@@ -8,18 +8,17 @@ import pt.ulisboa.tecnico.cnv.loadbalancer.task.ThreadManager;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * Requests end up here when there are no instances available
  **/
 public class RequestQueue {
-    private static final int NUMBER_REMOVAL_THREADS = 1;
+    private static final int NUMBER_REMOVAL_THREADS = 1; //More than this won't be efective due to strict locking
     private static final BlockingQueue<SudokuParameters> queue = new LinkedBlockingQueue<>(); //Pretty much an infinite queue
-    private static final ReadWriteLock queueLock = new ReentrantReadWriteLock();
-    private static final Condition noInstanceCondition = queueLock.writeLock().newCondition();
+    private static final ReentrantLock queueLock = new ReentrantLock();
+    private static final Condition noInstanceCondition = queueLock.newCondition();
+    //Wanted to have read write lock but java does not support lock upgrade
 
     //On class load create thread to remove entries from queue
     static {
@@ -37,25 +36,25 @@ public class RequestQueue {
     }
 
     public static SudokuRequest removeFromQueue() throws InterruptedException {
-        SudokuParameters parameters = queue.take();
-        Instance instance;
-        queueLock.readLock().lock();
-        while ((instance = InstanceManager.getBestInstance()) == null) {
-            //Upgrade read lock to write lock (Java does not support out of the box lock upgrade)
-            queueLock.readLock().unlock();
-            queueLock.writeLock().lock();
-            noInstanceCondition.await();
-            queueLock.writeLock().unlock();
-            queueLock.readLock().lock();
+        try {
+            SudokuParameters parameters = queue.take();
+            Instance instance;
+            queueLock.lock();
+            while ((instance = InstanceManager.getBestInstance()) == null) {
+                noInstanceCondition.await();
+            }
+            return new SudokuRequest(parameters, instance);
+        } finally {
+            if (queueLock.isHeldByCurrentThread()) {
+                queueLock.unlock();
+            }
         }
-        queueLock.readLock().unlock();
-        return new SudokuRequest(parameters, instance);
     }
 
     public static void notifyQueue() {
-        queueLock.writeLock().lock();
+        queueLock.lock();
         System.out.println("Signalling queue of new instance");
         noInstanceCondition.signalAll();
-        queueLock.writeLock().unlock();
+        queueLock.unlock();
     }
 }

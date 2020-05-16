@@ -84,7 +84,7 @@ public class Instance {
         long load = 0;
         synchronized (requests) {
             for (SudokuRequest request : requests) {
-                load += request.getCost();
+                load += request.getCurrentCost();
             }
         }
         return load;

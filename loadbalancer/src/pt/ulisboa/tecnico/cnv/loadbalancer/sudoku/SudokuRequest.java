@@ -1,7 +1,6 @@
 package pt.ulisboa.tecnico.cnv.loadbalancer.sudoku;
 
 import pt.ulisboa.tecnico.cnv.loadbalancer.instance.Instance;
-import pt.ulisboa.tecnico.cnv.loadbalancer.instance.InstanceManager;
 import pt.ulisboa.tecnico.cnv.loadbalancer.instance.RequestQueue;
 import pt.ulisboa.tecnico.cnv.loadbalancer.instance.state.InstanceStateSuspected;
 
@@ -14,19 +13,19 @@ import java.net.HttpURLConnection;
 
 public class SudokuRequest implements Runnable {
     private static final int SUDOKU_REQUEST_SUCCESS = 200;
-    private static final long COST_LOSS_PER_MILLISECOND = 0; //TODO
+    private static final long COST_LOSS_PER_MILLISECOND = 100; //TODO
     private static final double MIN_COST_SCALE = 0.1;
 
     private final SudokuParameters parameters;
-    private final long cost;
+    private final long startingCost;
     private final long minCost;
     private final Instance instance;
     private final long sentTime;
 
     public SudokuRequest(SudokuParameters parameters, Instance instance) {
         this.parameters = parameters;
-        this.cost = parameters.getCost();
-        this.minCost = (long) (cost * MIN_COST_SCALE);
+        this.startingCost = parameters.getCost();
+        this.minCost = (long) (startingCost * MIN_COST_SCALE);
         this.instance = instance;
         this.sentTime = System.currentTimeMillis();
     }
@@ -35,8 +34,8 @@ public class SudokuRequest implements Runnable {
         return parameters;
     }
 
-    public long getCost() {
-        return Math.min(minCost, cost - COST_LOSS_PER_MILLISECOND * getTime());
+    public long getCurrentCost() {
+        return Math.min(minCost, startingCost - COST_LOSS_PER_MILLISECOND * getTime());
     }
 
     private long getTime() {
