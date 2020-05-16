@@ -30,6 +30,7 @@ public class RequestQueue {
     }
 
     public static void addToQueue(SudokuParameters parameters) {
+        System.out.println("Request " + parameters + " was added to queue");
         queue.add(parameters);
     }
 
@@ -39,12 +40,14 @@ public class RequestQueue {
         while ((instance = InstanceManager.getBestInstance()) == null) {
             queueLock.lock();
             noInstanceCondition.await();
+            queueLock.unlock();
         }
         return new SudokuRequest(parameters, instance);
     }
 
     public static void notifyQueue() {
         queueLock.lock();
-        queueLock.notifyAll();
+        noInstanceCondition.signalAll();
+        queueLock.unlock();
     }
 }

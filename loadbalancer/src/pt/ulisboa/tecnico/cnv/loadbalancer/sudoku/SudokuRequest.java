@@ -3,6 +3,7 @@ package pt.ulisboa.tecnico.cnv.loadbalancer.sudoku;
 import pt.ulisboa.tecnico.cnv.loadbalancer.instance.Instance;
 import pt.ulisboa.tecnico.cnv.loadbalancer.instance.InstanceManager;
 import pt.ulisboa.tecnico.cnv.loadbalancer.instance.RequestQueue;
+import pt.ulisboa.tecnico.cnv.loadbalancer.instance.state.InstanceStateSuspected;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -47,7 +48,7 @@ public class SudokuRequest implements Runnable {
      * Sends Sudoku Request to instance on the other side of @conn
      */
     public void sendRequest(HttpURLConnection conn) {
-        System.out.println("Request " + this.parameters + " going to instance" + instance.getId()); 
+        System.out.println("Request " + this.parameters + " going to instance " + instance.getId());
         this.instance.addRequest(this);
         try {
             conn.setRequestProperty("Content-Type", "application/json");
@@ -80,7 +81,7 @@ public class SudokuRequest implements Runnable {
     private void instanceError(HttpURLConnection conn) {
         instance.removeRequest(this);
         conn.disconnect();
-        instance.setState(Instance.InstanceState.UNHEALTHY);
+        instance.setState(InstanceStateSuspected.getInstance());
         RequestQueue.addToQueue(this.getParameters());
     }
 
