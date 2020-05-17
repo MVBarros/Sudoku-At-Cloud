@@ -35,7 +35,7 @@ public class SudokuRequest implements Runnable {
     }
 
     public long getCurrentCost() {
-        return Math.min(minCost, startingCost - COST_LOSS_PER_MILLISECOND * getTime());
+        return Math.max(minCost, startingCost - COST_LOSS_PER_MILLISECOND * getTime());
     }
 
     private long getTime() {
