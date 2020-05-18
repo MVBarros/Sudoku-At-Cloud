@@ -54,7 +54,7 @@ public class SudokuRequest implements Runnable {
                 return COST_LOSS_PER_MILLISECOND_DLX;
             default:
                 //Should never reach here
-                System.out.println("Wrong cost loss");
+                System.out.println("Wrong cost loss strategy");
                 return COST_LOSS_PER_MILLISECOND_CP;
         }
     }

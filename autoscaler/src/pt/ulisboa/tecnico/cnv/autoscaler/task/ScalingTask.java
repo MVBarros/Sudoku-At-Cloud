@@ -9,7 +9,7 @@ public class ScalingTask implements Runnable {
     private static final long SCALE_COOLDOWN = 3 * 60 * 1000;
     private static final int NUMBER_MEASURES = 10;
     private static final int TIME_BETWEEN_MEASUREMENTS = 5000;
-    private static final long SCALE_UP_VALUE_THRESHOLD = 100000; //TODO
+    private static final long SCALE_UP_VALUE_THRESHOLD = 20000; //TODO
     private static final long SCALE_DOWN_VALUE_THRESHOLD = 1000; //TODO
 
     private long[] measurements = new long[NUMBER_MEASURES];

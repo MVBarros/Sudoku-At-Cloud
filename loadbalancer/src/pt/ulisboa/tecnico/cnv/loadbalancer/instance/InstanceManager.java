@@ -1,8 +1,5 @@
 package pt.ulisboa.tecnico.cnv.loadbalancer.instance;
 
-import pt.ulisboa.tecnico.cnv.autoscaler.AutoScaler;
-import pt.ulisboa.tecnico.cnv.loadbalancer.instance.state.InstanceState;
-import pt.ulisboa.tecnico.cnv.loadbalancer.instance.state.InstanceStateDead;
 import pt.ulisboa.tecnico.cnv.loadbalancer.task.HealthCheckTask;
 import pt.ulisboa.tecnico.cnv.loadbalancer.task.ThreadManager;
 
@@ -18,12 +15,14 @@ public class InstanceManager {
     private InstanceManager() {
     }
 
-    public static long getTotalLoad() {
-        long totalLoad = 0;
-        for (Instance instance : instances.values()) {
-            totalLoad += instance.getLoad();
+    public static long getSystemLoad() {
+        synchronized (instances) {
+            long totalLoad = 0;
+            for (Instance instance : instances.values()) {
+                totalLoad += instance.getLoad();
+            }
+            return totalLoad / instances.size();
         }
-        return totalLoad;
     }
 
     public static void addInstance(String address, String id) throws MalformedURLException {
@@ -37,11 +36,9 @@ public class InstanceManager {
                 HealthCheckTask task = new HealthCheckTask(instance);
                 healthCheckThreads.put(instance.getId(), task);
                 ThreadManager.execute(task);
-
             }
         }
     }
-
 
 
     public static Instance removeInstance(String id) {
