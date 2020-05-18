@@ -14,7 +14,7 @@ import java.net.HttpURLConnection;
 public class SudokuRequest implements Runnable {
     private static final int SUDOKU_REQUEST_SUCCESS = 200;
     private static final long COST_LOSS_PER_MILLISECOND = 100; //TODO
-    private static final double MIN_COST_SCALE = Math.pow(10, -4);
+    private static final double MIN_COST_SCALE = Math.pow(10, -6);
 
     private final SudokuParameters parameters;
     private final long startingCost;
