@@ -60,7 +60,7 @@ public class ScalingTask implements Runnable {
             totalLoad += load;
         }
         long average = totalLoad / NUMBER_MEASURES;
-        System.out.println("Current average cost: " + average);
+        System.out.println("Current average load: " + average);
         return average;
     }
 
