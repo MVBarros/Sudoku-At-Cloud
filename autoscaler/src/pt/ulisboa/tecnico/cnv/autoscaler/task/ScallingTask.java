@@ -7,8 +7,8 @@ import pt.ulisboa.tecnico.cnv.loadbalancer.task.ThreadManager;
 import java.util.Date;
 
 public class ScallingTask implements Runnable {
-    //TODO - Implement default cooldown
-    //TODO - MIN AND MAX INSTANCES
+    private static final int MIN_COUNT = 1;
+
     private static final long DEFAULT_COOLDOWN = 3 * 60 * 1000; //3 minutes
     private static final int MAX_LOAD_TIME = 120000; //2 minutes
     private static final int NUMBER_MEASURES = 10; //Number of measures per max load time
@@ -55,7 +55,7 @@ public class ScallingTask implements Runnable {
             String instanceId = InstanceManager.getInstanceToRemove();
 
             Date date = new Date();
-            if(date.getTime() - lastScaleTime >= DEFAULT_COOLDOWN){
+            if(date.getTime() - lastScaleTime >= DEFAULT_COOLDOWN && InstanceManager.getNumInstances() > MIN_COUNT){
                 System.out.println("Removing instance " + instanceId);
                 ThreadManager.execute(new RemoveInstanceTask(instanceId));
                 lastScaleTime = date.getTime();

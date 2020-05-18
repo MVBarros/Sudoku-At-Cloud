@@ -58,4 +58,16 @@ public class InstanceManager {
         //TODO - Make actual selection of instance to remove
         return instances.values().iterator().next().getId();
     }
+
+    public static int getNumInstances() {
+        int numInstances = 0;
+        synchronized (instances){
+            for(Instance instance : instances.values()){
+                if(instance.isHealthy()){
+                    numInstances++;
+                }
+            }
+        }
+        return numInstances;
+    }
 }
