@@ -4,6 +4,8 @@ import pt.ulisboa.tecnico.cnv.autoscaler.AutoScaler;
 import pt.ulisboa.tecnico.cnv.loadbalancer.instance.InstanceManager;
 import pt.ulisboa.tecnico.cnv.loadbalancer.task.ThreadManager;
 
+import java.util.Date;
+
 public class ScallingTask implements Runnable {
     //TODO - Implement default cooldown
     //TODO - MIN AND MAX INSTANCES
@@ -16,7 +18,7 @@ public class ScallingTask implements Runnable {
     private static final long SCALE_DOWN_VALUE_THRESHOLD = 1000;
 
     private long[] loadValues = new long[NUMBER_MEASURES];
-
+    private long lastScaleTime = 0;
 
     @Override
     public void run() {
@@ -39,15 +41,25 @@ public class ScallingTask implements Runnable {
 
         if(averageLoad >= SCALE_UP_VALUE_THRESHOLD){
             System.out.println("Scale Up Threshold achieved");
-            ThreadManager.execute(new CreateInstanceTask());
+
+            Date date = new Date();
+            if(date.getTime() - lastScaleTime >= DEFAULT_COOLDOWN){
+                System.out.println("Adding new instance");
+                ThreadManager.execute(new CreateInstanceTask());
+                lastScaleTime = date.getTime();
+            }
         }
 
         else if(averageLoad <= SCALE_DOWN_VALUE_THRESHOLD){
             System.out.println("Scale Down Threshold achieved");
             String instanceId = InstanceManager.getInstanceToRemove();
 
-            System.out.println("Removing instance " + instanceId);
-            ThreadManager.execute(new RemoveInstanceTask(instanceId));
+            Date date = new Date();
+            if(date.getTime() - lastScaleTime >= DEFAULT_COOLDOWN){
+                System.out.println("Removing instance " + instanceId);
+                ThreadManager.execute(new RemoveInstanceTask(instanceId));
+                lastScaleTime = date.getTime();
+            }
         }
     }
 
