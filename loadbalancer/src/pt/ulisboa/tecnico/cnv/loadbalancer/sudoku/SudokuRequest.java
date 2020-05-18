@@ -13,8 +13,10 @@ import java.net.HttpURLConnection;
 
 public class SudokuRequest implements Runnable {
     private static final int SUDOKU_REQUEST_SUCCESS = 200;
-    private static final long COST_LOSS_PER_MILLISECOND = 100; //TODO
-    private static final double MIN_COST_SCALE = Math.pow(10, -6);
+    private static final long COST_LOSS_PER_MILLISECOND_BFS = 2;
+    private static final long COST_LOSS_PER_MILLISECOND_CP = 1;
+    private static final long COST_LOSS_PER_MILLISECOND_DLX = 7091;
+    private static final double MIN_COST_SCALE = Math.pow(10, -7);
 
     private final SudokuParameters parameters;
     private final long startingCost;
@@ -35,18 +37,31 @@ public class SudokuRequest implements Runnable {
     }
 
     public long getCurrentCost() {
-        return Math.max(minCost, startingCost - COST_LOSS_PER_MILLISECOND * getTime());
+        return Math.max(minCost, startingCost - getCostLoss() * getTime());
     }
 
     private long getTime() {
         return System.currentTimeMillis() - sentTime;
     }
 
-
+    private long getCostLoss() {
+        switch (parameters.getStrategy()) {
+            case BFS:
+                return COST_LOSS_PER_MILLISECOND_BFS;
+            case CP:
+                return COST_LOSS_PER_MILLISECOND_CP;
+            case DLX:
+                return COST_LOSS_PER_MILLISECOND_DLX;
+            default:
+                //Should never reach here
+                System.out.println("Wrong cost loss");
+                return COST_LOSS_PER_MILLISECOND_CP;
+        }
+    }
     /**
      * Sends Sudoku Request to instance on the other side of @conn
      */
-    public void sendRequest(HttpURLConnection conn) {
+    private void sendRequest(HttpURLConnection conn) {
         System.out.println("Request " + this.parameters + " going to instance " + instance.getId());
         this.instance.addRequest(this);
         try {
