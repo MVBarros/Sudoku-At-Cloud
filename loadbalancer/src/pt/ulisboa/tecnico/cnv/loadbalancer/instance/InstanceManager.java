@@ -1,5 +1,6 @@
 package pt.ulisboa.tecnico.cnv.loadbalancer.instance;
 
+import pt.ulisboa.tecnico.cnv.autoscaler.AutoScaler;
 import pt.ulisboa.tecnico.cnv.loadbalancer.instance.state.InstanceState;
 import pt.ulisboa.tecnico.cnv.loadbalancer.instance.state.InstanceStateDead;
 import pt.ulisboa.tecnico.cnv.loadbalancer.task.HealthCheckTask;
@@ -39,6 +40,8 @@ public class InstanceManager {
             ThreadManager.execute(new HealthCheckTask(instance));
         }
     }
+
+
 
     public static Instance removeInstance(String id) {
         return instances.remove(id);

@@ -1,5 +1,6 @@
 package pt.ulisboa.tecnico.cnv.autoscaler.task;
 
+import pt.ulisboa.tecnico.cnv.autoscaler.AutoScaler;
 import pt.ulisboa.tecnico.cnv.loadbalancer.instance.InstanceManager;
 import pt.ulisboa.tecnico.cnv.loadbalancer.task.ThreadManager;
 
@@ -33,24 +34,22 @@ public class ScalingTask implements Runnable {
 
     private void scalingPolicy() {
         long currentTime = System.currentTimeMillis();
+        int numInstances =  AutoScaler.getNumInstances();
+        if (numInstances < MIN_NUMBER_INSTANCES) {
+            System.out.println("Instances dropped below minimum, adding new instance");
+            addInstance(currentTime);
+            return;
+        }
         if (currentTime - lastScaleTimestamp < SCALE_COOLDOWN) {
             return;
         }
-        int numInstances = InstanceManager.getNumInstances();
         long averageLoad = calculateLoadAverage();
 
-        if (numInstances < MIN_NUMBER_INSTANCES) {
-            ThreadManager.execute(new CreateInstanceTask());
-            lastScaleTimestamp = currentTime;
-        } else if (averageLoad >= SCALE_UP_VALUE_THRESHOLD) {
+        if (averageLoad >= SCALE_UP_VALUE_THRESHOLD) {
             System.out.println("Scale Up Threshold achieved, adding new instance");
-            ThreadManager.execute(new CreateInstanceTask());
-            lastScaleTimestamp = currentTime;
+            addInstance(currentTime);
         } else if (averageLoad <= SCALE_DOWN_VALUE_THRESHOLD && numInstances > MIN_NUMBER_INSTANCES) {
-            String instanceId = InstanceManager.getInstanceToRemove();
-            System.out.println("Scale Down Threshold achieved, removing instance " + instanceId);
-            ThreadManager.execute(new RemoveInstanceTask(instanceId));
-            lastScaleTimestamp = currentTime;
+            removeInstance(currentTime);
         }
     }
 
@@ -60,6 +59,18 @@ public class ScalingTask implements Runnable {
             totalLoad += load;
         }
         return totalLoad / NUMBER_MEASURES;
+    }
+
+    private void addInstance(long currentTime) {
+        AutoScaler.createInstance();
+        lastScaleTimestamp = currentTime;
+    }
+
+    private void removeInstance(long currentTime) {
+        String instanceId = InstanceManager.getInstanceToRemove();
+        System.out.println("Scale Down Threshold achieved, removing instance " + instanceId);
+        AutoScaler.terminateInstance(instanceId);
+        lastScaleTimestamp = currentTime;
     }
 
 
