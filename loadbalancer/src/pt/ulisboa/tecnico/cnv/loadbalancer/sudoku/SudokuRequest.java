@@ -61,7 +61,7 @@ public class SudokuRequest implements Runnable {
     /**
      * Sends Sudoku Request to instance on the other side of @conn
      */
-    public void sendRequest(HttpURLConnection conn) {
+    private void sendRequest(HttpURLConnection conn) {
         System.out.println("Request " + this.parameters + " going to instance " + instance.getId());
         this.instance.addRequest(this);
         try {
