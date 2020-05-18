@@ -5,6 +5,7 @@ import pt.ulisboa.tecnico.cnv.loadbalancer.instance.InstanceManager;
 
 public class ScallingTask implements Runnable {
     //TODO - Implement default cooldown
+    //TODO - MIN AND MAX INSTANCES
     private static final long DEFAULT_COOLDOWN = 3 * 60 * 1000; //3 minutes
     private static final int MAX_LOAD_TIME = 120000; //2 minutes
     private static final int NUMBER_MEASURES = 10; //Number of measures per max load time
