@@ -3,6 +3,7 @@ package pt.ulisboa.tecnico.cnv.loadbalancer.sudoku;
 import pt.ulisboa.tecnico.cnv.loadbalancer.instance.Instance;
 import pt.ulisboa.tecnico.cnv.loadbalancer.instance.RequestQueue;
 import pt.ulisboa.tecnico.cnv.loadbalancer.instance.state.InstanceStateSuspected;
+import pt.ulisboa.tecnico.cnv.loadbalancer.task.ThreadManager;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -16,7 +17,7 @@ public class SudokuRequest implements Runnable {
     private static final long COST_LOSS_PER_MILLISECOND_BFS = 2;
     private static final long COST_LOSS_PER_MILLISECOND_CP = 1;
     private static final long COST_LOSS_PER_MILLISECOND_DLX = 7091;
-    private static final double MIN_COST_SCALE = Math.pow(10, -7);
+    private static final double MIN_COST_SCALE = 2 * Math.pow(10, -2); //Allow to lose up to 80% of the cost due to time elapsing
 
     private final SudokuParameters parameters;
     private final long startingCost;
@@ -58,12 +59,22 @@ public class SudokuRequest implements Runnable {
                 return COST_LOSS_PER_MILLISECOND_CP;
         }
     }
+
+    public void executeOnNewThread() {
+        this.instance.addRequest(this);
+        ThreadManager.execute(this);
+    }
+
+
+    public void execute() {
+        this.instance.addRequest(this);
+        this.run();
+    }
     /**
      * Sends Sudoku Request to instance on the other side of @conn
      */
     private void sendRequest(HttpURLConnection conn) {
         System.out.println("Request " + this.parameters + " going to instance " + instance.getId());
-        this.instance.addRequest(this);
         try {
             conn.setRequestProperty("Content-Type", "application/json");
             conn.setDoOutput(true);

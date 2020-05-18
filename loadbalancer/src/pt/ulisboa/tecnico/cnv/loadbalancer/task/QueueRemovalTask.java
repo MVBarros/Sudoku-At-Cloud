@@ -9,7 +9,7 @@ public class QueueRemovalTask implements Runnable {
         while(true) {
             try {
                 SudokuRequest request = RequestQueue.removeFromQueue();
-                ThreadManager.execute(request);
+                request.executeOnNewThread();
             } catch (InterruptedException e) {
                 System.out.println("Error: Queue Removal task runnin on thread "
                         + Thread.currentThread().getName() + " was interrupted");
