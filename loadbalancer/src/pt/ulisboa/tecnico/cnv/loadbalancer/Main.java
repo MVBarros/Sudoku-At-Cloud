@@ -26,6 +26,10 @@ public class Main {
         for (int i = 0; i < ScalingTask.MIN_NUMBER_INSTANCES; i++) {
             tasks[i].waitFinish();
         }
+
+        //Start scaling measurements
+        ThreadManager.execute(new ScalingTask());
+
         System.out.println("Created " +  ScalingTask.MIN_NUMBER_INSTANCES + " instances successfully");
 
         final HttpServer server = HttpServer.create(new InetSocketAddress(PORT), 0);

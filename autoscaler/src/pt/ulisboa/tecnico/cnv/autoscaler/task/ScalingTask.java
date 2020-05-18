@@ -2,11 +2,9 @@ package pt.ulisboa.tecnico.cnv.autoscaler.task;
 
 import pt.ulisboa.tecnico.cnv.autoscaler.AutoScaler;
 import pt.ulisboa.tecnico.cnv.loadbalancer.instance.InstanceManager;
-import pt.ulisboa.tecnico.cnv.loadbalancer.task.ThreadManager;
 
 public class ScalingTask implements Runnable {
-    //FIXME AUTOSCALER SHOULD KEEP NUMBER OF INSTANCES THAT EXIST (INDEPENDENT OF TIMINGS), WHICH IS THE ONE THAT IS USED BY THIS THREAD
-    public static final int MIN_NUMBER_INSTANCES = 1;
+    public static final int MIN_NUMBER_INSTANCES = 2;
 
     private static final long SCALE_COOLDOWN = 3 * 60 * 1000;
     private static final int NUMBER_MEASURES = 10;
@@ -34,7 +32,7 @@ public class ScalingTask implements Runnable {
 
     private void scalingPolicy() {
         long currentTime = System.currentTimeMillis();
-        int numInstances =  AutoScaler.getNumInstances();
+        int numInstances = AutoScaler.getNumInstances();
         if (numInstances < MIN_NUMBER_INSTANCES) {
             System.out.println("Instances dropped below minimum, adding new instance");
             addInstance(currentTime);
@@ -58,7 +56,9 @@ public class ScalingTask implements Runnable {
         for (long load : measurements) {
             totalLoad += load;
         }
-        return totalLoad / NUMBER_MEASURES;
+        long average = totalLoad / NUMBER_MEASURES;
+        System.out.println("Current average cost: " + average);
+        return average;
     }
 
     private void addInstance(long currentTime) {
