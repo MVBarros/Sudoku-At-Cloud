@@ -1,6 +1,7 @@
 package pt.ulisboa.tecnico.cnv.loadbalancer.instance;
 
-import pt.ulisboa.tecnico.cnv.autoscaler.task.ScallingTask;
+import pt.ulisboa.tecnico.cnv.loadbalancer.instance.state.InstanceState;
+import pt.ulisboa.tecnico.cnv.loadbalancer.instance.state.InstanceStateDead;
 import pt.ulisboa.tecnico.cnv.loadbalancer.task.HealthCheckTask;
 import pt.ulisboa.tecnico.cnv.loadbalancer.task.ThreadManager;
 
@@ -12,6 +13,7 @@ public class InstanceManager {
 
     private static final Map<String, Instance> instances = new ConcurrentHashMap<>();
     private static boolean isAutoScalerRunning = false;
+
     private InstanceManager() {
     }
 
@@ -46,9 +48,7 @@ public class InstanceManager {
     }
 
     public static Instance removeInstance(String id) {
-        Instance instance = instances.get(id);
-        instances.remove(id);
-        return instance;
+        return instances.remove(id);
     }
 
 
@@ -71,11 +71,9 @@ public class InstanceManager {
 
     public static int getNumInstances() {
         int numInstances = 0;
-        synchronized (instances){
-            for(Instance instance : instances.values()){
-                if(instance.isHealthy()){
-                    numInstances++;
-                }
+        for (Instance instance : instances.values()) {
+            if (instance.getState() != InstanceStateDead.getInstance()) {
+                numInstances++;
             }
         }
         return numInstances;

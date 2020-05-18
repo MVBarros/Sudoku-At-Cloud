@@ -3,8 +3,6 @@ package pt.ulisboa.tecnico.cnv.autoscaler.task;
 import pt.ulisboa.tecnico.cnv.loadbalancer.instance.InstanceManager;
 import pt.ulisboa.tecnico.cnv.loadbalancer.task.ThreadManager;
 
-import java.util.Date;
-
 public class ScalingTask implements Runnable {
     private static final int MIN_COUNT = 1;
 
@@ -17,54 +15,53 @@ public class ScalingTask implements Runnable {
     private static final long SCALE_DOWN_VALUE_THRESHOLD = 1000;
 
     private long[] loadValues = new long[NUMBER_MEASURES];
-    private long lastScaleTime = 0;
+    private long lastScaleTime = System.currentTimeMillis();
 
     @Override
     public void run() {
         int round = 0;
-        while(true){
+        while (true) {
             try {
                 Thread.sleep(TIME);
                 loadValues[round] = InstanceManager.getTotalLoad();
                 scalingPolicy();
                 round = ++round % NUMBER_MEASURES;
             } catch (InterruptedException e) {
-                System.out.println("Scalling Task failed. Aborting");
+                System.out.println("Scaling Task failed. Aborting");
                 return;
             }
         }
     }
 
-    private void scalingPolicy(){
+    private void scalingPolicy() {
         long averageLoad = calculateLoadAverage();
 
-        if(averageLoad >= SCALE_UP_VALUE_THRESHOLD){
-            System.out.println("Scale Up Threshold achieved");
-
-            Date date = new Date();
-            if(date.getTime() - lastScaleTime >= DEFAULT_COOLDOWN){
-                System.out.println("Adding new instance");
-                ThreadManager.execute(new CreateInstanceTask());
-                lastScaleTime = date.getTime();
-            }
+        long currentTime = System.currentTimeMillis();
+        if (currentTime - lastScaleTime < DEFAULT_COOLDOWN) {
+            return;
         }
+        int numInstances = InstanceManager.getNumInstances();
+        if (numInstances < MIN_COUNT) {
+            ThreadManager.execute(new CreateInstanceTask());
+            lastScaleTime = currentTime;
+        } else if (averageLoad >= SCALE_UP_VALUE_THRESHOLD) {
+            System.out.println("Scale Up Threshold achieved");
+            System.out.println("Adding new instance");
+            ThreadManager.execute(new CreateInstanceTask());
+            lastScaleTime = currentTime;
 
-        else if(averageLoad <= SCALE_DOWN_VALUE_THRESHOLD){
+        } else if (averageLoad <= SCALE_DOWN_VALUE_THRESHOLD && numInstances > MIN_COUNT) {
             System.out.println("Scale Down Threshold achieved");
             String instanceId = InstanceManager.getInstanceToRemove();
-
-            Date date = new Date();
-            if(date.getTime() - lastScaleTime >= DEFAULT_COOLDOWN && InstanceManager.getNumInstances() > MIN_COUNT){
-                System.out.println("Removing instance " + instanceId);
-                ThreadManager.execute(new RemoveInstanceTask(instanceId));
-                lastScaleTime = date.getTime();
-            }
+            System.out.println("Removing instance " + instanceId);
+            ThreadManager.execute(new RemoveInstanceTask(instanceId));
+            lastScaleTime = currentTime;
         }
     }
 
-    private long calculateLoadAverage(){
+    private long calculateLoadAverage() {
         long totalLoad = 0;
-        for(long load : loadValues){
+        for (long load : loadValues) {
             totalLoad += load;
         }
         return totalLoad / NUMBER_MEASURES;

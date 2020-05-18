@@ -21,7 +21,7 @@ public class HealthCheckTask implements Runnable {
         try {
             Thread.sleep(GRACE_PERIOD);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            System.out.println("Error: health check thread for instance " + instance.getId() + " was interrupted waiting for grace period");
         }
 
         while (true) {
