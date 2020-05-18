@@ -35,6 +35,7 @@ public class ScalingTask implements Runnable {
     private void scalingPolicy() {
         long currentTime = System.currentTimeMillis();
         int numInstances = AutoScaler.getNumInstances();
+        System.out.println("Current number of instances: " + numInstances);
         if (numInstances < MIN_NUMBER_INSTANCES) {
             System.out.println("Instances dropped below minimum, adding new instance");
             addInstance(currentTime);
