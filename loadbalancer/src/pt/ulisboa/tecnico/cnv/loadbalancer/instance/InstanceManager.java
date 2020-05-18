@@ -34,13 +34,6 @@ public class InstanceManager {
                 instance = new Instance(address, id);
                 instances.put(id, instance);
             }
-            //TODO - Remove comment when ScallingTask is ready
-            /*
-            if(instances.size() == 1 && !isAutoScalerRunning){
-                ThreadManager.execute(new ScallingTask());
-                isAutoScalerRunning = true;
-            }
-            */
         }
         if (isNew) {
             ThreadManager.execute(new HealthCheckTask(instance));
