@@ -1,12 +1,11 @@
 package pt.ulisboa.tecnico.cnv.autoscaler.task;
 
-import pt.ulisboa.tecnico.cnv.autoscaler.AutoScaler;
 import pt.ulisboa.tecnico.cnv.loadbalancer.instance.InstanceManager;
 import pt.ulisboa.tecnico.cnv.loadbalancer.task.ThreadManager;
 
 import java.util.Date;
 
-public class ScallingTask implements Runnable {
+public class ScalingTask implements Runnable {
     private static final int MIN_COUNT = 1;
 
     private static final long DEFAULT_COOLDOWN = 3 * 60 * 1000; //3 minutes
@@ -27,7 +26,7 @@ public class ScallingTask implements Runnable {
             try {
                 Thread.sleep(TIME);
                 loadValues[round] = InstanceManager.getTotalLoad();
-                scallingPolicy();
+                scalingPolicy();
                 round = ++round % NUMBER_MEASURES;
             } catch (InterruptedException e) {
                 System.out.println("Scalling Task failed. Aborting");
@@ -36,7 +35,7 @@ public class ScallingTask implements Runnable {
         }
     }
 
-    private void scallingPolicy(){
+    private void scalingPolicy(){
         long averageLoad = calculateLoadAverage();
 
         if(averageLoad >= SCALE_UP_VALUE_THRESHOLD){
