@@ -13,7 +13,7 @@ public class Main {
 
     public static void main(final String[] args) throws Exception {
         DynamoFrontEnd.createTables();
-        CreateInstanceTask[] tasks = new CreateInstanceTask[ScalingTask.MIN_NUMBER_INSTANCES]
+        CreateInstanceTask[] tasks = new CreateInstanceTask[ScalingTask.MIN_NUMBER_INSTANCES];
         for (int i = 0; i < ScalingTask.MIN_NUMBER_INSTANCES; i++) {
             tasks[i] = new CreateInstanceTask();
         }
