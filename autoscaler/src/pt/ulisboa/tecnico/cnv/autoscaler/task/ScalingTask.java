@@ -1,6 +1,6 @@
 package pt.ulisboa.tecnico.cnv.autoscaler.task;
 
-import pt.ulisboa.tecnico.cnv.autoscaler.AutoScaler;
+import pt.ulisboa.tecnico.cnv.autoscaler.EC2FrontEnd;
 import pt.ulisboa.tecnico.cnv.loadbalancer.instance.InstanceManager;
 
 public class ScalingTask implements Runnable {
@@ -34,7 +34,7 @@ public class ScalingTask implements Runnable {
 
     private void scalingPolicy() {
         long currentTime = System.currentTimeMillis();
-        int numInstances = AutoScaler.getNumInstances();
+        int numInstances = EC2FrontEnd.getNumInstances();
         System.out.println("Current number of instances: " + numInstances);
         if (numInstances < MIN_NUMBER_INSTANCES) {
             System.out.println("Instances dropped below minimum, adding new instance");
@@ -65,14 +65,14 @@ public class ScalingTask implements Runnable {
     }
 
     private void addInstance(long currentTime) {
-        AutoScaler.createInstance();
+        EC2FrontEnd.createInstance();
         lastScaleTimestamp = currentTime;
     }
 
     private void removeInstance(long currentTime) {
         String instanceId = InstanceManager.getInstanceToRemove();
         System.out.println("Scale Down Threshold achieved, removing instance " + instanceId);
-        AutoScaler.terminateInstance(instanceId);
+        EC2FrontEnd.terminateInstance(instanceId);
         lastScaleTimestamp = currentTime;
     }
 

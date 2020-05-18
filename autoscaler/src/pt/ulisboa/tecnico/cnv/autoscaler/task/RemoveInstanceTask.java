@@ -1,30 +1,28 @@
 package pt.ulisboa.tecnico.cnv.autoscaler.task;
 
-import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
-import pt.ulisboa.tecnico.cnv.autoscaler.AutoScaler;
+import pt.ulisboa.tecnico.cnv.autoscaler.EC2FrontEnd;
 import pt.ulisboa.tecnico.cnv.loadbalancer.instance.Instance;
 
 public class RemoveInstanceTask implements Runnable {
+    private static final int WAIT_TIME = 2000;
+    private Instance instance;
 
-    private Instance removedInstance;
-    public RemoveInstanceTask(Instance instance) { this.removedInstance = instance;}
+    public RemoveInstanceTask(Instance instance) {
+        this.instance = instance;
+    }
 
     @Override
     public void run() {
-        System.out.println("Removed instance " + removedInstance.getId());
+        System.out.println("Removed instance " + instance.getId());
 
         //Wait for instance to finish it's job
-        while(removedInstance.getRequests().size() > 0){
+        while (instance.getRequests().size() > 0) {
             try {
-                Thread.sleep(2000);
+                Thread.sleep(WAIT_TIME);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                System.out.println("Error: Thread was interrupted while waiting for removed instance " + instance.getId() +" to finish its job");
             }
         }
-
-        TerminateInstancesRequest termInstanceReq = new TerminateInstancesRequest();
-        termInstanceReq.withInstanceIds(removedInstance.getId());
-        AutoScaler.getEc2().terminateInstances(termInstanceReq);
-
+        EC2FrontEnd.terminateInstance(instance);
     }
 }

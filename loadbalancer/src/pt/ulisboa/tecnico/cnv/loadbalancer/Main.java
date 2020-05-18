@@ -1,7 +1,7 @@
 package pt.ulisboa.tecnico.cnv.loadbalancer;
 
 import com.sun.net.httpserver.HttpServer;
-import pt.ulisboa.tecnico.cnv.autoscaler.AutoScaler;
+import pt.ulisboa.tecnico.cnv.autoscaler.EC2FrontEnd;
 import pt.ulisboa.tecnico.cnv.autoscaler.task.CreateInstanceTask;
 import pt.ulisboa.tecnico.cnv.autoscaler.task.ScalingTask;
 import pt.ulisboa.tecnico.cnv.dynamo.DynamoFrontEnd;
@@ -19,7 +19,7 @@ public class Main {
 
         System.out.println("Creating " +  ScalingTask.MIN_NUMBER_INSTANCES + " instances");
         for (int i = 0; i < ScalingTask.MIN_NUMBER_INSTANCES; i++) {
-            tasks[i] = AutoScaler.createInstance();
+            tasks[i] = EC2FrontEnd.createInstance();
         }
 
         for (int i = 0; i < ScalingTask.MIN_NUMBER_INSTANCES; i++) {
