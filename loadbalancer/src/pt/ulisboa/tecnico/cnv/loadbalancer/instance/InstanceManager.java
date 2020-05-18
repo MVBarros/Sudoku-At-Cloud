@@ -37,8 +37,10 @@ public class InstanceManager {
         }
     }
 
-    public static void removeInstance(String id) {
+    public static Instance removeInstance(String id) {
+        Instance instance = instances.get(id);
         instances.remove(id);
+        return instance;
     }
 
 

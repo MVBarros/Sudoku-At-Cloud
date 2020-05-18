@@ -86,10 +86,17 @@ public class AutoScaler {
     }
 
     public static void terminateInstance(String instanceId) {
-        InstanceManager.removeInstance(instanceId);
+        pt.ulisboa.tecnico.cnv.loadbalancer.instance.Instance removedInstance = InstanceManager.removeInstance(instanceId);
         System.out.println("Removed instance " + instanceId);
 
-        //TODO Wait for instance to finish it's requests
+        while(removedInstance.getLoad() > 0){
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
         TerminateInstancesRequest termInstanceReq = new TerminateInstancesRequest();
         termInstanceReq.withInstanceIds(instanceId);
         ec2.terminateInstances(termInstanceReq);
