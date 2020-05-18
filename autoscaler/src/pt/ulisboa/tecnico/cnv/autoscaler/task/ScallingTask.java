@@ -4,29 +4,27 @@ import pt.ulisboa.tecnico.cnv.autoscaler.AutoScaler;
 import pt.ulisboa.tecnico.cnv.loadbalancer.instance.InstanceManager;
 
 public class ScallingTask implements Runnable {
-    //TODO - Define Max time and interval
+    //TODO - Implement default cooldown
+    private static final long DEFAULT_COOLDOWN = 3 * 60 * 1000; //3 minutes
     private static final int MAX_LOAD_TIME = 120000; //2 minutes
-    private static final int TIME = MAX_LOAD_TIME / 10; // 12 seconds
+    private static final int NUMBER_MEASURES = 10; //Number of measures per max load time
+    private static final int TIME = MAX_LOAD_TIME / NUMBER_MEASURES;
     //TODO - Calculate scale up and down values
     private static final long SCALE_UP_VALUE_THRESHOLD = 10000;
     private static final long SCALE_DOWN_VALUE_THRESHOLD = 1000;
-    private static final int INTERVAL = MAX_LOAD_TIME / TIME;
 
-    private long[] loadValues = new long[INTERVAL];
+    private long[] loadValues = new long[NUMBER_MEASURES];
 
-    private AutoScaler scaler = AutoScaler.getInstance();
-    private InstanceManager loadBalancer = InstanceManager.getInstance();
 
     @Override
     public void run() {
-        setupVector();
         int round = 0;
         while(true){
             try {
                 Thread.sleep(TIME);
-                loadValues[round] = loadBalancer.getTotalLoad();
+                loadValues[round] = InstanceManager.getTotalLoad();
                 scallingPolicy();
-                round = ++round % INTERVAL;
+                round = ++round % NUMBER_MEASURES;
             } catch (InterruptedException e) {
                 System.out.println("Scalling Task failed. Aborting");
                 return;
@@ -39,15 +37,17 @@ public class ScallingTask implements Runnable {
 
         if(averageLoad >= SCALE_UP_VALUE_THRESHOLD){
             System.out.println("Scale Up Threshold achieved");
-            scaler.createInstance();
+            //TODO FAZER ISTO NUMA THREAD A PARTE
+            AutoScaler.createInstance();
         }
 
         else if(averageLoad <= SCALE_DOWN_VALUE_THRESHOLD){
             System.out.println("Scale Down Threshold achieved");
-            String instanceId = loadBalancer.getInstanceToRemove();
+            String instanceId = InstanceManager.getInstanceToRemove();
 
             System.out.println("Removing instance " + instanceId);
-            scaler.terminateInstance(instanceId);
+            //TODO FAZER ISTO NUMA THREAD A PARTE
+            AutoScaler.terminateInstance(instanceId);
         }
     }
 
@@ -55,18 +55,13 @@ public class ScallingTask implements Runnable {
     /** Aux functions **/
     /*******************/
 
-    private void setupVector(){
-        for(int i = 0; i < INTERVAL; i ++){
-            loadValues[i] = 0;
-        }
-    }
 
     private long calculateLoadAverage(){
         long totalLoad = 0;
         for(long load : loadValues){
             totalLoad += load;
         }
-        return totalLoad / INTERVAL;
+        return totalLoad / NUMBER_MEASURES;
     }
 
 

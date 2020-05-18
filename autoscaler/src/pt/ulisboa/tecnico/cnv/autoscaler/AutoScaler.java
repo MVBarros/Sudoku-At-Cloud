@@ -1,8 +1,5 @@
 package pt.ulisboa.tecnico.cnv.autoscaler;
 
-import java.net.MalformedURLException;
-import java.util.ArrayList;
-import java.util.List;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
@@ -12,24 +9,25 @@ import com.amazonaws.services.ec2.AmazonEC2ClientBuilder;
 import com.amazonaws.services.ec2.model.*;
 import pt.ulisboa.tecnico.cnv.loadbalancer.instance.InstanceManager;
 
+import java.net.MalformedURLException;
+import java.util.List;
+
 public class AutoScaler {
 
-    //Code for instance Running
-    private int RUNNING = 16;
-
-    private static AutoScaler autoScaler;
-
-    private AmazonEC2 ec2;
-
-    private String region = "us-east-1";
-
     //Instances information
-    private String AMIid = "ami-0c56c418f2f4f7df4";
-    private String keyPairName = "CNV-Project-Pair";
-    private String securityGroupName = "CNV-ssh+http";
+    private static final int INSTANCE_RUNNING_CODE = 16;
+    private static final int MIN_COUNT = 1;
+    private static final int MAX_COUNT = 1;
+    private static final String REGION = "us-east-1";
+    private static final String AMI_ID = "ami-0c56c418f2f4f7df4";
+    private static final String KEY_PAIR_NAME = "CNV-Project-Pair";
+    private static final String SECURITY_GROUP_NAME = "CNV-Project";
+    private static final String INSTANCE_TYPE = "t2.micro";
 
-    private AutoScaler(){
-        AWSCredentials credentials = null;
+    private static AmazonEC2 ec2;
+
+    static {
+        AWSCredentials credentials;
         try {
             credentials = new ProfileCredentialsProvider().getCredentials();
         } catch (Exception e) {
@@ -40,27 +38,23 @@ public class AutoScaler {
                     e);
         }
         ec2 = AmazonEC2ClientBuilder.standard()
-                .withRegion(region)
+                .withRegion(REGION)
                 .withCredentials(new AWSStaticCredentialsProvider(credentials)).build();
     }
 
-    public static AutoScaler getInstance(){
-        if(autoScaler == null){
-            autoScaler = new AutoScaler();
-        }
-        return autoScaler;
+    public AutoScaler() {
     }
 
-    public void createInstance(){
+    public static void createInstance() {
         RunInstancesRequest runInstancesRequest =
                 new RunInstancesRequest();
 
-        runInstancesRequest.withImageId(AMIid)
-                .withInstanceType("t2.micro")
-                .withMinCount(1)
-                .withMaxCount(1)
-                .withKeyName(keyPairName)
-                .withSecurityGroups(securityGroupName);
+        runInstancesRequest.withImageId(AMI_ID)
+                .withInstanceType(INSTANCE_TYPE)
+                .withMinCount(MIN_COUNT)
+                .withMaxCount(MAX_COUNT)
+                .withKeyName(KEY_PAIR_NAME)
+                .withSecurityGroups(SECURITY_GROUP_NAME);
 
         RunInstancesResult runInstancesResult =
                 ec2.runInstances(runInstancesRequest);
@@ -69,13 +63,13 @@ public class AutoScaler {
         String instanceId = runInstancesResult.getReservation().getInstances().get(0).getInstanceId();
         System.out.println("Created instance " + instanceId);
 
-        while(true){
+        while (true) {
             //Checks if instance is already running
-            Instance instance = getCreatedInstance(instanceId);
-            if(instance.getState().getCode() == RUNNING){
+            com.amazonaws.services.ec2.model.Instance instance = getCreatedInstance(instanceId);
+            if (instance.getState().getCode() == INSTANCE_RUNNING_CODE) {
                 System.out.println("Instance is running! Adding to LoadBalancer");
                 try {
-                    InstanceManager.getInstance().addInstance(instance.getPublicIpAddress(), instance.getInstanceId());
+                    InstanceManager.addInstance(instance.getPublicDnsName(), instance.getInstanceId());
                 } catch (MalformedURLException e) {
                     System.out.println("Malformed URL, unable to add instance");
                 }
@@ -91,28 +85,24 @@ public class AutoScaler {
 
     }
 
-    public void terminateInstance(String instanceId){
-        InstanceManager.getInstance().removeInstance(instanceId);
+    public static void terminateInstance(String instanceId) {
+        InstanceManager.removeInstance(instanceId);
         System.out.println("Removed instance " + instanceId);
 
+        //TODO Wait for instance to finish it's requests
         TerminateInstancesRequest termInstanceReq = new TerminateInstancesRequest();
         termInstanceReq.withInstanceIds(instanceId);
         ec2.terminateInstances(termInstanceReq);
     }
 
-    private Instance getCreatedInstance(String instanceId){
-        DescribeInstancesRequest request = new DescribeInstancesRequest();
-        ArrayList<String> instanceCreated = new ArrayList<>();
-        instanceCreated.add(instanceId);
-
-        request.setInstanceIds(instanceCreated);
+    private static com.amazonaws.services.ec2.model.Instance getCreatedInstance(String instanceId) {
+        DescribeInstancesRequest request = new DescribeInstancesRequest().withInstanceIds(instanceId);
         DescribeInstancesResult describeInstancesResult = ec2.describeInstances(request);
-
         //TODO - Assuming only 1 reservation with 1 instance returns. Check if it is correct
 
         List<Reservation> reservations = describeInstancesResult.getReservations();
-        List<Instance> instances = reservations.get(0).getInstances();
-        return  instances.get(0);
+        List<com.amazonaws.services.ec2.model.Instance> instances = reservations.get(0).getInstances();
+        return instances.get(0);
     }
 
 }
