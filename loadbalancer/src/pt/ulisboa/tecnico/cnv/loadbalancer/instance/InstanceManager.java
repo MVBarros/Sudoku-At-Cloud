@@ -37,8 +37,10 @@ public class InstanceManager {
         }
     }
 
-    public static void removeInstance(String id) {
+    public static Instance removeInstance(String id) {
+        Instance instance = instances.get(id);
         instances.remove(id);
+        return instance;
     }
 
 
@@ -57,5 +59,17 @@ public class InstanceManager {
     public static String getInstanceToRemove() {
         //TODO - Make actual selection of instance to remove
         return instances.values().iterator().next().getId();
+    }
+
+    public static int getNumInstances() {
+        int numInstances = 0;
+        synchronized (instances){
+            for(Instance instance : instances.values()){
+                if(instance.isHealthy()){
+                    numInstances++;
+                }
+            }
+        }
+        return numInstances;
     }
 }

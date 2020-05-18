@@ -65,31 +65,38 @@ public class AutoScaler {
 
         while (true) {
             //Checks if instance is already running
-            com.amazonaws.services.ec2.model.Instance instance = getCreatedInstance(instanceId);
-            if (instance.getState().getCode() == INSTANCE_RUNNING_CODE) {
-                System.out.println("Instance is running! Adding to LoadBalancer");
-                try {
-                    InstanceManager.addInstance(instance.getPublicDnsName(), instance.getInstanceId());
-                } catch (MalformedURLException e) {
-                    System.out.println("Malformed URL, unable to add instance");
-                }
-                return;
-            }
-            //Else, check wait a bit to try again
             try {
+                com.amazonaws.services.ec2.model.Instance instance = getCreatedInstance(instanceId);
+                if (instance.getState().getCode() == INSTANCE_RUNNING_CODE) {
+                    System.out.println("Instance is running! Adding to LoadBalancer");
+                    InstanceManager.addInstance("http://" + instance.getPublicDnsName() + ":8000", instance.getInstanceId());
+                    return;
+                }
                 Thread.sleep(5000);
+            } catch (MalformedURLException e) {
+                System.out.println("Malformed URL, unable to add instance");
             } catch (InterruptedException e) {
                 e.printStackTrace();
+            } catch (com.amazonaws.services.ec2.model.AmazonEC2Exception e){
+                System.out.println("Instance not yet available, trying again");
+
             }
         }
 
     }
 
     public static void terminateInstance(String instanceId) {
-        InstanceManager.removeInstance(instanceId);
+        pt.ulisboa.tecnico.cnv.loadbalancer.instance.Instance removedInstance = InstanceManager.removeInstance(instanceId);
         System.out.println("Removed instance " + instanceId);
 
-        //TODO Wait for instance to finish it's requests
+        while(removedInstance.getLoad() > 0){
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
         TerminateInstancesRequest termInstanceReq = new TerminateInstancesRequest();
         termInstanceReq.withInstanceIds(instanceId);
         ec2.terminateInstances(termInstanceReq);
