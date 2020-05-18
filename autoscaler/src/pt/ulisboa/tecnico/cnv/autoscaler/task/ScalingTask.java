@@ -25,7 +25,7 @@ public class ScalingTask implements Runnable {
                 System.out.println("Current system load: " + currentLoad);
                 measurements[index] = currentLoad;
                 scalingPolicy();
-                index = ++index % NUMBER_MEASURES;
+                index = (index + 1) % NUMBER_MEASURES;
             } catch (InterruptedException e) {
                 System.out.println("Error: Scaling Task was interrupted");
             }
