@@ -13,10 +13,20 @@ public class Main {
 
     public static void main(final String[] args) throws Exception {
         DynamoFrontEnd.createTables();
-
-        for (int instance = 0; instance < ScalingTask.MIN_NUMBER_INSTANCES; instance++) {
-            ThreadManager.execute(new CreateInstanceTask());
+        CreateInstanceTask[] tasks = new CreateInstanceTask[ScalingTask.MIN_NUMBER_INSTANCES]
+        for (int i = 0; i < ScalingTask.MIN_NUMBER_INSTANCES; i++) {
+            tasks[i] = new CreateInstanceTask();
         }
+
+        System.out.println("Creating " +  ScalingTask.MIN_NUMBER_INSTANCES + " instances");
+        for (int i = 0; i < ScalingTask.MIN_NUMBER_INSTANCES; i++) {
+            ThreadManager.execute(tasks[i]);
+        }
+
+        for (int i = 0; i < ScalingTask.MIN_NUMBER_INSTANCES; i++) {
+            tasks[i].waitFinish();
+        }
+        System.out.println("Created " +  ScalingTask.MIN_NUMBER_INSTANCES + " instances successfully");
 
         final HttpServer server = HttpServer.create(new InetSocketAddress(PORT), 0);
         server.createContext("/sudoku", new SudokuHandler());

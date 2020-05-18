@@ -14,7 +14,6 @@ public class CreateInstanceTask implements Runnable {
     private static final int INSTANCE_RUNNING_CODE = 16;
     private static final int MIN_COUNT = 1;
     private static final int MAX_COUNT = 1;
-    private static final String REGION = "us-east-1";
     private static final String AMI_ID = "ami-0c56c418f2f4f7df4";
     private static final String KEY_PAIR_NAME = "CNV-Project-Pair";
     private static final String SECURITY_GROUP_NAME = "CNV-Project";
@@ -73,7 +72,7 @@ public class CreateInstanceTask implements Runnable {
         return instances.get(0);
     }
 
-    public void await() throws InterruptedException {
+    public void waitFinish() throws InterruptedException {
         latch.await();
     }
 
