@@ -27,8 +27,8 @@ public class SudokuRequest implements Runnable {
 
     public SudokuRequest(SudokuParameters parameters, Instance instance) {
         this.parameters = parameters;
-        this.startingCost = parameters.getCost();
-        this.minCost = (long) (startingCost * MIN_COST_SCALE);
+        this.startingCost = parameters.getCost() / getCostLoss();
+        this.minCost = (long) (this.startingCost * MIN_COST_SCALE);
         this.instance = instance;
         this.sentTime = System.currentTimeMillis();
     }
@@ -38,7 +38,7 @@ public class SudokuRequest implements Runnable {
     }
 
     public long getCurrentCost() {
-        return Math.max(minCost, startingCost - getCostLoss() * getTime());
+        return Math.max(minCost, startingCost - getTime());
     }
 
     private long getTime() {

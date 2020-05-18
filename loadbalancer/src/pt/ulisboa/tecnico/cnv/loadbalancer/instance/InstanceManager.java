@@ -67,6 +67,7 @@ public class InstanceManager {
     }
 
     public static String getInstanceToRemove() {
+        //TODO FIX 0 INSTANCES
         //TODO - Make actual selection of instance to remove
         return instances.values().iterator().next().getId();
     }

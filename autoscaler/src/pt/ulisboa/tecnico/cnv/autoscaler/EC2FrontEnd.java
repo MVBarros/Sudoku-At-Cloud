@@ -66,10 +66,9 @@ public class EC2FrontEnd {
 
         RunInstancesResult runInstancesResult = ec2.runInstances(runInstancesRequest);
         String instanceId = runInstancesResult.getReservation().getInstances().get(0).getInstanceId();
-        String instanceDns = runInstancesResult.getReservation().getInstances().get(0).getPublicDnsName();
         System.out.println("Created instance " + instanceId + " waiting for it to start...");
 
-        waitInstanceRunning(instanceId);
+        String instanceDns = waitInstanceRunning(instanceId);
         String url = String.format("http://%s:8000", instanceDns);
         try {
             System.out.println("Adding instance " + instanceId + " to load balancer");
@@ -80,7 +79,7 @@ public class EC2FrontEnd {
 
     }
 
-    private static void waitInstanceRunning(String instanceId) {
+    private static String waitInstanceRunning(String instanceId) {
         while (true) {
             //Checks if instance is already running
             try {
@@ -88,7 +87,7 @@ public class EC2FrontEnd {
                 Instance instance = getInstance(instanceId);
                 if (instance.getState().getCode() == INSTANCE_RUNNING_CODE) {
                     System.out.println("Instance " + instanceId + " is running!");
-                    return;
+                    return instance.getPublicDnsName();
                 }
             } catch (InterruptedException e) {
                 System.out.println("Error: Auto Scaling thread interrupted while creating instance");
