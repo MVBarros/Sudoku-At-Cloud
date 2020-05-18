@@ -9,7 +9,6 @@ import metrics.tools.SudokuMetricsBFS;
 import metrics.tools.SudokuMetricsCP;
 import metrics.tools.SudokuMetricsDLX;
 import org.json.JSONArray;
-import pt.ulisboa.tecnico.cnv.dynamo.DynamoFrontEnd;
 import pt.ulisboa.tecnico.cnv.server.task.UploadStatsTask;
 import pt.ulisboa.tecnico.cnv.solver.Solver;
 import pt.ulisboa.tecnico.cnv.solver.SolverArgumentParser;
@@ -18,13 +17,10 @@ import pt.ulisboa.tecnico.cnv.solver.SolverFactory;
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 public class WebServer {
-
-    private static ConcurrentHashMap<String, SolverArgumentParser> boards = new ConcurrentHashMap<>();
 
     /**
      * One thread should be enough to upload request metrics
@@ -63,19 +59,6 @@ public class WebServer {
         isr.close();
 
         return buf.toString();
-    }
-
-    private static ConcurrentHashMap<String, SolverArgumentParser> getBoards() {
-        return boards;
-    }
-
-    private static String getCurrentThreadName() {
-        return String.valueOf(Thread.currentThread().getId());
-    }
-
-    public static SolverArgumentParser getCurrentThreadBoard() {
-        String name = getCurrentThreadName();
-        return boards.get(name);
     }
 
     private static void writeBack(SolverArgumentParser parser) {
@@ -141,7 +124,6 @@ public class WebServer {
             }
             // Get user-provided flags.
             final SolverArgumentParser ap = new SolverArgumentParser(args);
-            WebServer.getBoards().put(WebServer.getCurrentThreadName(), ap);
 
 
             // Create solver instance from factory.
@@ -150,7 +132,8 @@ public class WebServer {
             //Solve sudoku puzzle
             JSONArray solution = s.solveSudoku();
 
-            writeBack(getCurrentThreadBoard());
+            writeBack(ap);
+
             // Send response to browser.
             final Headers hdrs = t.getResponseHeaders();
 
@@ -178,10 +161,6 @@ public class WebServer {
             os.close();
 
             System.out.println("> Sent response to " + t.getRemoteAddress().toString());
-
-
-            WebServer.getBoards().remove(getCurrentThreadName());
-
         }
     }
 }
