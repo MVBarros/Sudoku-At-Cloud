@@ -1,6 +1,7 @@
 package pt.ulisboa.tecnico.cnv.loadbalancer;
 
 import com.sun.net.httpserver.HttpServer;
+import pt.ulisboa.tecnico.cnv.autoscaler.AutoScaler;
 import pt.ulisboa.tecnico.cnv.autoscaler.task.CreateInstanceTask;
 import pt.ulisboa.tecnico.cnv.autoscaler.task.ScalingTask;
 import pt.ulisboa.tecnico.cnv.dynamo.DynamoFrontEnd;
@@ -14,13 +15,10 @@ public class Main {
     public static void main(final String[] args) throws Exception {
         DynamoFrontEnd.createTables();
         CreateInstanceTask[] tasks = new CreateInstanceTask[ScalingTask.MIN_NUMBER_INSTANCES];
-        for (int i = 0; i < ScalingTask.MIN_NUMBER_INSTANCES; i++) {
-            tasks[i] = new CreateInstanceTask();
-        }
 
         System.out.println("Creating " +  ScalingTask.MIN_NUMBER_INSTANCES + " instances");
         for (int i = 0; i < ScalingTask.MIN_NUMBER_INSTANCES; i++) {
-            ThreadManager.execute(tasks[i]);
+            tasks[i] = AutoScaler.createInstance();
         }
 
         for (int i = 0; i < ScalingTask.MIN_NUMBER_INSTANCES; i++) {

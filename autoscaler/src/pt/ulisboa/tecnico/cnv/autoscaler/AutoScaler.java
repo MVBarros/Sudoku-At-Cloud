@@ -39,9 +39,11 @@ public class AutoScaler {
     public AutoScaler() {
     }
 
-    public static void createInstance() {
+    public static CreateInstanceTask createInstance() {
         AutoScaler.numInstances.incrementAndGet();
-        ThreadManager.execute(new CreateInstanceTask());
+        CreateInstanceTask task = new CreateInstanceTask();
+        ThreadManager.execute(task);
+        return task;
     }
 
     public static void terminateInstance(String instanceId) {
