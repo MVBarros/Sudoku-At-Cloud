@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class InstanceManager {
 
     private static final Map<String, Instance> instances = new ConcurrentHashMap<>();
-    private static boolean isAutoScalerRunning = false;
+    private static final Map<String, HealthCheckTask> healthCheckThreads = new ConcurrentHashMap<>();
 
     private InstanceManager() {
     }
@@ -27,24 +27,33 @@ public class InstanceManager {
     }
 
     public static void addInstance(String address, String id) throws MalformedURLException {
-        Instance instance = null;
+        Instance instance;
         boolean isNew;
         synchronized (instances) {
             isNew = !instances.containsKey(id);
             if (isNew) {
                 instance = new Instance(address, id);
                 instances.put(id, instance);
+                HealthCheckTask task = new HealthCheckTask(instance);
+                healthCheckThreads.put(instance.getId(), task);
+                ThreadManager.execute(task);
+
             }
-        }
-        if (isNew) {
-            ThreadManager.execute(new HealthCheckTask(instance));
         }
     }
 
 
 
     public static Instance removeInstance(String id) {
-        return instances.remove(id);
+        synchronized (instances) {
+            HealthCheckTask task = healthCheckThreads.remove(id);
+            if (task != null) {
+                task.interrupt();
+            } else {
+                System.out.println("Error: Removing health check for instance " + id + " that does not exist");
+            }
+            return instances.remove(id);
+        }
     }
 
 
@@ -63,15 +72,5 @@ public class InstanceManager {
     public static String getInstanceToRemove() {
         //TODO - Make actual selection of instance to remove
         return instances.values().iterator().next().getId();
-    }
-
-    public static int getNumInstances() {
-        int numInstances = 0;
-        for (Instance instance : instances.values()) {
-            if (instance.getState() != InstanceStateDead.getInstance()) {
-                numInstances++;
-            }
-        }
-        return numInstances;
     }
 }
