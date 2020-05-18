@@ -2,6 +2,7 @@ package pt.ulisboa.tecnico.cnv.autoscaler.task;
 
 import pt.ulisboa.tecnico.cnv.autoscaler.AutoScaler;
 import pt.ulisboa.tecnico.cnv.loadbalancer.instance.InstanceManager;
+import pt.ulisboa.tecnico.cnv.loadbalancer.task.ThreadManager;
 
 public class ScallingTask implements Runnable {
     //TODO - Implement default cooldown
@@ -38,8 +39,7 @@ public class ScallingTask implements Runnable {
 
         if(averageLoad >= SCALE_UP_VALUE_THRESHOLD){
             System.out.println("Scale Up Threshold achieved");
-            //TODO FAZER ISTO NUMA THREAD A PARTE
-            AutoScaler.createInstance();
+            ThreadManager.execute(new CreateInstanceTask());
         }
 
         else if(averageLoad <= SCALE_DOWN_VALUE_THRESHOLD){
@@ -47,8 +47,7 @@ public class ScallingTask implements Runnable {
             String instanceId = InstanceManager.getInstanceToRemove();
 
             System.out.println("Removing instance " + instanceId);
-            //TODO FAZER ISTO NUMA THREAD A PARTE
-            AutoScaler.terminateInstance(instanceId);
+            ThreadManager.execute(new RemoveInstanceTask(instanceId));
         }
     }
 
