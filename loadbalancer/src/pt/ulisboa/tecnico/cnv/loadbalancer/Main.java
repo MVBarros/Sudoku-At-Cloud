@@ -13,6 +13,7 @@ public class Main {
     private static final int PORT = 9000;
 
     public static void main(final String[] args) throws Exception {
+        System.out.println("Creating tables for dynamodb");
         DynamoFrontEnd.createTables();
         CreateInstanceTask[] tasks = new CreateInstanceTask[ScalingTask.MIN_NUMBER_INSTANCES];
 

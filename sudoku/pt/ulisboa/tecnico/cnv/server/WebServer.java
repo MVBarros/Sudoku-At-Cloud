@@ -33,10 +33,6 @@ public class WebServer {
 
     public static void main(final String[] args) throws Exception {
 
-        //Create tables if they don't already exist
-        //TODO PUT THIS IN LOAD BALANCER/AUTO SCALER
-        DynamoFrontEnd.createTables();
-
         final HttpServer server = HttpServer.create(new InetSocketAddress(8000), 0);
 
 
