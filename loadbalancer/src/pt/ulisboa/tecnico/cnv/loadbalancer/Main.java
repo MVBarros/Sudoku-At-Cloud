@@ -1,8 +1,10 @@
 package pt.ulisboa.tecnico.cnv.loadbalancer;
 
 import com.sun.net.httpserver.HttpServer;
+import pt.ulisboa.tecnico.cnv.autoscaler.AutoScaler;
 import pt.ulisboa.tecnico.cnv.autoscaler.task.CreateInstanceTask;
 import pt.ulisboa.tecnico.cnv.dynamo.DynamoFrontEnd;
+import pt.ulisboa.tecnico.cnv.loadbalancer.instance.InstanceManager;
 import pt.ulisboa.tecnico.cnv.loadbalancer.task.ThreadManager;
 
 import java.net.InetSocketAddress;
@@ -18,6 +20,7 @@ public class Main {
         for(int instance = 0; instance < MIN_COUNT; instance++){
             ThreadManager.execute(new CreateInstanceTask());
         }
+
         final HttpServer server = HttpServer.create(new InetSocketAddress(PORT), 0);
         server.createContext("/newInstance", new NewInstanceHandler());
         server.createContext("/sudoku", new SudokuHandler());
@@ -26,6 +29,4 @@ public class Main {
 
         System.out.println("Load balancer running at address " + server.getAddress().toString());
     }
-
-
 }

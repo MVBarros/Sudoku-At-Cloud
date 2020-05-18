@@ -6,7 +6,7 @@ import pt.ulisboa.tecnico.cnv.loadbalancer.instance.state.InstanceStateDead;
 
 public class HealthCheckTask implements Runnable {
     private static final int INTERVAL = 10000; //10 seconds
-    private static final int GRACE_PERIOD = 30000; //30 seconds
+    private static final int GRACE_PERIOD = 40000; //40 seconds
 
 
     private final Instance instance;

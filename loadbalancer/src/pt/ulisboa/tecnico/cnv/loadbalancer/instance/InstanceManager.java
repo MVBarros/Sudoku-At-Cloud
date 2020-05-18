@@ -1,5 +1,6 @@
 package pt.ulisboa.tecnico.cnv.loadbalancer.instance;
 
+import pt.ulisboa.tecnico.cnv.autoscaler.task.ScallingTask;
 import pt.ulisboa.tecnico.cnv.loadbalancer.task.HealthCheckTask;
 import pt.ulisboa.tecnico.cnv.loadbalancer.task.ThreadManager;
 
@@ -10,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class InstanceManager {
 
     private static final Map<String, Instance> instances = new ConcurrentHashMap<>();
-
+    private static boolean isAutoScalerRunning = false;
     private InstanceManager() {
     }
 
@@ -31,6 +32,13 @@ public class InstanceManager {
                 instance = new Instance(address, id);
                 instances.put(id, instance);
             }
+            //TODO - Remove comment when ScallingTask is ready
+            /*
+            if(instances.size() == 1 && !isAutoScalerRunning){
+                ThreadManager.execute(new ScallingTask());
+                isAutoScalerRunning = true;
+            }
+            */
         }
         if (isNew) {
             ThreadManager.execute(new HealthCheckTask(instance));
