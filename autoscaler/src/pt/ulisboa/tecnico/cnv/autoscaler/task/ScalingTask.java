@@ -21,7 +21,7 @@ public class ScalingTask implements Runnable {
         while (true) {
             try {
                 Thread.sleep(TIME_BETWEEN_MEASUREMENTS);
-                long currentLoad = InstanceManager.getTotalLoad();
+                long currentLoad = InstanceManager.getSystemLoad();
                 System.out.println("Current system load: " + currentLoad);
                 measurements[index] = currentLoad;
                 scalingPolicy();
