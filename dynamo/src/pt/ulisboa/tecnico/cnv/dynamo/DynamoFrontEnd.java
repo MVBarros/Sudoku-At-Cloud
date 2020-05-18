@@ -28,6 +28,7 @@ public class DynamoFrontEnd {
     private static final String KEY_SHORT_KEY = KEY_UNASSIGNED_ENTRIES;
     private static final String KEY_BOARD_IDENTIFIER = "BoardIdentifier";
     private static final String KEY_REQUEST_COST = "RequestCost";
+    private static final String KEY_ELAPSED_TIME = "ElapsedTime";
     private static final int CACHE_CAPACITY = 200;
     private static final int SCAN_RESULT_LIMIT = 1;
     private static final int UN_ACCEPTABLE_INTERVAL = 20;
@@ -80,7 +81,7 @@ public class DynamoFrontEnd {
         }
     }
 
-    public static void uploadStats(SolverArgumentParser parser, Stats stats) {
+    public static void uploadStats(SolverArgumentParser parser, Stats stats, long deltaT) {
         Map<String, AttributeValue> item = new HashMap<>();
         String key = getKey(parser);
         item.put(KEY_REQUEST_PRIMARY_KEY, new AttributeValue(key));
@@ -89,6 +90,7 @@ public class DynamoFrontEnd {
         item.put(KEY_BOARD_IDENTIFIER, new AttributeValue(parser.getInputBoard()));
         item.put(KEY_UNASSIGNED_ENTRIES, new AttributeValue().withN(Integer.toString(parser.getUn())));
         item.put(KEY_REQUEST_COST, new AttributeValue().withN(Long.toString(stats.getCost())));
+        item.put(KEY_ELAPSED_TIME, new AttributeValue().withN(Long.toString(deltaT)));
         PutItemRequest putItemRequest = new PutItemRequest(stats.getTableName(), item)
                 .withConditionExpression(String.format("attribute_not_exists(%s)", KEY_REQUEST_PRIMARY_KEY));
         try {

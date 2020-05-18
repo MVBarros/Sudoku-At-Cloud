@@ -25,6 +25,7 @@ import java.util.concurrent.Executors;
 public class WebServer {
 
     private static ConcurrentHashMap<String, SolverArgumentParser> boards = new ConcurrentHashMap<>();
+    private static ConcurrentHashMap<String, Long> requestStartTime = new ConcurrentHashMap<>();
 
     /**
      * One thread should be enough to upload request metrics
@@ -83,6 +84,7 @@ public class WebServer {
     }
 
     private static void writeBack(SolverArgumentParser parser) {
+        long deltaT = System.currentTimeMillis() - requestStartTime.get(getCurrentThreadName());
         SolverFactory.SolverType type = parser.getSolverStrategy();
         Stats stats;
         switch (type) {
@@ -99,7 +101,7 @@ public class WebServer {
                 System.out.println("ERROR: Invalid Stats type found: " + type);
                 return;
         }
-        metricsUploadExecutor.execute(new UploadStatsTask(parser, stats));
+        metricsUploadExecutor.execute(new UploadStatsTask(parser, stats, deltaT));
 
     }
 
@@ -116,7 +118,7 @@ public class WebServer {
     static class MyHandler implements HttpHandler {
         @Override
         public void handle(final HttpExchange t) throws IOException {
-
+            requestStartTime.put(getCurrentThreadName(), System.currentTimeMillis());
             // Get the query.
             final String query = t.getRequestURI().getQuery();
             System.out.println("> Query:\t" + query);
@@ -155,6 +157,8 @@ public class WebServer {
             JSONArray solution = s.solveSudoku();
 
             writeBack(getCurrentThreadBoard());
+
+            WebServer.getBoards().remove(getCurrentThreadName());
             // Send response to browser.
             final Headers hdrs = t.getResponseHeaders();
 
@@ -182,9 +186,6 @@ public class WebServer {
             os.close();
 
             System.out.println("> Sent response to " + t.getRemoteAddress().toString());
-
-
-            WebServer.getBoards().remove(getCurrentThreadName());
 
         }
     }
