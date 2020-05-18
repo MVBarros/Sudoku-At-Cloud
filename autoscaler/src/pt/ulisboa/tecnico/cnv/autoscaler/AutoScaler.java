@@ -65,21 +65,21 @@ public class AutoScaler {
 
         while (true) {
             //Checks if instance is already running
-            com.amazonaws.services.ec2.model.Instance instance = getCreatedInstance(instanceId);
-            if (instance.getState().getCode() == INSTANCE_RUNNING_CODE) {
-                System.out.println("Instance is running! Adding to LoadBalancer");
-                try {
-                    InstanceManager.addInstance(instance.getPublicDnsName(), instance.getInstanceId());
-                } catch (MalformedURLException e) {
-                    System.out.println("Malformed URL, unable to add instance");
-                }
-                return;
-            }
-            //Else, check wait a bit to try again
             try {
+                com.amazonaws.services.ec2.model.Instance instance = getCreatedInstance(instanceId);
+                if (instance.getState().getCode() == INSTANCE_RUNNING_CODE) {
+                    System.out.println("Instance is running! Adding to LoadBalancer");
+                    InstanceManager.addInstance("http://" + instance.getPublicDnsName() + ":8000", instance.getInstanceId());
+                    return;
+                }
                 Thread.sleep(5000);
+            } catch (MalformedURLException e) {
+                System.out.println("Malformed URL, unable to add instance");
             } catch (InterruptedException e) {
                 e.printStackTrace();
+            } catch (com.amazonaws.services.ec2.model.AmazonEC2Exception e){
+                System.out.println("Instance not yet available, trying again");
+
             }
         }
 
