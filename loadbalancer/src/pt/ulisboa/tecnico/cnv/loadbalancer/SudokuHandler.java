@@ -34,7 +34,9 @@ public class SudokuHandler implements HttpHandler {
         if (instance == null) {
             RequestQueue.addToQueue(parameters);
         } else {
-            ThreadManager.execute(new SudokuRequest(parameters, instance));
+            //ThreadManager.execute(new SudokuRequest(parameters, instance));
+            //No need to start new thread here
+            new SudokuRequest(parameters, instance).run();
         }
     }
 
