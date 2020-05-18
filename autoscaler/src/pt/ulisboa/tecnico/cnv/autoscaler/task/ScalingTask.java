@@ -62,11 +62,6 @@ public class ScalingTask implements Runnable {
         }
     }
 
-    /*******************/
-    /** Aux functions **/
-    /*******************/
-
-
     private long calculateLoadAverage(){
         long totalLoad = 0;
         for(long load : loadValues){
