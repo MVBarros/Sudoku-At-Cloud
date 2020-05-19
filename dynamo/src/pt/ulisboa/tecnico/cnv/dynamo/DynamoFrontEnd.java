@@ -17,9 +17,9 @@ import java.util.List;
 import java.util.Map;
 
 public class DynamoFrontEnd {
-    public static final String BFS_TABLE_NAME = "Stats-BFS";
-    public static final String CP_TABLE_NAME = "Stats-CP";
-    public static final String DLX_TABLE_NAME = "Stats-DLX";
+    public static final String BFS_TABLE_NAME = "BFS-Stats";
+    public static final String CP_TABLE_NAME = "CP-Stats";
+    public static final String DLX_TABLE_NAME = "DLX-Stats";
     private static final String REGION = "us-east-1";
     private static final String KEY_REQUEST_PRIMARY_KEY = "RequestQuery";
     private static final String KEY_BOARD_SIZE_N1 = "BoardSizeN1";

@@ -41,7 +41,7 @@ public class SudokuMetricsTool {
             Instruction instr = (Instruction) instrs.nextElement();
             int opcode = instr.getOpcode();
             if (opcode == InstructionTable.NEW) {
-                instr.addBefore("metrics/tools/SudokuMetricsTool", "allocNew", "null");
+                instr.addBefore("metrics/tools/SudokuMetricsTool", "allocNew", 1);
             }
         }
     }

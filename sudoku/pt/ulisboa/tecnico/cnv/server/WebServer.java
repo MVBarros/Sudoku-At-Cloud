@@ -106,7 +106,7 @@ public class WebServer {
                     i++;
                 }
                 // Get user-provided flags.
-                final SolverArgumentParser ap = new SolverArgumentParser(args);
+                 final SolverArgumentParser ap = new SolverArgumentParser(args);
 
 
                 // Create solver instance from factory.
