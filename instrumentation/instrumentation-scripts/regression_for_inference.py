@@ -9,12 +9,10 @@ numbers = re.compile(r'(\d+)')
 
 
 paths = [ \
-'../package-instrumentation-results/9x9/1-BFS/*.json', '../package-instrumentation-results/9x9/1-CP/*.json', '../package-instrumentation-results/9x9/1-DLX/*.json', \
-'../package-instrumentation-results/9x9/2-BFS/*.json', '../package-instrumentation-results/9x9/2-CP/*.json', '../package-instrumentation-results/9x9/2-DLX/*.json',\
-'../package-instrumentation-results/9x9/3-BFS/*.json', '../package-instrumentation-results/9x9/3-CP/*.json', '../package-instrumentation-results/9x9/3-DLX/*.json', \
+'../package-instrumentation-results/9x9/101/BFS/*.json', '../package-instrumentation-results/9x9/101/CP/*.json', '../package-instrumentation-results/9x9/101/DLX/*.json', \
+'../package-instrumentation-results/9x9/102/BFS/*.json', '../package-instrumentation-results/9x9/102/CP/*.json', '../package-instrumentation-results/9x9/102/DLX/*.json',\
 '../package-instrumentation-results/16x16/1-BFS/*.json', '../package-instrumentation-results/16x16/1-CP/*.json', '../package-instrumentation-results/16x16/1-DLX/*.json', \
 '../package-instrumentation-results/16x16/2-BFS/*.json', '../package-instrumentation-results/16x16/2-CP/*.json', '../package-instrumentation-results/16x16/2-DLX/*.json', \
-'../package-instrumentation-results/16x16/3-BFS/*.json', '../package-instrumentation-results/16x16/3-CP/*.json', '../package-instrumentation-results/16x16/3-DLX/*.json', \
 '../package-instrumentation-results/25x25/1-BFS/*.json', '../package-instrumentation-results/25x25/1-CP/*.json', '../package-instrumentation-results/25x25/1-DLX/*.json', \
 '../package-instrumentation-results/25x25/2-BFS/*.json', '../package-instrumentation-results/25x25/2-CP/*.json', '../package-instrumentation-results/25x25/2-DLX/*.json' \
 ]
