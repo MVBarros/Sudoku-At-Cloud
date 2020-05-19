@@ -18,7 +18,7 @@ paths = [ \
 ]
 
 strats = ['BFS', 'CP', 'DLX']
-metrics = {'BFS' : "Method Count", 'CP' : "New Count", 'DLX' : "Stack Depth"}
+metrics = {'BFS' : "Method Count", 'CP' : "New Count", 'DLX' : "Method Count"}
 
 def numericalSort(value):
     parts = numbers.split(value)
@@ -36,20 +36,20 @@ def getMetricsForStrat(strat):
         for filename in sorted(glob.iglob(path), key=numericalSort):
             with open(filename, 'r') as f:
                 items = json.load(f)
-                ret[0].append(items[metric])
+                ret[0].append([items[metric], items["Board"]["N1"], items["Board"]["N2"], items["Board"]["UN"]])
                 ret[1].append(items["Instruction Count"])
     return ret
-
+    
 
 for strat in strats:
     print("\n\nStrategy : " + strat + "\n\n")
     a = getMetricsForStrat(strat)
-    x = np.array(a[0]).reshape((-1, 1))    
+    x = np.array(a[0])    
     y = np.array(a[1])
     print("Simple linear regression")
 
     model = LinearRegression()
-    model.fit_intercept = False #we're removing intercept to avoid negative costs
+    model.fit_intercept = True
     model.fit(x, y)
     r_sq = model.score(x, y)
     print('coefficient of determination:', r_sq)

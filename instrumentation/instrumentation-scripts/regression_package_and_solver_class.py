@@ -9,17 +9,14 @@ numbers = re.compile(r'(\d+)')
 
 #Can only do field store since they are the only ones that have exactly the same number of measures with respect to UN taken
 
-paths_class = [ \
-'../solver-class-instrumentation-results/16x16/1-BFS/*.json', '../solver-class-instrumentation-results/16x16/1-CP/*.json',\
-'../solver-class-instrumentation-results/16x16/1-DLX/*.json', \
-'../solver-class-instrumentation-results/16x16/2-BFS/*.json', '../solver-class-instrumentation-results/16x16/2-CP/*.json',\
-'../solver-class-instrumentation-results/16x16/2-DLX/*.json', \
-]
 
 paths_package = [\
     '../package-instrumentation-results/16x16/1-BFS/*.json', '../package-instrumentation-results/16x16/1-CP/*.json',\
     '../package-instrumentation-results/16x16/1-DLX/*.json', '../package-instrumentation-results/16x16/2-BFS/*.json',\
     '../package-instrumentation-results/16x16/2-CP/*.json', '../package-instrumentation-results/16x16/2-DLX/*.json', \
+    '../package-instrumentation-results/25x25/1-BFS/*.json', '../package-instrumentation-results/25x25/1-CP/*.json',\
+    '../package-instrumentation-results/25x25/1-DLX/*.json', '../package-instrumentation-results/25x25/2-BFS/*.json',\
+    '../package-instrumentation-results/25x25/2-CP/*.json', '../package-instrumentation-results/25x25/2-DLX/*.json', \
 
 ]
 
@@ -30,14 +27,14 @@ def numericalSort(value):
     parts[1::2] = map(int, parts[1::2])
     return parts
 
-metric_strat = {"BFS" : "Method Count", "CP" : "New Count", "DLX" : "Field Store Count"}
+metric_strat = {"BFS" : "Method Count", "CP" : "New Count", "DLX" : "Method Count"}
 
 
 def getMetricsForStratClass(strat):
     ret = []
     curr_metric = metric_strat[strat]
     print(curr_metric)
-    curr_paths = [s for s in paths_class if strat in s]
+    curr_paths = [s for s in paths_package if strat in s]
     for path in curr_paths:
         for filename in sorted(glob.iglob(path), key=numericalSort):
             with open(filename, 'r') as f:
@@ -61,7 +58,7 @@ for strat in strats:
     y = getMetricsForStratPackage(strat)
    
     model = LinearRegression()
-    model.fit_intercept = False #we're removing intercept to avoid negative costs
+    model.fit_intercept = True #we're removing intercept to avoid negative costs
     model.fit(x, y)
     r_sq = model.score(x, y)
     print('coefficient of determination:', r_sq)
