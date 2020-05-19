@@ -14,9 +14,6 @@ import java.net.HttpURLConnection;
 
 public class SudokuRequest implements Runnable {
     private static final int SUDOKU_REQUEST_SUCCESS = 200;
-    private static final long COST_LOSS_PER_MILLISECOND_BFS = 2;
-    private static final long COST_LOSS_PER_MILLISECOND_CP = 1;
-    private static final long COST_LOSS_PER_MILLISECOND_DLX = 7091;
     private static final double MIN_COST_SCALE = 2 * Math.pow(10, -2); //Allow to lose up to 80% of the cost due to time elapsing
 
     private final SudokuParameters parameters;
@@ -27,7 +24,7 @@ public class SudokuRequest implements Runnable {
 
     public SudokuRequest(SudokuParameters parameters, Instance instance) {
         this.parameters = parameters;
-        this.startingCost = parameters.getCost() / getCostLoss();
+        this.startingCost = parameters.getCost();
         this.minCost = (long) (this.startingCost * MIN_COST_SCALE);
         this.instance = instance;
         this.sentTime = System.currentTimeMillis();
@@ -45,20 +42,6 @@ public class SudokuRequest implements Runnable {
         return System.currentTimeMillis() - sentTime;
     }
 
-    private long getCostLoss() {
-        switch (parameters.getStrategy()) {
-            case BFS:
-                return COST_LOSS_PER_MILLISECOND_BFS;
-            case CP:
-                return COST_LOSS_PER_MILLISECOND_CP;
-            case DLX:
-                return COST_LOSS_PER_MILLISECOND_DLX;
-            default:
-                //Should never reach here
-                System.out.println("Wrong cost loss strategy");
-                return COST_LOSS_PER_MILLISECOND_CP;
-        }
-    }
 
     public void executeOnNewThread() {
         this.instance.addRequest(this);

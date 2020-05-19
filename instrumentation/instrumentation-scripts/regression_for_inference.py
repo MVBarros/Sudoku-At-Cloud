@@ -53,9 +53,9 @@ for strat in strats:
     print('coefficient of determination:', r_sq)
     print('intercept:', model.intercept_)
     print('slope:', model.coef_)
-    y_predict = model.predict(x)
-    for i in range(0, y.size):
-        print("\tPredicted: ", y_predict[i])
-        print("\tReal:      ", y[i])
+    #y_predict = model.predict(x)
+    #for i in range(0, y.size):
+    #    print("\tPredicted: ", y_predict[i])
+    #    print("\tReal:      ", y[i])
 
         

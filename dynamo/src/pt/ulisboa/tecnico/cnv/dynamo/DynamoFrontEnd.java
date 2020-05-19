@@ -33,15 +33,15 @@ public class DynamoFrontEnd {
     private static final int UN_ACCEPTABLE_INTERVAL = 20;
     private static final long TABLE_READ_CAPACITY = 5;
     private static final long TABLE_WRITE_CAPACITY = 5;
-    private static final double BFS_N1_SLOPE = -298.2783986;
-    private static final double BFS_N2_SLOPE = -298.2783986;
-    private static final double BFS_UN_SLOPE = 927.19685145;
-    private static final double CP_N1_SLOPE = -1905.43807419;
-    private static final double CP_N2_SLOPE = -1905.43807419;
-    private static final double CP_UN_SLOPE = 1641.30725146;
-    private static final double DLX_N1_SLOPE = 8002346.72978024;
-    private static final double DLX_N2_SLOPE = 8002346.72978024;
-    private static final double DLX_UN_SLOPE = 1344284.95812563;
+    private static final double BFS_N1_SLOPE = 3082522.82763111;
+    private static final double BFS_N2_SLOPE = 3082522.82763111;
+    private static final double BFS_UN_SLOPE = 4137998.28074235;
+    private static final double CP_N1_SLOPE = -10532450.90665789;
+    private static final double CP_N2_SLOPE = -10532450.90665789;
+    private static final double CP_UN_SLOPE = 11335191.92076031;
+    private static final double DLX_N1_SLOPE = 45927723.22862084;
+    private static final double DLX_N2_SLOPE = 45927723.22862084;
+    private static final double DLX_UN_SLOPE = 2127945.97904317;
 
     private static Map<String, Long> requestCostCache = Collections.synchronizedMap(new LRUCache<String, Long>(CACHE_CAPACITY));
     private static AmazonDynamoDB dynamoDB;
