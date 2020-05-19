@@ -4,10 +4,8 @@ import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
-import metrics.tools.Stats;
-import metrics.tools.SudokuMetricsBFS;
-import metrics.tools.SudokuMetricsCP;
-import metrics.tools.SudokuMetricsDLX;
+import metrics.tools.RequestStats;
+import metrics.tools.SudokuMetricsTool;
 import org.json.JSONArray;
 import pt.ulisboa.tecnico.cnv.server.task.UploadStatsTask;
 import pt.ulisboa.tecnico.cnv.solver.Solver;
@@ -61,23 +59,8 @@ public class WebServer {
         return buf.toString();
     }
 
-    private static void writeBack(SolverArgumentParser parser) {
-        SolverFactory.SolverType type = parser.getSolverStrategy();
-        Stats stats;
-        switch (type) {
-            case BFS:
-                stats = SudokuMetricsBFS.getAndRemoveCurrentStats();
-                break;
-            case CP:
-                stats = SudokuMetricsCP.getAndRemoveCurrentStats();
-                break;
-            case DLX:
-                stats = SudokuMetricsDLX.getAndRemoveCurrentStats();
-                break;
-            default:
-                System.out.println("ERROR: Invalid Stats type found: " + type);
-                return;
-        }
+    private static void saveStats(SolverArgumentParser parser) {
+        RequestStats stats = SudokuMetricsTool.getCurrentStats();
         metricsUploadExecutor.execute(new UploadStatsTask(parser, stats));
 
     }
@@ -95,72 +78,75 @@ public class WebServer {
     static class MyHandler implements HttpHandler {
         @Override
         public void handle(final HttpExchange t) throws IOException {
+            try {
+                // Get the query.
+                final String query = t.getRequestURI().getQuery();
+                System.out.println("> Query:\t" + query);
 
-            // Get the query.
-            final String query = t.getRequestURI().getQuery();
-            System.out.println("> Query:\t" + query);
+                // Break it down into String[].
+                final String[] params = query.split("&");
 
-            // Break it down into String[].
-            final String[] params = query.split("&");
+                // Store as if it was a direct call to SolverMain.
+                final ArrayList<String> newArgs = new ArrayList<>();
+                for (final String p : params) {
+                    final String[] splitParam = p.split("=");
+                    newArgs.add("-" + splitParam[0]);
+                    newArgs.add(splitParam[1]);
+                }
+                newArgs.add("-b");
+                newArgs.add(parseRequestBody(t.getRequestBody()));
 
-            // Store as if it was a direct call to SolverMain.
-            final ArrayList<String> newArgs = new ArrayList<>();
-            for (final String p : params) {
-                final String[] splitParam = p.split("=");
-                newArgs.add("-" + splitParam[0]);
-                newArgs.add(splitParam[1]);
+                newArgs.add("-d");
+
+                // Store from ArrayList into regular String[].
+                final String[] args = new String[newArgs.size()];
+                int i = 0;
+                for (String arg : newArgs) {
+                    args[i] = arg;
+                    i++;
+                }
+                // Get user-provided flags.
+                final SolverArgumentParser ap = new SolverArgumentParser(args);
+
+
+                // Create solver instance from factory.
+                final Solver s = SolverFactory.getInstance().makeSolver(ap);
+
+                //Solve sudoku puzzle
+                JSONArray solution = s.solveSudoku();
+
+                saveStats(ap);
+
+                // Send response to browser.
+                final Headers hdrs = t.getResponseHeaders();
+
+                //t.sendResponseHeaders(200, responseFile.length());
+
+
+                ///hdrs.add("Content-Type", "image/png");
+                hdrs.add("Content-Type", "application/json");
+
+                hdrs.add("Access-Control-Allow-Origin", "*");
+
+                hdrs.add("Access-Control-Allow-Credentials", "true");
+                hdrs.add("Access-Control-Allow-Methods", "POST, GET, HEAD, OPTIONS");
+                hdrs.add("Access-Control-Allow-Headers", "Origin, Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers");
+
+                t.sendResponseHeaders(200, solution.toString().length());
+
+
+                final OutputStream os = t.getResponseBody();
+                OutputStreamWriter osw = new OutputStreamWriter(os, "UTF-8");
+                osw.write(solution.toString());
+                osw.flush();
+                osw.close();
+
+                os.close();
+
+                System.out.println("> Sent response to " + t.getRemoteAddress().toString());
+            } finally {
+                SudokuMetricsTool.removeCurrentStats();
             }
-            newArgs.add("-b");
-            newArgs.add(parseRequestBody(t.getRequestBody()));
-
-            newArgs.add("-d");
-
-            // Store from ArrayList into regular String[].
-            final String[] args = new String[newArgs.size()];
-            int i = 0;
-            for (String arg : newArgs) {
-                args[i] = arg;
-                i++;
-            }
-            // Get user-provided flags.
-            final SolverArgumentParser ap = new SolverArgumentParser(args);
-
-
-            // Create solver instance from factory.
-            final Solver s = SolverFactory.getInstance().makeSolver(ap);
-
-            //Solve sudoku puzzle
-            JSONArray solution = s.solveSudoku();
-
-            writeBack(ap);
-
-            // Send response to browser.
-            final Headers hdrs = t.getResponseHeaders();
-
-            //t.sendResponseHeaders(200, responseFile.length());
-
-
-            ///hdrs.add("Content-Type", "image/png");
-            hdrs.add("Content-Type", "application/json");
-
-            hdrs.add("Access-Control-Allow-Origin", "*");
-
-            hdrs.add("Access-Control-Allow-Credentials", "true");
-            hdrs.add("Access-Control-Allow-Methods", "POST, GET, HEAD, OPTIONS");
-            hdrs.add("Access-Control-Allow-Headers", "Origin, Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers");
-
-            t.sendResponseHeaders(200, solution.toString().length());
-
-
-            final OutputStream os = t.getResponseBody();
-            OutputStreamWriter osw = new OutputStreamWriter(os, "UTF-8");
-            osw.write(solution.toString());
-            osw.flush();
-            osw.close();
-
-            os.close();
-
-            System.out.println("> Sent response to " + t.getRemoteAddress().toString());
         }
     }
 }

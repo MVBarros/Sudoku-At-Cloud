@@ -25,8 +25,8 @@ public class SudokuMetricsTool {
         return stat;
     }
 
-    public static RequestStats getAndRemoveCurrentStats() {
-        return stats.remove(getCurrentThreadId());
+    public static void removeCurrentStats() {
+        stats.remove(getCurrentThreadId());
     }
 
     public static void printUsage() {

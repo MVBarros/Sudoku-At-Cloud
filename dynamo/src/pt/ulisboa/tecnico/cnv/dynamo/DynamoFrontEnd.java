@@ -6,10 +6,7 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.model.*;
 import com.amazonaws.services.dynamodbv2.util.TableUtils;
-import metrics.tools.Stats;
-import metrics.tools.StatsBFS;
-import metrics.tools.StatsCP;
-import metrics.tools.StatsDLX;
+import metrics.tools.RequestStats;
 import pt.ulisboa.tecnico.cnv.dynamo.cache.LRUCache;
 import pt.ulisboa.tecnico.cnv.loadbalancer.sudoku.SudokuParameters;
 import pt.ulisboa.tecnico.cnv.solver.SolverArgumentParser;
@@ -20,6 +17,9 @@ import java.util.List;
 import java.util.Map;
 
 public class DynamoFrontEnd {
+    public static final String BFS_TABLE_NAME = "Stats-BFS";
+    public static final String CP_TABLE_NAME = "Stats-CP";
+    public static final String DLX_TABLE_NAME = "Stats-DLX";
     private static final String REGION = "us-east-1";
     private static final String KEY_REQUEST_PRIMARY_KEY = "RequestQuery";
     private static final String KEY_BOARD_SIZE_N1 = "BoardSizeN1";
@@ -66,13 +66,13 @@ public class DynamoFrontEnd {
 
     public static void createTables() {
         try {
-            createStatsTable(StatsBFS.BFS_TABLE_NAME);
-            createStatsTable(StatsCP.CP_TABLE_NAME);
-            createStatsTable(StatsDLX.DLX_TABLE_NAME);
+            createStatsTable(BFS_TABLE_NAME);
+            createStatsTable(CP_TABLE_NAME);
+            createStatsTable(DLX_TABLE_NAME);
 
-            TableUtils.waitUntilActive(dynamoDB, StatsBFS.BFS_TABLE_NAME);
-            TableUtils.waitUntilActive(dynamoDB, StatsCP.CP_TABLE_NAME);
-            TableUtils.waitUntilActive(dynamoDB, StatsDLX.DLX_TABLE_NAME);
+            TableUtils.waitUntilActive(dynamoDB, BFS_TABLE_NAME);
+            TableUtils.waitUntilActive(dynamoDB, CP_TABLE_NAME);
+            TableUtils.waitUntilActive(dynamoDB, DLX_TABLE_NAME);
 
         } catch (InterruptedException e) {
             System.out.println("ERROR: was interrupted while creating tables");
@@ -80,7 +80,7 @@ public class DynamoFrontEnd {
         }
     }
 
-    public static void uploadStats(SolverArgumentParser parser, Stats stats) {
+    public static void uploadStats(SolverArgumentParser parser, RequestStats stats) {
         Map<String, AttributeValue> item = new HashMap<>();
         String key = getKey(parser);
         item.put(KEY_REQUEST_PRIMARY_KEY, new AttributeValue(key));
@@ -88,8 +88,8 @@ public class DynamoFrontEnd {
         item.put(KEY_BOARD_SIZE_N2, new AttributeValue().withN(Integer.toString(parser.getN2())));
         item.put(KEY_BOARD_IDENTIFIER, new AttributeValue(parser.getInputBoard()));
         item.put(KEY_UNASSIGNED_ENTRIES, new AttributeValue().withN(Integer.toString(parser.getUn())));
-        item.put(KEY_REQUEST_COST, new AttributeValue().withN(Long.toString(stats.getCost())));
-        PutItemRequest putItemRequest = new PutItemRequest(stats.getTableName(), item)
+        item.put(KEY_REQUEST_COST, new AttributeValue().withN(Long.toString(getCost(parser, stats))));
+        PutItemRequest putItemRequest = new PutItemRequest(getTableName(parser), item)
                 .withConditionExpression(String.format("attribute_not_exists(%s)", KEY_REQUEST_PRIMARY_KEY));
         try {
             dynamoDB.putItem(putItemRequest);
@@ -112,6 +112,32 @@ public class DynamoFrontEnd {
             }
         }
     }
+
+    private static String getTableName(SolverArgumentParser parser) {
+        switch (parser.getSolverStrategy()) {
+            case BFS:
+                return BFS_TABLE_NAME;
+            case CP:
+                return CP_TABLE_NAME;
+            case DLX:
+            default:
+                return DLX_TABLE_NAME;
+        }
+    }
+
+    private static long getCost(SolverArgumentParser parser, RequestStats stats) {
+        switch (parser.getSolverStrategy()) {
+            case BFS:
+                return stats.getBFSCost(parser.getN1(), parser.getN2(), parser.getUn());
+            case CP:
+                return stats.getCPCost(parser.getN1(), parser.getN2(), parser.getUn());
+            case DLX:
+            default: //Should never happen
+                return stats.getDLXCost(parser.getN1(), parser.getN2(), parser.getUn());
+
+        }
+    }
+
 
     private static Long inferCostFilterBoard(SudokuParameters parameters) {
         String cacheKey = getCacheKey(parameters);
