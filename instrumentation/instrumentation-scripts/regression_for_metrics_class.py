@@ -20,7 +20,7 @@ paths = [ \
 ]
 
 strats = ['BFS', 'CP', 'DLX']
-metrics = {'BFS' : "Method Count", 'CP' : "New Count", 'DLX' : "New Array Count"}
+metrics_per_stat = {'BFS' : "Method Count", 'CP' : "New Count", 'DLX' : "New Array Count"}
 
 def numericalSort(value):
     parts = numbers.split(value)
@@ -32,13 +32,13 @@ def numericalSort(value):
 
 def getMetricsForStrat(strat):
     ret = [[], []]
-    metric = metrics[strat]
+    curr_metric = metrics[metrics_per_stat]
     curr_paths = [s for s in paths if strat in s]
     for path in curr_paths:
         for filename in sorted(glob.iglob(path), key=numericalSort):
             with open(filename, 'r') as f:
                 items = json.load(f)
-                ret[0].append(items[metric])
+                ret[0].append(items[curr_metric])
                 ret[1].append(items["Instruction Count"])
     return ret
 
