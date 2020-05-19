@@ -59,9 +59,9 @@ public class WebServer {
         return buf.toString();
     }
 
-    private static void saveStats(SolverArgumentParser parser) {
+    private static void saveStats(SolverArgumentParser parser, long delta) {
         RequestStats stats = SudokuMetricsTool.getCurrentStats();
-        metricsUploadExecutor.execute(new UploadStatsTask(parser, stats));
+        metricsUploadExecutor.execute(new UploadStatsTask(parser, stats, delta));
 
     }
 
@@ -79,6 +79,7 @@ public class WebServer {
         @Override
         public void handle(final HttpExchange t) throws IOException {
             try {
+                long stime = System.currentTimeMillis();
                 // Get the query.
                 final String query = t.getRequestURI().getQuery();
                 System.out.println("> Query:\t" + query);
@@ -114,8 +115,8 @@ public class WebServer {
 
                 //Solve sudoku puzzle
                 JSONArray solution = s.solveSudoku();
-
-                saveStats(ap);
+                long delta = System.currentTimeMillis() - stime;
+                saveStats(ap, delta);
 
                 // Send response to browser.
                 final Headers hdrs = t.getResponseHeaders();
