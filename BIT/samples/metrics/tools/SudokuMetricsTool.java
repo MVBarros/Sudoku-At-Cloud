@@ -67,7 +67,8 @@ public class SudokuMetricsTool {
         String filelist[] = in_dir.list();
         for (String filename : filelist) {
             if (filename.endsWith(".class")) {
-                addInstrumentation(new File(filename));
+                String in_filename = in_dir.getAbsolutePath() + System.getProperty("file.separator") + filename;
+                addInstrumentation(new File(in_filename));
             }
         }
     }
