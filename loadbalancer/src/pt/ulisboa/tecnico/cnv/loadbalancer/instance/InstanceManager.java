@@ -43,7 +43,7 @@ public class InstanceManager {
     }
 
 
-    public static Instance removeInstance(String id) {
+    private static void removeInstance(String id) {
         synchronized (instances) {
             HealthCheckTask task = healthCheckThreads.remove(id);
             if (task != null) {
@@ -51,7 +51,7 @@ public class InstanceManager {
             } else {
                 System.out.println("Error: Removing health check for instance " + id + " that does not exist");
             }
-            return instances.remove(id);
+            instances.remove(id);
         }
     }
 
@@ -68,7 +68,7 @@ public class InstanceManager {
         return bestInstance;
     }
 
-    public static Instance getInstanceToRemove() {
+    public static Instance removeInstance() {
         synchronized (instances) {
             if (instances.size() == 0) {
                 return null; //Just in case
