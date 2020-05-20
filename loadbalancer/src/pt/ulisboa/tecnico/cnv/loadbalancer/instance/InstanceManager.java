@@ -9,8 +9,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class InstanceManager {
 
-    private static final long TIME_INTERVAL_TOLERANCE = 5 * 60 * 1000;
-
     private static final Map<String, Instance> instances = new ConcurrentHashMap<>();
     private static final Map<String, HealthCheckTask> healthCheckThreads = new ConcurrentHashMap<>();
 
@@ -43,15 +41,15 @@ public class InstanceManager {
     }
 
 
-    private static void removeInstance(String id) {
+    public static void removeInstance(Instance instance) {
         synchronized (instances) {
-            HealthCheckTask task = healthCheckThreads.remove(id);
+            HealthCheckTask task = healthCheckThreads.remove(instance.getId());
             if (task != null) {
                 task.interrupt();
             } else {
-                System.out.println("Error: Removing health check for instance " + id + " that does not exist");
+                System.out.println("Error: Removing health check for instance " + instance.getId() + " that does not exist");
             }
-            instances.remove(id);
+            instances.remove(instance.getId());
         }
     }
 
@@ -81,7 +79,7 @@ public class InstanceManager {
                     best = instance;
                 }
             }
-            removeInstance(best.getId());
+            removeInstance(best);
             return best;
         }
     }
