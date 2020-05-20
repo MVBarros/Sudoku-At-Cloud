@@ -77,15 +77,7 @@ public class InstanceManager {
             Instance best = null;
             //Chose instance closer to completing requests (since we will be waiting for it to finish)
             for (Instance instance : instances.values()) {
-                if (best == null || best.estimateCompletionTime() > instance.estimateCompletionTime()) {
-                    best = instance;
-                }
-            }
-
-            //prioritize older instances
-            for (Instance instance : instances.values()) {
-                if (best.estimateCompletionTime() + TIME_INTERVAL_TOLERANCE >= instance.estimateCompletionTime()
-                        && best.getUpTime() < instance.getUpTime()) {
+                if (best == null || best.removalCost() > instance.removalCost()) {
                     best = instance;
                 }
             }

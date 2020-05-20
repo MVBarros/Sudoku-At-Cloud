@@ -25,6 +25,9 @@ public class Instance {
     private static final String SUDOKU_REQUEST_METHOD = "GET";
     private static final int UNHEALTHY_THRESHOLD = 1; //1 timeouts before declaring instance as temporary dead
     private static final int DEAD_THRESHOLD = 5; //5 timeouts before declaring instance as permanently dead
+    private static final double COMPLETION_TIME_WEIGHT = 0.9;
+    private static final double UP_TIME_WEIGHT = 0.1;
+
 
     private final URL address;
     private final URL LBAddress;
@@ -44,11 +47,11 @@ public class Instance {
         setState(InstanceStateSuspected.getInstance()); //Only healthy after passing first health check
     }
 
-    public long getUpTime() {
+    private long getUpTime() {
         return System.currentTimeMillis() - startedTS;
     }
 
-    public long estimateCompletionTime() {
+    private long estimateCompletionTime() {
         synchronized (this.requests) {
             long total = 0;
             for (SudokuRequest request : requests) {
@@ -60,6 +63,10 @@ public class Instance {
 
     private String getAddress() {
         return address.toString();
+    }
+
+    public long removalCost() {
+        return (long) (COMPLETION_TIME_WEIGHT * estimateCompletionTime() + UP_TIME_WEIGHT * getUpTime());
     }
 
     public String getId() {
