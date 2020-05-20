@@ -9,6 +9,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class InstanceManager {
 
+    private static final long TIME_INTERVAL_TOLERANCE = 5 * 60 * 1000;
+
     private static final Map<String, Instance> instances = new ConcurrentHashMap<>();
     private static final Map<String, HealthCheckTask> healthCheckThreads = new ConcurrentHashMap<>();
 
@@ -21,7 +23,7 @@ public class InstanceManager {
             for (Instance instance : instances.values()) {
                 totalLoad += instance.getLoad();
             }
-            return totalLoad / instances.size();
+            return totalLoad / (instances.size() == 0 ? 1 : instances.size()); //Just in case, should never happen
         }
     }
 
@@ -66,9 +68,29 @@ public class InstanceManager {
         return bestInstance;
     }
 
-    public static String getInstanceToRemove() {
-        //TODO FIX 0 INSTANCES
-        //TODO - Make actual selection of instance to remove
-        return instances.values().iterator().next().getId();
+    public static Instance getInstanceToRemove() {
+        synchronized (instances) {
+            if (instances.size() == 0) {
+                return null; //Just in case
+            }
+
+            Instance best = null;
+            //Chose instance closer to completing requests (since we will be waiting for it to finish)
+            for (Instance instance : instances.values()) {
+                if (best == null || best.estimateCompletionTime() > instance.estimateCompletionTime()) {
+                    best = instance;
+                }
+            }
+
+            //prioritize older instances
+            for (Instance instance : instances.values()) {
+                if (best.estimateCompletionTime() + TIME_INTERVAL_TOLERANCE >= instance.estimateCompletionTime()
+                        && best.getUpTime() < instance.getUpTime()) {
+                    best = instance;
+                }
+            }
+            removeInstance(best.getId());
+            return best;
+        }
     }
 }

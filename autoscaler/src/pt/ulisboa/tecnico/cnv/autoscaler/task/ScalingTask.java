@@ -1,6 +1,7 @@
 package pt.ulisboa.tecnico.cnv.autoscaler.task;
 
 import pt.ulisboa.tecnico.cnv.autoscaler.EC2FrontEnd;
+import pt.ulisboa.tecnico.cnv.loadbalancer.instance.Instance;
 import pt.ulisboa.tecnico.cnv.loadbalancer.instance.InstanceManager;
 import java.lang.Math;
 
@@ -71,9 +72,14 @@ public class ScalingTask implements Runnable {
     }
 
     private void removeInstance(long currentTime) {
-        String instanceId = InstanceManager.getInstanceToRemove();
-        System.out.println("Scale Down Threshold achieved, removing instance " + instanceId);
-        EC2FrontEnd.terminateInstance(instanceId);
+        Instance instance = InstanceManager.getInstanceToRemove();
+        if (instance == null) {
+            //Return
+            System.out.println("Instance to remove was null...");
+            return;
+        }
+        System.out.println("Scale Down Threshold achieved, removing instance " + instance.getId());
+        EC2FrontEnd.terminateInstance(instance);
         lastScaleTimestamp = currentTime;
     }
 

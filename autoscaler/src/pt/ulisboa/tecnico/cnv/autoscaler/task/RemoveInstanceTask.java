@@ -23,6 +23,6 @@ public class RemoveInstanceTask implements Runnable {
                 System.out.println("Error: Thread was interrupted while waiting for removed instance " + instance.getId() +" to finish its job");
             }
         }
-        EC2FrontEnd.terminateInstance(instance);
+        EC2FrontEnd.terminateInstanceRequest(instance);
     }
 }

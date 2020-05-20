@@ -46,7 +46,8 @@ public class EC2FrontEnd {
                 .withCredentials(new AWSStaticCredentialsProvider(credentials)).build();
     }
 
-    private EC2FrontEnd() {}
+    private EC2FrontEnd() {
+    }
 
     public static CreateInstanceTask createInstance() {
         EC2FrontEnd.numInstances.incrementAndGet();
@@ -73,7 +74,7 @@ public class EC2FrontEnd {
         try {
             System.out.println("Adding instance " + instanceId + " to load balancer");
             InstanceManager.addInstance(url, instanceId);
-        }  catch (MalformedURLException e) {
+        } catch (MalformedURLException e) {
             System.out.println("Malformed URL " + url + " unable to add instance");
         }
 
@@ -106,20 +107,14 @@ public class EC2FrontEnd {
         return instances.get(0);
     }
 
-    public static void terminateInstance(String instanceId) {
-       pt.ulisboa.tecnico.cnv.loadbalancer.instance.Instance removedInstance = InstanceManager.removeInstance(instanceId);
-        if (removedInstance != null) {
-            numInstances.decrementAndGet();
-            ThreadManager.execute(new RemoveInstanceTask(removedInstance));
-        } else {
-            System.out.println("Error: Trying to remove instance with id " + instanceId + " but it does not exist");
-        }
+    public static void terminateInstance(pt.ulisboa.tecnico.cnv.loadbalancer.instance.Instance instance) {
+        numInstances.decrementAndGet();
+        ThreadManager.execute(new RemoveInstanceTask(instance));
     }
 
-    public static void terminateInstance(pt.ulisboa.tecnico.cnv.loadbalancer.instance.Instance instance) {
-        TerminateInstancesRequest request = new TerminateInstancesRequest()
-                .withInstanceIds(instance.getId());
-       ec2.terminateInstances(request);
+    public static void terminateInstanceRequest(pt.ulisboa.tecnico.cnv.loadbalancer.instance.Instance instance) {
+        TerminateInstancesRequest request = new TerminateInstancesRequest().withInstanceIds(instance.getId());
+        ec2.terminateInstances(request);
     }
 
     public static int getNumInstances() {

@@ -31,15 +31,31 @@ public class Instance {
     private final AtomicInteger failureCounter;
     private final Set<SudokuRequest> requests;
     private InstanceState state;
-    private String id;
+    private final String id;
+    private final long startedTS;
 
     public Instance(String address, String id) throws MalformedURLException {
         this.address = new URL(address);
         this.LBAddress = new URL(address + LB_HANDLER);
         this.requests = Collections.synchronizedSet(new HashSet<SudokuRequest>());
         this.failureCounter = new AtomicInteger(0);
+        this.startedTS = System.currentTimeMillis();
         this.id = id;
         setState(InstanceStateSuspected.getInstance()); //Only healthy after passing first health check
+    }
+
+    public long getUpTime() {
+        return System.currentTimeMillis() - startedTS;
+    }
+
+    public long estimateCompletionTime() {
+        synchronized (this.requests) {
+            long total = 0;
+            for (SudokuRequest request : requests) {
+                total += request.estimateCompletionTime();
+            }
+            return  total;
+        }
     }
 
     private String getAddress() {
