@@ -72,7 +72,7 @@ public class ScalingTask implements Runnable {
     }
 
     private void removeInstance(long currentTime) {
-        Instance instance = InstanceManager.getInstanceToRemove();
+        Instance instance = InstanceManager.removeInstance();
         if (instance == null) {
             //Return
             System.out.println("Instance to remove was null...");
