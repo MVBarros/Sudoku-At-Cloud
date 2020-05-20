@@ -56,7 +56,7 @@ public class SudokuRequest implements Runnable {
 
     private long numberOfRequestsInInstance() {
         int size = instance.getRequests().size();
-        return size == 0 ? 1 : size;
+        return size == 0 ? 1 : size; //Avoid division by zero
     }
 
     private long getTime() {
