@@ -14,9 +14,8 @@ import java.net.HttpURLConnection;
 
 public class SudokuRequest implements Runnable {
     private static final int SUDOKU_REQUEST_SUCCESS = 200;
-    private static final double MIN_COST_SCALE = 1.5 * Math.pow(10, -2); //Allow to lose up to ~99% of the cost due to time elapsing
+    private static final double MIN_COST_SCALE = 0.01d; //Allow to lose up to ~99% of the cost due to time elapsing (To avoid negative costs)
     private static final long REQUEST_COST_LOSS_SLOPE = 10000; //Measured to be less than the average since we prefer to overmeasure instead of undermeasure
-    private static final long MAX_REQUEST_COST = (long) (3 * Math.pow(10, 9)); //Maximize to cost to ~ that espected for a 5 minute request, avoiding launching multiple instances for a single gigantic request
     private final SudokuParameters parameters;
     private final long minCost;
     private final Instance instance;
@@ -36,18 +35,14 @@ public class SudokuRequest implements Runnable {
     }
 
     public long getCurrentCost() {
-        return Math.min(MAX_REQUEST_COST, currentCost());
+        //Assuming all requests get equal CPU time
+        long newCost = Math.max(cost - getCurrentSlope() * getElapsedTime(), minCost);
+        this.cost = newCost;
+        return newCost;
     }
 
     public long estimateCompletionTime() {
         return getCurrentCost() / getCurrentSlope();
-    }
-
-    private long currentCost() {
-        //Assuming all requests get equal CPU time
-        long newCost = Math.max(cost - getCurrentSlope() * getTime(), minCost);
-        this.cost = newCost;
-        return newCost;
     }
 
     private long getCurrentSlope() {
@@ -59,7 +54,7 @@ public class SudokuRequest implements Runnable {
         return size == 0 ? 1 : size; //Avoid division by zero
     }
 
-    private long getTime() {
+    private long getElapsedTime() {
         long currentTs = System.currentTimeMillis();
         long time = currentTs - lastCostCheckTS;
         lastCostCheckTS = currentTs;

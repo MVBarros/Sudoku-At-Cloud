@@ -25,8 +25,6 @@ public class Instance {
     private static final String SUDOKU_REQUEST_METHOD = "GET";
     private static final int UNHEALTHY_THRESHOLD = 1; //1 timeouts before declaring instance as temporary dead
     private static final int DEAD_THRESHOLD = 5; //5 timeouts before declaring instance as permanently dead
-    private static final double COMPLETION_TIME_WEIGHT = 0.1;
-    private static final double UP_TIME_WEIGHT = 0.9;
     private static final long CHARGE_PERIOD = 60 * 1000 * 60; //1 hour
 
     private final URL address;
