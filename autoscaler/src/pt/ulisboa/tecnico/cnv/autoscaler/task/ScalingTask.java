@@ -89,7 +89,7 @@ public class ScalingTask implements Runnable {
         Instance instance = InstanceManager.removeInstance();
         if (instance == null) {
             //Return
-            System.out.println("Instance to remove was null...");
+            System.out.println("Instance to remove was null, no suitable candidate, delaying scale down...");
             return;
         }
         System.out.println("Scale Down Threshold achieved, removing instance " + instance.getId());
