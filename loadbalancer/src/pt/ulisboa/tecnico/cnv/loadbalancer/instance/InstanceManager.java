@@ -12,10 +12,15 @@ public class InstanceManager {
     private static final Map<String, Instance> instances = new ConcurrentHashMap<>();
     private static final Map<String, HealthCheckTask> healthCheckThreads = new ConcurrentHashMap<>();
 
-    private InstanceManager() {
+    private InstanceManager() {}
+
+    public static SystemLoad getSystemInfo() {
+        synchronized (instances) {
+            return new SystemLoad(getAverageNumberRequests(), getSystemLoad());
+        }
     }
 
-    public static long getSystemLoad() {
+    private static long getSystemLoad() {
         synchronized (instances) {
             long totalLoad = 0;
             for (Instance instance : instances.values()) {
@@ -24,6 +29,17 @@ public class InstanceManager {
             return totalLoad / (instances.size() == 0 ? 1 : instances.size()); //Just in case, should never happen
         }
     }
+
+    private static long getAverageNumberRequests() {
+        synchronized (instances) {
+            long totalNumberRequests = 0;
+            for (Instance instance : instances.values()) {
+                totalNumberRequests += instance.getRequests().size();
+            }
+            return totalNumberRequests / (instances.size() == 0 ? 1 : instances.size()); //Just in case, should never happen
+        }
+    }
+
 
     public static void addInstance(String address, String id) throws MalformedURLException {
         Instance instance;

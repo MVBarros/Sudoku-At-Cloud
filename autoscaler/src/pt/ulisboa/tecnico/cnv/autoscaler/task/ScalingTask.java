@@ -3,6 +3,8 @@ package pt.ulisboa.tecnico.cnv.autoscaler.task;
 import pt.ulisboa.tecnico.cnv.autoscaler.EC2FrontEnd;
 import pt.ulisboa.tecnico.cnv.loadbalancer.instance.Instance;
 import pt.ulisboa.tecnico.cnv.loadbalancer.instance.InstanceManager;
+import pt.ulisboa.tecnico.cnv.loadbalancer.instance.SystemLoad;
+
 import java.lang.Math;
 
 public class ScalingTask implements Runnable {
@@ -11,10 +13,13 @@ public class ScalingTask implements Runnable {
     private static final long SCALE_COOLDOWN = 3 * 60 * 1000;
     private static final int NUMBER_MEASURES = 10;
     private static final int TIME_BETWEEN_MEASUREMENTS = 5000;
-    private static final long SCALE_UP_VALUE_THRESHOLD = (long) (2.5 * Math.pow(10, 9));
-    private static final long SCALE_DOWN_VALUE_THRESHOLD = (long) (8 * Math.pow(10, 8));
+    private static final long SCALE_UP_LOAD_THRESHOLD = (long) (2.5 * Math.pow(10, 9));
+    private static final long SCALE_DOWN_LOAD_THRESHOLD = (long) (8 * Math.pow(10, 8));
+    private static final long SCALE_UP_AVG_REQUEST_THRESHOLD = 3;
+    private static final long SCALE_DOWN_AVG_REQUEST_THRESHOLD = 1;
 
-    private long[] measurements = new long[NUMBER_MEASURES];
+
+    private SystemLoad[] measurements = new SystemLoad[NUMBER_MEASURES];
     private long lastScaleTimestamp = System.currentTimeMillis();
 
     @Override
@@ -23,8 +28,10 @@ public class ScalingTask implements Runnable {
         while (true) {
             try {
                 Thread.sleep(TIME_BETWEEN_MEASUREMENTS);
-                long currentLoad = InstanceManager.getSystemLoad();
-                System.out.println("Current system load: " + currentLoad);
+                SystemLoad currentLoad = InstanceManager.getSystemInfo();
+                System.out.println("Current system load: " + currentLoad.getSystemLoad());
+                System.out.println("Current number of requests: " + currentLoad.getAvgNumberRequests());
+
                 measurements[index] = currentLoad;
                 scalingPolicy();
                 index = (index + 1) % NUMBER_MEASURES;
@@ -46,24 +53,31 @@ public class ScalingTask implements Runnable {
         if (currentTime - lastScaleTimestamp < SCALE_COOLDOWN) {
             return;
         }
-        long averageLoad = calculateLoadAverage();
+        SystemLoad averageLoad = calculateLoadAverage();
 
-        if (averageLoad >= SCALE_UP_VALUE_THRESHOLD) {
+        if (averageLoad.getSystemLoad() >= SCALE_UP_LOAD_THRESHOLD &&
+                averageLoad.getAvgNumberRequests() >= SCALE_UP_AVG_REQUEST_THRESHOLD) {
             System.out.println("Scale Up Threshold achieved, adding new instance");
             addInstance(currentTime);
-        } else if (averageLoad <= SCALE_DOWN_VALUE_THRESHOLD && numInstances > MIN_NUMBER_INSTANCES) {
+        } else if (averageLoad.getSystemLoad() <= SCALE_DOWN_LOAD_THRESHOLD &&
+                averageLoad.getAvgNumberRequests() <= SCALE_DOWN_AVG_REQUEST_THRESHOLD &&
+                numInstances > MIN_NUMBER_INSTANCES) {
             removeInstance(currentTime);
         }
     }
 
-    private long calculateLoadAverage() {
+    private SystemLoad calculateLoadAverage() {
         long totalLoad = 0;
-        for (long load : measurements) {
-            totalLoad += load;
+        long totalRequests = 0;
+        for (SystemLoad load : measurements) {
+            totalLoad += load.getSystemLoad();
+            totalRequests += load.getAvgNumberRequests();
         }
-        long average = totalLoad / NUMBER_MEASURES;
-        System.out.println("Current average load: " + average);
-        return average;
+        long averageLoad = totalLoad / NUMBER_MEASURES;
+        long averageRequests = totalRequests / NUMBER_MEASURES;
+        System.out.println("Current average load: " + averageLoad);
+        System.out.println("Current average number requests: " + averageRequests);
+        return new SystemLoad(averageLoad, averageRequests);
     }
 
     private void addInstance(long currentTime) {
