@@ -89,9 +89,9 @@ public class InstanceManager {
             }
 
             Instance best = null;
-            //Chose instance closer to completing requests (since we will be waiting for it to finish)
+            //Chose instance whose request completion will result in best use of the time we payed for it
             for (Instance instance : instances.values()) {
-                if (best == null || best.removalCost() > instance.removalCost()) {
+                if (best == null || best.removalCost() < instance.removalCost()) {
                     best = instance;
                 }
             }

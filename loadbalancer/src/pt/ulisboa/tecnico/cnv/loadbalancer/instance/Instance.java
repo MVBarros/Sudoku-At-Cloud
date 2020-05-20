@@ -27,7 +27,7 @@ public class Instance {
     private static final int DEAD_THRESHOLD = 5; //5 timeouts before declaring instance as permanently dead
     private static final double COMPLETION_TIME_WEIGHT = 0.1;
     private static final double UP_TIME_WEIGHT = 0.9;
-
+    private static final long CHARGE_PERIOD = 60 * 1000 * 60; //1 hour
 
     private final URL address;
     private final URL LBAddress;
@@ -66,7 +66,8 @@ public class Instance {
     }
 
     public long removalCost() {
-        return (long) (COMPLETION_TIME_WEIGHT * estimateCompletionTime() + UP_TIME_WEIGHT * getUpTime());
+        //Estimate how much of the time payed will be used once requests complete
+        return (getUpTime() + estimateCompletionTime()) % (CHARGE_PERIOD);
     }
 
     public String getId() {
