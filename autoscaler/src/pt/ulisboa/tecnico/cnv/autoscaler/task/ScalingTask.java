@@ -2,6 +2,7 @@ package pt.ulisboa.tecnico.cnv.autoscaler.task;
 
 import pt.ulisboa.tecnico.cnv.autoscaler.EC2FrontEnd;
 import pt.ulisboa.tecnico.cnv.loadbalancer.instance.InstanceManager;
+import java.lang.Math;
 
 public class ScalingTask implements Runnable {
     public static final int MIN_NUMBER_INSTANCES = 2;
@@ -9,8 +10,8 @@ public class ScalingTask implements Runnable {
     private static final long SCALE_COOLDOWN = 3 * 60 * 1000;
     private static final int NUMBER_MEASURES = 10;
     private static final int TIME_BETWEEN_MEASUREMENTS = 5000;
-    private static final long SCALE_UP_VALUE_THRESHOLD = 20000; //TODO
-    private static final long SCALE_DOWN_VALUE_THRESHOLD = 1000; //TODO
+    private static final long SCALE_UP_VALUE_THRESHOLD = 2 * Math.pow(10, 9); 
+    private static final long SCALE_DOWN_VALUE_THRESHOLD = 8 * Math.pow(10, 8); 
 
     private long[] measurements = new long[NUMBER_MEASURES];
     private long lastScaleTimestamp = System.currentTimeMillis();
