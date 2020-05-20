@@ -18,17 +18,17 @@ public class SudokuRequest implements Runnable {
     private static final long REQUEST_COST_LOSS_SLOPE = 10000; //Measured to be less than the average since we prefer to overmeasure instead of undermeasure
     private static final long MAX_REQUEST_COST = (long) (3 * Math.pow(10, 9)); //Maximize to cost to ~ that espected for a 5 minute request, avoiding launching multiple instances for a single gigantic request
     private final SudokuParameters parameters;
-    private final long startingCost;
     private final long minCost;
     private final Instance instance;
-    private final long sentTime;
+    private long cost;
+    private long lastCostCheckTS;
 
     public SudokuRequest(SudokuParameters parameters, Instance instance) {
         this.parameters = parameters;
-        this.startingCost = parameters.getCost();
-        this.minCost = (long) (this.startingCost * MIN_COST_SCALE);
+        this.cost = parameters.getCost();
+        this.minCost = (long) (this.cost * MIN_COST_SCALE);
         this.instance = instance;
-        this.sentTime = System.currentTimeMillis();
+        this.lastCostCheckTS = System.currentTimeMillis();
     }
 
     public SudokuParameters getParameters() {
@@ -40,15 +40,30 @@ public class SudokuRequest implements Runnable {
     }
 
     public long estimateCompletionTime() {
-        return getCurrentCost() / REQUEST_COST_LOSS_SLOPE;
+        return getCurrentCost() / getCurrentSlope();
     }
 
     private long currentCost() {
-        return Math.max(minCost, startingCost - REQUEST_COST_LOSS_SLOPE * getTime());
+        //Assuming all requests get equal CPU time
+        long newCost = Math.max(cost - getCurrentSlope() * getTime(), minCost);
+        this.cost = newCost;
+        return newCost;
+    }
+
+    private long getCurrentSlope() {
+        return REQUEST_COST_LOSS_SLOPE / numberOfRequestsInInstance();
+    }
+
+    private long numberOfRequestsInInstance() {
+        int size = instance.getRequests().size();
+        return size == 0 ? 1 : size;
     }
 
     private long getTime() {
-        return System.currentTimeMillis() - sentTime;
+        long currentTs = System.currentTimeMillis();
+        long time = currentTs - lastCostCheckTS;
+        lastCostCheckTS = currentTs;
+        return time;
     }
 
 
@@ -62,6 +77,7 @@ public class SudokuRequest implements Runnable {
         this.instance.addRequest(this);
         this.run();
     }
+
     /**
      * Sends Sudoku Request to instance on the other side of @conn
      */
