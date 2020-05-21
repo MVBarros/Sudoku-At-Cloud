@@ -77,7 +77,7 @@ public class ScalingTask implements Runnable {
         long averageRequests = totalRequests / NUMBER_MEASURES;
         System.out.println("Current average load: " + averageLoad);
         System.out.println("Current average number requests: " + averageRequests);
-        return new SystemLoad(averageLoad, averageRequests);
+        return new SystemLoad(averageRequests, averageLoad);
     }
 
     private void addInstance(long currentTime) {
