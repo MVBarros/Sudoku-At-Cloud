@@ -9,7 +9,7 @@ public class InstanceStateDead extends InstanceState {
 
     @Override
     public void newState(Instance instance) {
-        InstanceManager.removeInstance(instance);
+        InstanceManager.crashedInstance(instance);
         EC2FrontEnd.terminateInstance(instance);
     }
 

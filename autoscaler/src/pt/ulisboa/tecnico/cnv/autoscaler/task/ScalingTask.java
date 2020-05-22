@@ -62,6 +62,7 @@ public class ScalingTask implements Runnable {
         } else if (averageLoad.getSystemLoad() <= SCALE_DOWN_LOAD_THRESHOLD &&
                 averageLoad.getAvgNumberRequests() <= SCALE_DOWN_AVG_REQUEST_THRESHOLD &&
                 numInstances > MIN_NUMBER_INSTANCES) {
+            System.out.println("Scale Down Threshold achieved, removing new instance");
             removeInstance(currentTime);
         }
     }

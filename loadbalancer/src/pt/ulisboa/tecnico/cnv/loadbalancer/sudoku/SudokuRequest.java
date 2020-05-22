@@ -22,6 +22,9 @@ public class SudokuRequest implements Runnable {
     private long cost;
     private long lastCostCheckTS;
 
+    private Thread runningThread = null;
+    private HttpURLConnection conn;
+
     public SudokuRequest(SudokuParameters parameters, Instance instance) {
         this.parameters = parameters;
         this.cost = parameters.getCost();
@@ -76,7 +79,7 @@ public class SudokuRequest implements Runnable {
     /**
      * Sends Sudoku Request to instance on the other side of @conn
      */
-    private void sendRequest(HttpURLConnection conn) {
+    private void sendRequest() {
         System.out.println("Request " + this.parameters + " going to instance " + instance.getId());
         try {
             conn.setRequestProperty("Content-Type", "application/json");
@@ -89,32 +92,36 @@ public class SudokuRequest implements Runnable {
 
             int status = conn.getResponseCode();
             if (status == SUDOKU_REQUEST_SUCCESS) {
-                forwardReply(conn);
+                forwardReply();
             } else {
-                instanceError(conn);
+                instanceError();
             }
         } catch (IOException e) {
-            instanceError(conn);
+            System.out.println("Error occurred for request " + this.parameters + " exeception: " + e.getMessage());
+            instanceError();
         }
     }
+
 
     /**
      * Forward sudoku reply from @conn to client that made the request
      */
-    private void forwardReply(HttpURLConnection conn) throws IOException {
+    private void forwardReply() throws IOException {
         this.instance.removeRequest(this);
-        this.parameters.forwardReply(getReplyContent(conn));
+        this.parameters.forwardReply(getReplyContent());
     }
 
-    private void instanceError(HttpURLConnection conn) {
+    private void instanceError() {
         instance.removeRequest(this);
-        conn.disconnect();
+        if (conn != null) {
+            conn.disconnect();
+        }
         instance.setState(InstanceStateSuspected.getInstance());
         RequestQueue.addToQueue(this.getParameters());
     }
 
 
-    private String getReplyContent(HttpURLConnection conn) throws IOException {
+    private String getReplyContent() throws IOException {
         BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
         String inputLine;
         StringBuilder content = new StringBuilder();
@@ -128,6 +135,18 @@ public class SudokuRequest implements Runnable {
     @Override
     public void run() {
         HttpURLConnection connection = instance.getSudokuRequestConn(this.getParameters());
-        sendRequest(connection);
+        this.runningThread = Thread.currentThread();
+        this.conn = connection;
+        sendRequest();
+
     }
+
+    public void stop() {
+        if (runningThread != null) {
+            System.out.println("Stop thread " + runningThread.getId());
+            this.conn.disconnect();
+
+        }
+    }
+
 }

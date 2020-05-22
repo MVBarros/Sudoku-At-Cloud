@@ -1,5 +1,6 @@
 package pt.ulisboa.tecnico.cnv.loadbalancer.instance;
 
+import pt.ulisboa.tecnico.cnv.loadbalancer.sudoku.SudokuRequest;
 import pt.ulisboa.tecnico.cnv.loadbalancer.task.HealthCheckTask;
 import pt.ulisboa.tecnico.cnv.loadbalancer.task.ThreadManager;
 
@@ -66,6 +67,13 @@ public class InstanceManager {
                 System.out.println("Error: Removing health check for instance " + instance.getId() + " that does not exist");
             }
             instances.remove(instance.getId());
+        }
+    }
+
+    public static void crashedInstance(Instance instance) {
+        synchronized (instances) {
+            removeInstance(instance);
+            instance.stopRequests();
         }
     }
 

@@ -82,6 +82,14 @@ public class Instance {
         requests.remove(request);
     }
 
+    public void stopRequests() {
+        synchronized (requests) {
+            for (SudokuRequest request : requests) {
+                request.stop();
+            }
+        }
+    }
+
     public boolean healthCheck() {
         HttpURLConnection conn = null;
         try {
