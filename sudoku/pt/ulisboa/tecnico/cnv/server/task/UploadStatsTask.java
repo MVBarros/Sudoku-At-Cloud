@@ -8,16 +8,14 @@ public class UploadStatsTask implements Runnable {
 
     private RequestStats stats;
     private SolverArgumentParser parser;
-    private long delta;
 
-    public UploadStatsTask(SolverArgumentParser parser, RequestStats stats, long delta) {
+    public UploadStatsTask(SolverArgumentParser parser, RequestStats stats) {
         this.stats = stats;
         this.parser = parser;
-        this.delta = delta;
     }
 
     @Override
     public void run() {
-        DynamoFrontEnd.uploadStats(parser, stats, delta);
+        DynamoFrontEnd.uploadStats(parser, stats);
     }
 }
