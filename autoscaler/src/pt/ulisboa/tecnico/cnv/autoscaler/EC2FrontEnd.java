@@ -22,7 +22,7 @@ public class EC2FrontEnd {
     private static final int MIN_COUNT = 1;
     private static final int MAX_COUNT = 1;
     private static final int WAIT_TIME = 5000;
-    private static final String AMI_ID = "ami-082a03bd684313cbb";
+    private static final String AMI_ID = "ami-00f23826215163ef7";
     private static final String KEY_PAIR_NAME = "CNV-Project-Pair";
     private static final String SECURITY_GROUP_NAME = "CNV-Project";
     private static final String INSTANCE_TYPE = "t2.micro";
