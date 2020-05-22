@@ -135,10 +135,9 @@ public class SudokuRequest implements Runnable {
     @Override
     public void run() {
         HttpURLConnection connection = instance.getSudokuRequestConn(this.getParameters());
-        this.runningThread = Thread.currentThread();
         this.conn = connection;
+        this.runningThread = Thread.currentThread();
         sendRequest();
-
     }
 
     public void stop() {
