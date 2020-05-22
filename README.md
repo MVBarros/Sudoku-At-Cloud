@@ -38,4 +38,5 @@ java config scripts - configures Java 7 and the classpath (one for aws and one f
 
 credentials - AWS Credentials file to be able to use the AWS SDK
 
-all scripts assume you have the aws sdk in this directory with version 1.11.779 which we were not able to include due to size constraints
+all scripts assume you have the aws sdk in this directory with version 1.11.779 which we were not able to include due to size constraints, can be downloaded [here](http://web.tecnico.ulisboa.pt/ist187691/aws-java-sdk-1.11.779.zip)
+

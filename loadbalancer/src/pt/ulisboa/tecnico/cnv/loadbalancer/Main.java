@@ -10,7 +10,7 @@ import pt.ulisboa.tecnico.cnv.loadbalancer.task.ThreadManager;
 import java.net.InetSocketAddress;
 
 public class Main {
-    private static final int PORT = 9000;
+    private static final int PORT = 8000;
 
     public static void main(final String[] args) throws Exception {
         System.out.println("Creating tables for dynamodb");
